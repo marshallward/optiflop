@@ -5,8 +5,6 @@
 #include <stdio.h> /* printf */
 #include <time.h> /* timespec, clock_gettime */
 
-#include <stdlib.h> /* malloc */
-
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
@@ -31,7 +29,6 @@ int main(int argc, char *argv[])
     /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
      * Some compiler optimisers (gcc) will remove the operations.
      */
-
     r[0] = _mm256_set1_ps(1.0f);
     r[1] = _mm256_set1_ps(1.2f);
     r[2] = _mm256_set1_ps(1.3f);
@@ -40,6 +37,7 @@ int main(int argc, char *argv[])
     /* Add and subtract two nearly-equal double-precision numbers */
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
     for (i = 0; i < N; i++) {
+        /* Manual loop unroll */
         /*
         r[0] = _mm256_add_ps(r[0], add0);
         r[1] = _mm256_add_ps(r[1], add0);
