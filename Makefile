@@ -1,19 +1,32 @@
-CC=gcc
-CFLAGS=-march=native -O2 -lrt -funroll-loops
+TARGET=gnu
+ARCH=haswell
 
-# AVX (Sandy Bridge)
-#CFLAGS=-march=corei7-avx -O2 -lrt -funroll-loops
+# TODO: Clean this up (maybe templates?)
+ifeq ($(ARCH), sandybridge)
+	ARCH=corei7-avx
+else ifeq ($(ARCH), haswell)
+	ARCH=core-avx2
+else # Roll the dice...
+	ARCH=native
+endif
 
-# AVX2 (Haswell)
-#CFLAGS=-march=core-avx2 -O2 -lrt -funroll-loops
+ifeq ($(TARGET), intel)
+	CC=icc
+	CFLAGS=-O2
+else # gnu
+	CC=gcc
+	CFLAGS=-march=$(ARCH) -O2 -funroll-loops
+endif
+
+LDFLAGS=-lrt
 
 all: avx_add avx_mac
 
 avx_add: avx_add.c
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 avx_mac: avx_mac.c
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
 	$(RM) avx_add avx_mac
