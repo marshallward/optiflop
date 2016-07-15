@@ -10,85 +10,83 @@ const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 100000000;
 
+#define USE_RDTSC
+const double CPUFREQ = 2.601e9; // Raijin only!
+
 /* Headers */
 float reduce_AVX(__m256);
 
 int main(int argc, char *argv[])
 {
-    //__m256 r0, r1, r2, r3;
-    __m256 r[4];
+    #pragma omp parallel
+    {
+        __m256 r[4];
 
-    const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
-    const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
+        const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
+        const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
 
-    struct timespec ts_start, ts_end;
-    double runtime;
-    int i, j;
-    float result;
+        int i, j;
+        float result;
 
-    /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
-     * Some compiler optimisers (gcc) will remove the operations.
-     */
-    r[0] = _mm256_set1_ps(1.0f);
-    r[1] = _mm256_set1_ps(1.2f);
-    r[2] = _mm256_set1_ps(1.3f);
-    r[3] = _mm256_set1_ps(1.5f);
+#ifdef USE_RDTSC
+        uint32_t aux;
+        uint64_t rax, rdx;
+        uint64_t t0, t1;
+#else
+        struct timespec ts_start, ts_end;
+#endif
+        double runtime;
 
-    /* Add and subtract two nearly-equal double-precision numbers */
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
-    for (i = 0; i < N; i++) {
-        /* Manual loop unroll */
-        /*
-        r[0] = _mm256_add_ps(r[0], add0);
-        r[1] = _mm256_add_ps(r[1], add0);
-        r[2] = _mm256_add_ps(r[2], add0);
-        r[3] = _mm256_add_ps(r[3], add0);
-        r[0] = _mm256_sub_ps(r[0], sub0);
-        r[1] = _mm256_sub_ps(r[1], sub0);
-        r[2] = _mm256_sub_ps(r[2], sub0);
-        r[3] = _mm256_sub_ps(r[3], sub0);
+        /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
+         * Some compiler optimisers (gcc) will remove the operations.
+         */
+        r[0] = _mm256_set1_ps(1.0f);
+        r[1] = _mm256_set1_ps(1.2f);
+        r[2] = _mm256_set1_ps(1.3f);
+        r[3] = _mm256_set1_ps(1.5f);
 
-        r[0] = _mm256_add_ps(r[0], add0);
-        r[1] = _mm256_add_ps(r[1], add0);
-        r[2] = _mm256_add_ps(r[2], add0);
-        r[3] = _mm256_add_ps(r[3], add0);
-        r[0] = _mm256_sub_ps(r[0], sub0);
-        r[1] = _mm256_sub_ps(r[1], sub0);
-        r[2] = _mm256_sub_ps(r[2], sub0);
-        r[3] = _mm256_sub_ps(r[3], sub0);
-        */
-        for (j = 0; j < 4; j++)
-            r[j] = _mm256_add_ps(r[j], add0);
+        /* Add and subtract two nearly-equal double-precision numbers */
+#ifdef USE_RDTSC
+        __asm__ __volatile__ (
+                "rdtscp;" : "=a" (rax), "=d" (rdx), "=c" (aux) );
+        t0 = (rdx << 32) + rax;
+#else
+        clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
+#endif
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < 4; j++)
+                r[j] = _mm256_add_ps(r[j], add0);
 
-        for (j = 0; j < 4; j++)
-            r[j] = _mm256_sub_ps(r[j], sub0);
+            for (j = 0; j < 4; j++)
+                r[j] = _mm256_sub_ps(r[j], sub0);
+        }
+#ifdef USE_RDTSC
+        __asm__ __volatile__ (
+                "rdtscp;" : "=a" (rax), "=d" (rdx), "=c" (aux) );
+        t1 = (rdx << 32) + rax;
+        runtime = (t1 - t0) / 2.601e9;
+#else
+        clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
+        runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
+                 + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
+#endif
 
-        for (j = 0; j < 4; j++)
-            r[j] = _mm256_add_ps(r[j], add0);
+        /* In order to prevent removal of the prior loop by optimisers,
+         * sum the register values and print the result. */
 
-        for (j = 0; j < 4; j++)
-            r[j] = _mm256_sub_ps(r[j], sub0);
+        /* Binomial reduction sum */
+        r[0] = _mm256_add_ps(r[0], r[2]);
+        r[1] = _mm256_add_ps(r[1], r[3]);
+        r[0] = _mm256_add_ps(r[0], r[1]);
+
+        /* Sum of AVX registers */
+        result = reduce_AVX(r[0]);
+
+        printf("result: %f\n", result);
+        printf("runtime: %.12f\n", runtime);
+        /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+        printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
     }
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
-
-    /* In order to prevent removal of the prior loop by optimisers,
-     * sum the register values and print the result. */
-
-    /* Binomial reduction sum */
-    r[0] = _mm256_add_ps(r[0], r[2]);
-    r[1] = _mm256_add_ps(r[1], r[3]);
-    r[0] = _mm256_add_ps(r[0], r[1]);
-
-    /* Sum of AVX registers */
-    result = reduce_AVX(r[0]);
-
-    runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
-        + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
-
-    printf("result: %f\n", result);
-    printf("runtime: %.12f\n", runtime);
-    /* (iterations) * (8 flops / register) * (16 registers / iteration) */
-    printf("gflops: %.12f\n", N * 8 * 16 / (runtime * 1e9));
 
     return 0;
 }
@@ -101,7 +99,7 @@ float reduce_AVX(__m256 x) {
     } v;
     float result = 0;
     int i;
-    
+
     v.reg = x;
     for (i = 0; i < 8; i++)
         result += v.val[i];
