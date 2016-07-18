@@ -1,16 +1,16 @@
 /* FLOP test (based heavily on Alex Yee source) */
 
-#include <immintrin.h> /* __m256, _m256_* */
-#include <stdint.h> /* uint64_t */
-#include <stdio.h> /* printf */
-#include <time.h> /* timespec, clock_gettime */
+#include <immintrin.h>  /* __m256, _m256_* */
+#include <stdint.h>     /* uint64_t */
+#include <stdio.h>      /* printf */
+#include <time.h>       /* timespec, clock_gettime */
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 100000000;
 
-#define USE_RDTSC
+//#define USE_RDTSC
 const double CPUFREQ = 2.601e9; // Raijin only!
 
 /* Headers */
