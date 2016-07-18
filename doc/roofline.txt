@@ -1,0 +1,45 @@
+==========
+microbench
+==========
+
+Floating point microbenchmarks for Raijin
+
+
+Motivation
+==========
+
+The purpose of these microbenchmarks is to provide the baseline parameters for
+a `roofline performance model`_.  Roofline models relate model performance,
+typically FLOPs per second, to the memory bandwidth required for the
+calculation, or the *arithmetic intensity*.  The arithmetic intensity is
+typically defined as number of FLOPS that can be performed per bytes
+transferred from memory (usually DRAM).
+
+An example roofline diagram for a single CPU core on Raijin is shown in the
+figure below.
+
+.. figure:: roofline.png
+
+   An example roofline diagram for one of Raijin's CPUs.
+
+The figure illustrates the peak FLOP performance as a function of arithmetic
+intensity.
+
+The relevant parameters
+
+Peak computational performance
+
+
+
+floating point
+performance as a function of memory bandwidth
+
+
+
+flop
+====
+
+
+
+.. _`roofline performance model`:
+   http://crd.lbl.gov/departments/computer-science/PAR/research/roofline
