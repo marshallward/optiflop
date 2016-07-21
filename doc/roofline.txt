@@ -18,12 +18,18 @@ transferred from memory (usually DRAM).
 An example roofline diagram for a single CPU core on Raijin is shown in the
 figure below.
 
-.. figure:: roofline.png
+.. figure:: raijin_roofline.png
 
    An example roofline diagram for one of Raijin's CPUs.
 
 The figure illustrates the peak FLOP performance as a function of arithmetic
-intensity.
+intensity.  Tasks which require many calculations over a limited data set, such
+as DFTs or dense matrix solvers, will have a high arithmetic intensity and be
+bounded by the computational speed of the CPU, denoted by the solid horizontal
+line.  Smaller, more contained calculations, such as vector updates or PDE
+stencil approximations, will have much lower arithmetic intensity and will be
+bounded by memory transfers, such that the CPU is waiting on new data to
+calculate, which are denoted by the sloped curves on the left.
 
 The relevant parameters
 
