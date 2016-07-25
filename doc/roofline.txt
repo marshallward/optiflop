@@ -15,8 +15,8 @@ calculation, or the *arithmetic intensity*.  The arithmetic intensity is
 typically defined as number of FLOPS that can be performed per bytes
 transferred from memory (usually DRAM).
 
-An example roofline diagram for a single CPU core on Raijin is shown in the
-figure below.
+An example roofline diagram for a single CPU core on Raijin, as produced by the
+`Empirical Roofline Toolkit`_, is shown in the figure below.
 
 .. figure:: raijin_roofline.png
 
@@ -26,26 +26,108 @@ The figure illustrates the peak FLOP performance as a function of arithmetic
 intensity.  Tasks which require many calculations over a limited data set, such
 as DFTs or dense matrix solvers, will have a high arithmetic intensity and be
 bounded by the computational speed of the CPU, denoted by the solid horizontal
-line.  Smaller, more contained calculations, such as vector updates or PDE
-stencil approximations, will have much lower arithmetic intensity and will be
-bounded by memory transfers, such that the CPU is waiting on new data to
-calculate, which are denoted by the sloped curves on the left.
-
-The relevant parameters
-
-Peak computational performance
+line.  Simpler calculations, such as simple Euler timesteps across a vector, or
+pointwise PDE approximations on compact stencils, will have much lower
+arithmetic intensity and may be bounded by memory transfers, such that the CPU
+is waiting on new data to calculate.  Memory-bounded peak performance limits
+are denoted by the sloped curves on the left for different CPU cache levels and
+on-board DRAM.
 
 
+Arithmetic Intensity
+--------------------
 
-floating point
-performance as a function of memory bandwidth
+A hierarchy of calculations based on arithmetic intensity are shown below.
 
+
+Register arithmetic
++++++++++++++++++++
+
+Operations which are applied directly to registers do not require any data
+transfers and represent the peak performance for any operation.  An example
+using x86 AVX instructions is shown below.
+
+.. code:: c
+
+   __mm256 r0, r1                   /* 32-byte vector of 8 SP floats */
+
+   r0 = _mm256_set1_ps(1.0f)        /* r0[:] = 1.0f */
+   r1 = _mm256_set1_ps(2.0f)        /* r1[:] = 2.0f */
+
+   for (int i = 0; i < N; i++)
+       r0 = _mm256_add_ps(r0, r1)    /* r0[:] = r0[:] + r1[:] */
+
+Since the arithmetic is performed directly on registers, there is no transfer
+of memory from cache, and the arithmetic intensity can be interpreted as
+infinite.  The peak performance would therefore bounded by the peak theoretical
+performance of the CPU.
+
+(Note that the above example would not achieve peak performance, since the
+latency of the arithmetic operation (``vaddps``) exceeds 1 cycle, and requires
+some additional pipelining to improve its performance.  This is discussed
+futher in a later section (TODO: section name)).
+
+It is rare to find practical examples of register arithmetic which do not
+depend on DRAM or cache memory, since operations will typically depend on more
+values than available registers, even if only indirectly.  Otherwise, the
+repetitive arithmetic could be reduced to a single operation.
+
+
+Vector arithmetic
++++++++++++++++++
+
+Vectorised addition is the simplest example of a potentially memory-bound
+operation, such as in the code block shown below.
+
+.. code:: c
+
+   float x[N], y[N];
+
+   for (int i = 0; i < N; i++)
+       y[i] = x[i] + y[i];
+
+To compute the arithmetic intensity of this loop at the L1 cache level:
+
+1. Two 4-byte reals must be loaded from L1 to register, or 8 bytes.
+
+2. One floating point calculation is computed using these two bytes.
+
+So the arithmetic intensity is (1 FLOP / 8 bytes) or :math:`\frac{1}{8}`.
+
+
+
+Measurement
+-----------
+
+Construction of a roofline diagram involves two steps of measurement.
+
+1. Global performance bounds of the current hardware platform, and
+
+2. Measurement of the performance (FLOP/sec) and arithmetic intensity
+   (FLOP/byte) of a program or code segment.
+
+
+Timing
+++++++
+
+TODO
+
+1. `clock_gettime`
+
+#. `rdtsc`
+
+#. `getrusage`
+
+#. `gettimeofday`
 
 
 flop
 ====
 
-
+.. References
 
 .. _`roofline performance model`:
    http://crd.lbl.gov/departments/computer-science/PAR/research/roofline
+
+.. _`Empirical Roofline Toolkit`:
+   https://bitbucket.org/berkeleylab/cs-roofline-toolkit
