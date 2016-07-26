@@ -10,8 +10,8 @@ const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 100000000;
 
-#define USE_RDTSC
-const double CPUFREQ = 2.601e9; // Raijin only!
+//#define USE_RDTSC
+const double CPUFREQ = 2.593966925e9; // Raijin only!
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
                 : "=r" (rdx), "=r" (rax)
                 :: "%rax", "%rbx", "%rcx", "%rdx" );
         t1 = (rdx << 32) + rax;
-        runtime = (t1 - t0) / 2.601e9;
+        runtime = (t1 - t0) / CPUFREQ;
 #else
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
         runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
