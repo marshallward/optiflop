@@ -10,7 +10,7 @@ const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 100000000;
 
-//#define USE_RDTSC
+#define USE_RDTSC
 const double CPUFREQ = 2.601e9; // Raijin only!
 
 /* Headers */
@@ -48,7 +48,12 @@ int main(int argc, char *argv[])
         /* Add and subtract two nearly-equal double-precision numbers */
 #ifdef USE_RDTSC
         __asm__ __volatile__ (
-                "rdtscp;" : "=a" (rax), "=d" (rdx), "=c" (aux) );
+            // "rdtscp;" : "=a" (rax), "=d" (rdx), "=c" (aux) );
+            "cpuid\n"
+            "rdtsc\n" : "=a" (rax), "=d" (rdx) );
+            // "movq %%rdx, %0\n"
+            // "movq %%rax, %1\n"
+            // : "=r" (rdx), "=r" (rax) :: "%rax", "%rdx");
         t0 = (rdx << 32) + rax;
 #else
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
@@ -62,7 +67,12 @@ int main(int argc, char *argv[])
         }
 #ifdef USE_RDTSC
         __asm__ __volatile__ (
-                "rdtscp;" : "=a" (rax), "=d" (rdx), "=c" (aux) );
+                "rdtscp\n"
+                "movq %%rdx, %0\n"
+                "movq %%rax, %1\n"
+                "cpuid\n"
+                : "=r" (rdx), "=r" (rax)
+                :: "%rax", "%rbx", "%rcx", "%rdx" );
         t1 = (rdx << 32) + rax;
         runtime = (t1 - t0) / 2.601e9;
 #else
