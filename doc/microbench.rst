@@ -227,8 +227,67 @@ In order to safely use the TSC register, several issues must be considered:
 
       __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi) :: "%rax", "%rdx");
 
+   This will prevent spurious segmentation faults during testing.
 
-2. TODO
+2. Out-of-order execution
+
+   Intel CPUs will cache and reorder its assembly instructions in order to
+   minimise latency effects, regardless of the order in the executable, and
+   this can lead to scenarios where ``rdtsc`` is called prematurely or after a
+   code block has begun.  This can be prevented by using serialising
+   instructions.
+
+   One option is to use the ``cpuid`` instruction, which populates the EAX,
+   EBX, ECX, and EDX instructions with information about the CPU.  Since this
+   instruction is seralized, it ensures that all instructions prior to it have
+   been completed.  However, the latency of this instruction can be volatile
+   and it is best to only use this before a dedicated ``rdtsc`` instruction.
+
+   Another alternative is to use the ``rdtscp`` instruction, which combines the
+   ``cpuid`` and ``rdtsc`` instructions and is also serialized.  Since it is
+   still longer than ``rdtsc``, it is best to use this at the end of a profiled
+   code block.
+
+   It is also a good idea to follow ``rdtscp`` with another ``cpuid`` call, in
+   order to ensure no instructions are inserted before the ``rdtscp`` call.
+
+   An example code block which avoid serialization is shown below:
+
+   .. code:: c
+
+      __asm__ __volatile__ (
+         "cpuid\n"
+         "rdtsc"
+         : "=a" (rax1), "=d" (rdx1) :: "%rax", "%rbx", "%rcx", "%rdx");
+
+      /* Code block */
+
+      __asm__ __volatile__ (
+         "rdtscp\n"
+         "movq %%rax, %0\n"
+         "movq %%rdx, %1\n"
+         "cpuid"
+         : "=r" (rax2), "=r" (rdx2) :: "%rax", "%rbx", "%rcx", "%rdx");
+
+3. Warmup (populate the instruction cache)
+
+   .. TODO
+
+4. Kernel improvements
+
+   While not an option for userspace profiling, it is possible to implement a
+   code block as a kernel model and make additional improvements which prevent
+   interference by the kernel.
+
+   a. ``preempt_disable()``, ``preempt_enable()``
+   b. ``raw_local_irq_save()``, ``raw_local_irq_restore()``
+
+5. User overhead
+
+   1. Explicit ``movq`` calls?
+
+   2. Calculate times later!
+
 
 
 getrusage

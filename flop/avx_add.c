@@ -10,8 +10,8 @@ const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 100000000;
 
-//#define USE_RDTSC
-const double CPUFREQ = 2.593966925e9; // Raijin only!
+#define USE_RDTSC
+const double CPUFREQ = 2.593966925e9;   // My desktop?
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -29,8 +29,7 @@ int main(int argc, char *argv[])
         float result;
 
 #ifdef USE_RDTSC
-        uint32_t aux;
-        uint64_t rax, rdx;
+        uint64_t rax0, rdx0, rax1, rdx1;
         uint64_t t0, t1;
 #else
         struct timespec ts_start, ts_end;
@@ -48,13 +47,15 @@ int main(int argc, char *argv[])
         /* Add and subtract two nearly-equal double-precision numbers */
 #ifdef USE_RDTSC
         __asm__ __volatile__ (
-            // "rdtscp;" : "=a" (rax), "=d" (rdx), "=c" (aux) );
             "cpuid\n"
-            "rdtsc\n" : "=a" (rax), "=d" (rdx) );
+            "rdtsc\n"
+            "movq %%rax, %0\n"
+            "movq %%rdx, %1\n"
+            : "=r" (rax0), "=r" (rdx0)
+            :: "%rax", "%rbx", "%rcx", "%rdx");
             // "movq %%rdx, %0\n"
             // "movq %%rax, %1\n"
             // : "=r" (rdx), "=r" (rax) :: "%rax", "%rdx");
-        t0 = (rdx << 32) + rax;
 #else
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
 #endif
@@ -68,12 +69,14 @@ int main(int argc, char *argv[])
 #ifdef USE_RDTSC
         __asm__ __volatile__ (
                 "rdtscp\n"
-                "movq %%rdx, %0\n"
-                "movq %%rax, %1\n"
+                "movq %%rax, %0\n"
+                "movq %%rdx, %1\n"
                 "cpuid\n"
-                : "=r" (rdx), "=r" (rax)
+                : "=r" (rax1), "=r" (rdx1)
                 :: "%rax", "%rbx", "%rcx", "%rdx" );
-        t1 = (rdx << 32) + rax;
+
+        t0 = (rdx0 << 32) + rax0;
+        t1 = (rdx1 << 32) + rax1;
         runtime = (t1 - t0) / CPUFREQ;
 #else
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
