@@ -18,7 +18,7 @@ transferred from memory (usually DRAM).
 An example roofline diagram for a single CPU core on Raijin, as produced by the
 `Empirical Roofline Toolkit`_, is shown in the figure below.
 
-.. figure:: raijin_roofline.png
+.. figure:: raijin_roofline.svg
 
    An example roofline diagram for one of Raijin's CPUs.
 
