@@ -17,9 +17,8 @@ static int __init hello_start(void)
 
     printk(KERN_INFO "Loading KernFlops.\n");
 
-    preempt_disable();                  /* Disable preemption of CPU */
-    raw_local_irq_save(irq_flags);      /* Disable hard interrupts on CPU */
-    kernel_fpu_begin();                 /* Enable floating point */
+    local_irq_save(irq_flags);          /* Disable interrupts */
+    kernel_fpu_begin();                 /* Disable preempt, save FP state */
 
     __asm__ __volatile__ (
         "cpuid\n"
@@ -58,9 +57,8 @@ static int __init hello_start(void)
 
     printk(KERN_INFO "TSC count: %lu\n", tsc1 - tsc0);
 
-    kernel_fpu_end();                   /* Disable floating point */
-    raw_local_irq_restore(irq_flags);   /* Re-enable hard interrupts on CPU */
-    preempt_enable();                   /* Re-enable preemption on CPU */
+    kernel_fpu_end();                   /* Restore FP state, enable preempts */
+    local_irq_restore(irq_flags);       /* Enable interrupts */
 
     return 0;
 }
