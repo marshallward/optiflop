@@ -9,12 +9,12 @@
 static int __init hello_start(void)
 {
     unsigned long irq_flags;
-    unsigned long rax0, rdx0, rax1, rdx1;
-    unsigned long tsc0, tsc1;
-    unsigned long flops, flop_hi, flop_lo;
+    unsigned long long rax0, rdx0, rax1, rdx1;
+    unsigned long long tsc0, tsc1;
+    unsigned long long flops, flop_hi, flop_lo;
 
-    const unsigned long N = 10000000;
-    unsigned long i;
+    const unsigned long long N = 10000000;
+    unsigned long long i;
 
     printk(KERN_INFO "Loading KernFlops.\n");
 
@@ -60,8 +60,8 @@ static int __init hello_start(void)
     flop_hi = flops / 1000000000;
     flop_lo = flops % 1000000000;
 
-    printk(KERN_INFO "TSC count: %lu\n", tsc1 - tsc0);
-    printk(KERN_INFO "FLOP/sec: %lu.%lu\n", flop_hi, flop_lo);
+    printk(KERN_INFO "TSC count: %llu\n", tsc1 - tsc0);
+    printk(KERN_INFO "FLOP/sec: %llu.%llu\n", flop_hi, flop_lo);
 
     kernel_fpu_end();                   /* Restore FP state, enable preempts */
     local_irq_restore(irq_flags);       /* Enable interrupts */
