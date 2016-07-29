@@ -11,6 +11,7 @@ static int __init hello_start(void)
     unsigned long irq_flags;
     unsigned long rax0, rdx0, rax1, rdx1;
     unsigned long tsc0, tsc1;
+    unsigned long flops, flop_hi, flop_lo;
 
     const unsigned long N = 10000000;
     unsigned long i;
@@ -55,7 +56,12 @@ static int __init hello_start(void)
     tsc0 = (rdx0 << 32) | rax0;
     tsc1 = (rdx1 << 32) | rax1;
 
+    flops = 8 * 8 * N * 1800000000 / (tsc1 - tsc0);
+    flop_hi = flops / 1000000000;
+    flop_lo = flops % 1000000000;
+
     printk(KERN_INFO "TSC count: %lu\n", tsc1 - tsc0);
+    printk(KERN_INFO "FLOP/sec: %lu.%lu\n", flop_hi, flop_lo);
 
     kernel_fpu_end();                   /* Restore FP state, enable preempts */
     local_irq_restore(irq_flags);       /* Enable interrupts */
