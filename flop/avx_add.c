@@ -8,11 +8,11 @@
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
-const uint64_t N = 2000000000;
+const uint64_t N = 1000000000;
 
 #define USE_RDTSC
-//const double CPUFREQ = 2.593966925e9;   // My desktop?
-const double CPUFREQ = 1.796e9;       // Home laptop
+//const double CPUFREQ = 2.593966925e9;     // My desktop?
+const double CPUFREQ = 2.601e9;             // Raijin (?)
 
 /* Headers */
 float reduce_AVX(__m256);
