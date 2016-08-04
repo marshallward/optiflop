@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
         const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
 
-        int i, j;
+        uint64_t i, j;
         float result;
 
 #ifdef USE_RDTSC
@@ -76,9 +76,10 @@ int main(int argc, char *argv[])
                 : "=r" (rax1), "=r" (rdx1)
                 :: "%rax", "%rbx", "%rcx", "%rdx" );
 
-        t0 = (rdx0 << 32) + rax0;
-        t1 = (rdx1 << 32) + rax1;
+        t0 = (rdx0 << 32) | rax0;
+        t1 = (rdx1 << 32) | rax1;
         runtime = (t1 - t0) / CPUFREQ;
+        printf("TSC count: %lu\n", t1 - t0);
 #else
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
         runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
