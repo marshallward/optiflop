@@ -8,11 +8,11 @@
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
-const uint64_t N = 10000000;
+const uint64_t N = 2000000000;
 
 #define USE_RDTSC
 //const double CPUFREQ = 2.593966925e9;   // My desktop?
-const double CPUFREQ = 1.8e9;       // Home laptop
+const double CPUFREQ = 1.796e9;       // Home laptop
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -46,6 +46,16 @@ int main(int argc, char *argv[])
         r[3] = _mm256_set1_ps(1.5f);
 
         /* Add and subtract two nearly-equal double-precision numbers */
+
+        /* Warmup */
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < 4; j++)
+                r[j] = _mm256_add_ps(r[j], add0);
+
+            for (j = 0; j < 4; j++)
+                r[j] = _mm256_sub_ps(r[j], sub0);
+        }
+
 #ifdef USE_RDTSC
         __asm__ __volatile__ (
             "cpuid\n"

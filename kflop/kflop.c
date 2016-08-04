@@ -56,7 +56,7 @@ static int __init hello_start(void)
     tsc0 = (rdx0 << 32) | rax0;
     tsc1 = (rdx1 << 32) | rax1;
 
-    flops = 8 * 8 * N * 1800000000 / (tsc1 - tsc0);
+    flops = 8 * 8 * N * 1796000000 / (tsc1 - tsc0);
     flop_hi = flops / 1000000000;
     flop_lo = flops % 1000000000;
 
