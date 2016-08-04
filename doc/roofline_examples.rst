@@ -8,6 +8,9 @@ and compare their performance with the upper bound based on roofline modelling
 Peak performance
 ================
 
+FLOPs
+-----
+
 The peak performance of the CPU is
 
 .. math::
@@ -44,8 +47,8 @@ Sandy Bridge also provides two separate ports for the simultaneous loading of
 two values from the L1 cache, as well as additional arithmetic logic unit (ALU)
 ports, shared with the addition and multiplication ports.
 
-The peak performance, in GFLOPS per second, is summarised on the following
-table:
+The peak performance, in GFLOPS per second, on Raijin is summarised on the
+following table:
 
 =====    ======   ======   ======   ======   ======   ======
 Cores    SP Add   SP Mul   SP MAC   DP Add   DP Mul   DP MAC
@@ -68,6 +71,13 @@ TSC        20.8     20.8     41.6     10.4     10.4     20.8
 - *MAC*: Concurrent addition-multiplication
 - *TSC*: Time Stamp Counter, referring to the non-turbo TSC frequency
 
+.. TODO Haswell 12-core peak flops
+
+
+Minimum peak arithmetic intensity
+---------------------------------
+
+Need to show that :math:`\frac{1}{4}` is the peak L1 arithmetic intensity.
 
 
 Register arithmetic
@@ -83,3 +93,61 @@ concurrent multiply/add operations.
 
 Addition over registers
 -----------------------
+
+TODO (sort of started this already)
+
+
+Concurrent addition-multiplication
+----------------------------------
+
+TODO
+
+
+Vector arithmetic
+=================
+
+``y[i] = a y[i]``
+-----------------
+
+Scalar-vector multiplication is shown in the code block below:
+
+.. code:: c
+
+   float y[N];
+   float a;
+
+   for (int i = 0; i < N; i++)
+       y[i] = a * y[i];
+
+For each iteration, there is one 4-byte load and one FLOP, so that the
+arithmetic intensity is :math:`\frac{1}{4}`.  Based on our roofline diagram,
+this operation is bounded by single-core peak performance of 26.4 GFLOP/sec.
+
+The observed peak performance is approximately 12.7 GFLOP/sec, or less than
+half of peak.  This can be understood from the assembly instructions:
+
+.. code:: asm
+
+   ..B2.6:
+           vmulps    (%r14,%rdx,4), %ymm4, %ymm2
+           vmulps    32(%r14,%rdx,4), %ymm4, %ymm3
+           vmovups   %ymm2, (%r14,%rdx,4)
+           vmovups   %ymm3, 32(%r14,%rdx,4)
+           addq      $16, %rdx
+           cmpq      %rdi, %rdx
+           jb        ..B2.7
+
+
+There are 10 micro-ops in this loop: two FLOPs, two moves, 4 loads, and two for
+loop increments.  (max 4μops per cycle)
+
+
+``y[i] = y[i] + y[i]``
+----------------------
+
+``y[i] = x[i] + y[i]``
+----------------------
+
+``y[i] = a * x[i] + y[i]``
+--------------------------
+
