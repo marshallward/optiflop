@@ -1,4 +1,4 @@
-TARGET=intel
+TARGET=gnu
 ARCH=haswell
 
 # TODO: Clean this up (maybe templates?)

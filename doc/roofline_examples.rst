@@ -123,7 +123,7 @@ For each iteration, there is one 4-byte load and one FLOP, so that the
 arithmetic intensity is :math:`\frac{1}{4}`.  Based on our roofline diagram,
 this operation is bounded by single-core peak performance of 26.4 GFLOP/sec.
 
-The observed peak performance is approximately 12.7 GFLOP/sec, or less than
+The observed peak performance is slightly below 12.8 GFLOP/sec, or nearly
 half of peak.  This can be understood from the assembly instructions:
 
 .. code:: asm
@@ -138,12 +138,67 @@ half of peak.  This can be understood from the assembly instructions:
            jb        ..B2.7
 
 
-There are 10 micro-ops in this loop: two FLOPs, two moves, 4 loads, and two for
-loop increments.  (max 4μops per cycle)
+There are 10 micro-ops in this loop: two FLOPs and two moves, each with two
+memory load/stores, and two loop counter instructions.
+
+Since the Sandy Bridge can only decode up to four instructions per cycle, this
+loop is already bounded by at least three cycles.  So at minimum, the
+performance is 2 FLOPs per 3 cycles.
+
+Additionally, the memory load/stores require two cycles to complete for AVX
+operations, processing 128 bits per cycle, and there are only two ports
+available.  So this ultimately leads to a stalling of the unrolled loop on our
+architecture.
+
+Therefore, the peak performance on our architecture is 13.2 GFLOP/sec, and we
+observe ~96% efficiency on Raijin.
+
+This example illustrates that Roofline performance predictions represent an
+upper bound between CPU cycles and L1 bandwidth, and that additional
+constraints may be present.
 
 
 ``y[i] = y[i] + y[i]``
 ----------------------
+
+A similar example is the addition of a vector with itself, as in the following
+code block.
+
+.. code:: c
+
+   float y[N];
+   float a;
+
+   for (int i = 0; i < N; i++)
+       y[i] = y[i] + y[i];
+
+Again, the peak roofline performance of this block is :math:`\frac{1}{4}`,
+since there is one FLOP per 4-byte access, ``y[i]``, and peak performance is
+26.4 GFLOP/s.  But again, the observed performance is slightly below 12.8
+GFLOP/sec.
+
+The assembly code shows a similar story to the ``y[i] = a * y[i]`` loop.
+
+.. code:: asm
+
+   ..B2.7:
+           vmovups   (%r14,%rdx,4), %ymm0
+           vmovups   32(%r14,%rdx,4), %ymm3
+           vaddps    %ymm0, %ymm0, %ymm2
+           vaddps    %ymm3, %ymm3, %ymm4
+           vmovups   %ymm2, (%r14,%rdx,4)
+           vmovups   %ymm4, 32(%r14,%rdx,4)
+           addq      $16, %rdx
+           cmpq      %rdi, %rdx
+           jb        ..B2.7
+
+For this code block with extra loop unroll, there are 12 micro-ops: 2 FLOPs, 4
+moves, 4 memory load/stores, and 2 loop increments.  So the loop is again
+bounded by 3 cycles and 2 FLOPs per 3 cycles.
+
+The loop is further bound again by its number of loads.
+
+
 
 ``y[i] = x[i] + y[i]``
 ----------------------

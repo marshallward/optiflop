@@ -76,7 +76,7 @@ double axpy(float a, float *x, float *y, int n, int r_max)
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
     for (r = 0; r < r_max; r++) {
         for (i = 0; i < n; i++)
-            //y[i] = a;
+            //y[i] = a * y[i];
             //y[i] = y[i] + y[i];
             y[i] = x[i] + y[i];
             //y[i] = a * x[i] + y[i];
