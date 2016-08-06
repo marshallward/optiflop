@@ -142,13 +142,13 @@ There are 10 micro-ops in this loop: two FLOPs and two moves, each with two
 memory load/stores, and two loop counter instructions.
 
 Since the Sandy Bridge can only decode up to four instructions per cycle, this
-loop is already bounded by at least three cycles.  So at minimum, the
-performance is 2 FLOPs per 3 cycles.
+loop is already bounded by at least three cycles.  So the best performance we
+can expect is 2 FLOPs per 3 cycles.
 
 Additionally, the memory load/stores require two cycles to complete for AVX
-operations, processing 128 bits per cycle, and there are only two ports
-available.  So this ultimately leads to a stalling of the unrolled loop on our
-architecture.
+operations, processing 128 bits (16 bytes) per cycle, and there are only two
+ports available.  So this ultimately leads to a stalling of the unrolled loop
+on our architecture.  (This is wrong, it's the single-port p4 bottleneck.)
 
 Therefore, the peak performance on our architecture is 13.2 GFLOP/sec, and we
 observe ~96% efficiency on Raijin.
