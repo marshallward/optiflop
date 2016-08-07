@@ -108,8 +108,8 @@ TODO
 Vector arithmetic
 =================
 
-``y[i] = a y[i]``
------------------
+``y[i] = a * y[i]``
+-------------------
 
 Scalar-vector multiplication is shown in the code block below.
 
@@ -196,10 +196,11 @@ code block.
    for (int i = 0; i < N; i++)
        y[i] = y[i] + y[i];
 
-Again, the peak roofline performance of this block is :math:`\frac{1}{4}`,
-since there is one FLOP per 4-byte access, ``y[i]``, and peak performance is
-26.4 GFLOP/s.  But again, the observed performance is slightly below 12.8
-GFLOP/sec.
+Again, the arithmetic load and store intensities are :math:`\frac{1}{4}`,
+since there is one FLOP, one 4-byte read of ``y[i]``, and one 4-byte write back
+to ``y[i]``.  Roofline analysis predicts a peak performance of 13.2 GFLOP/sec,
+based on the L1 store bandwidth, and the observed performance is slightly below
+12.8 GFLOP/sec.
 
 The assembly code shows a similar story to the ``y[i] = a * y[i]`` loop.
 
@@ -220,12 +221,36 @@ For this code block with extra loop unroll, there are 12 micro-ops: 2 FLOPs, 4
 moves, 4 memory load/stores, and 2 loop increments.  So the loop is again
 bounded by 3 cycles and 2 FLOPs per 3 cycles.
 
-The loop is further bound again by its number of loads.
-
+Although there are more instructions, the addition instructions ``vaddps``
+operate on an independent port from the loads and stores, so the behaviour is
+otherwise identical to the first example.  The two loads to populate
+``ymm0`` and ``ymm3`` can be done in two cycles using the two load ports, but
+the single store port means that four cycles are required to transfer the
+results from ``ymm2`` and ``ymm4`` to L1 memory.  Therefore, the two FLOPs
+require four cycles to complete, yielding the 50% peak performance result.
 
 
 ``y[i] = x[i] + y[i]``
 ----------------------
+
+Addition of two independent vectors introduces an additional layer of
+complexity, although the net result is similar.  The example code block is
+shown below.
+
+.. code:: c
+
+   float x[N], y[N];
+
+   for (int i = 0; i < N; i++)
+       y[i] = x[i] + y[i];
+
+This time, each FLOP requires that we load two 4-byte floats, and the
+arithmetic load intensity is :math:`\frac{1}{8}`.  Only one 4-byte float is
+stores in memory, so the arithmetic store intensity if :math:`\frac{1}{4}`.
+
+
+
+
 
 ``y[i] = a * x[i] + y[i]``
 --------------------------
