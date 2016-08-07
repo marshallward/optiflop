@@ -17,16 +17,18 @@ The peak performance of the CPU is
 
    P_\text{peak} = f \times N_\text{ops} \times N_\text{vec}
 
-where :math:`f` is the maximum CPU frequency, :math:`N_\text{ops}` is the maximum
-number of concurrent operations per cycle, and :math:`N_\text{vec}` is the
-size of the vector registers.
+where :math:`f` is the maximum CPU frequency, :math:`N_\text{ops}` is the
+maximum number of concurrent operations per cycle, and :math:`N_\text{vec}` is
+the size of the vector registers.
 
-For the Sandy Bridge architecture used on Raijin, the maximum turbo-boosted frequency
-is a function of the number of active cores, and obeys the following formula:
+For the Sandy Bridge architecture used on Raijin, the maximum turbo-boosted
+frequency is a function of the number of active cores, and obeys the following
+formula:
 
 .. math::
 
-   f = 2600 MHz + \left(4 + \left\lfloor \frac{8 - n}{2} \right\rfloor \right) \times 100 MHz
+   f = 2600 MHz + \left(4 + \left\lfloor \frac{8 - n}{2} \right\rfloor \right)
+         \times 100 MHz
 
 so that :math:`f` is equal to 3.3 GHz when one core is active, and 3.0 GHz when
 all 8 cores are active.  The non-turbo (TSC) frequency is 2.6 GHz.
@@ -109,7 +111,7 @@ Vector arithmetic
 ``y[i] = a y[i]``
 -----------------
 
-Scalar-vector multiplication is shown in the code block below:
+Scalar-vector multiplication is shown in the code block below.
 
 .. code:: c
 
@@ -123,8 +125,11 @@ For each iteration, there is one 4-byte load and one FLOP, so that the
 arithmetic intensity is :math:`\frac{1}{4}`.  Based on our roofline diagram,
 this operation is bounded by single-core peak performance of 26.4 GFLOP/sec.
 
-The observed peak performance is slightly below 12.8 GFLOP/sec, or nearly
-half of peak.  This can be understood from the assembly instructions:
+(TODO: Explain performance as a function of vector size)
+
+The observed peak performance is slightly below 12.8 GFLOP/sec, or nearly half
+of peak.  This can be understood from the Intel-optimised assembly instructions
+shown below.
 
 .. code:: asm
 
@@ -138,24 +143,43 @@ half of peak.  This can be understood from the assembly instructions:
            jb        ..B2.7
 
 
-There are 10 micro-ops in this loop: two FLOPs and two moves, each with two
-memory load/stores, and two loop counter instructions.
+The loop has one extra unroll, and there are 10 micro-ops in this block: two
+FLOPs and two moves, four memory offset calculations, and two loop counter
+instructions.
 
 Since the Sandy Bridge can only decode up to four instructions per cycle, this
-loop is already bounded by at least three cycles.  So the best performance we
-can expect is 2 FLOPs per 3 cycles.
+loop requires at least three cycles.  So the best performance we can expect is
+2 FLOPs per 3 cycles.
 
-Additionally, the memory load/stores require two cycles to complete for AVX
-operations, processing 128 bits (16 bytes) per cycle, and there are only two
-ports available.  So this ultimately leads to a stalling of the unrolled loop
-on our architecture.  (This is wrong, it's the single-port p4 bottleneck.)
+There are two ``vmulps`` multiplication instructions and the Sandy Bridge has
+one AVX multiplication port, so these must be distributed over two cycles.
+Each of these ``vmulps`` instructions also requires a load from memory, and
+each AVX load requires two cycles, or one half of an AVX register (16 bytes)
+per cycle.  But since there are two load ports, these loads can be similarly
+staggered, so that the loads and FLOPs can be executed over two cycles.  The
+code block is therefore not bounded by memory loads.
+
+However, the code block is bounded by its memory stores.  Sandy Bridge only has
+a single port dedicated to L1 memory writes, and each AVX write to memory
+requires two cycles.  So the two memory writes of the ``movups`` instructions
+require four cycles to execute, and our peak performance is 2 FLOPs per 4
+cycles.
 
 Therefore, the peak performance on our architecture is 13.2 GFLOP/sec, and we
 observe ~96% efficiency on Raijin.
 
-This example illustrates that Roofline performance predictions represent an
-upper bound between CPU cycles and L1 bandwidth, and that additional
-constraints may be present.
+This simple example illustrates how we must consider multiple factors in a
+roofline analysis.  In this case, there were three limiting factors:
+
+* Load arithmetic intensity
+* Store arithmetic intensity
+* Micro-op decoding
+
+The load and store arithmetic intensity for this case are both
+:math:`\frac{1}{4}`, but the different L1 load and store speeds (32 and 16
+bytes per cycle, respectively) result in different peak performances at
+:math:`\frac{1}{4}` intensity, where loads are computationally bound but stores
+are memory-bound.
 
 
 ``y[i] = y[i] + y[i]``
