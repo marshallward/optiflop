@@ -115,8 +115,7 @@ Scalar-vector multiplication is shown in the code block below.
 
 .. code:: c
 
-   float y[N];
-   float a;
+   float a, y[N];
 
    for (int i = 0; i < N; i++)
        y[i] = a * y[i];
@@ -191,7 +190,6 @@ code block.
 .. code:: c
 
    float y[N];
-   float a;
 
    for (int i = 0; i < N; i++)
        y[i] = y[i] + y[i];
@@ -223,9 +221,10 @@ bounded by 3 cycles and 2 FLOPs per 3 cycles.
 
 Although there are more instructions, the addition instructions ``vaddps``
 operate on an independent port from the loads and stores, so the behaviour is
-otherwise identical to the first example.  The two loads to populate
-``ymm0`` and ``ymm3`` can be done in two cycles using the two load ports, but
-the single store port means that four cycles are required to transfer the
+otherwise identical to the first example.  The two load instructions used to
+populate ``ymm0`` and ``ymm3`` can be done in two cycles by using the two load
+ports.  But we also need to store two results, each taking two cycles, and
+there is only a single store port, so it takes four cycles to transfer the
 results from ``ymm2`` and ``ymm4`` to L1 memory.  Therefore, the two FLOPs
 require four cycles to complete, yielding the 50% peak performance result.
 
@@ -247,7 +246,9 @@ shown below.
 This time, each FLOP requires that we load two 4-byte floats, and the
 arithmetic load intensity is :math:`\frac{1}{8}`.  Only one 4-byte float is
 stores in memory, so the arithmetic store intensity if :math:`\frac{1}{4}`.
-
+For these values of arithmetic intensity, the calculation should be bounded by
+both loads and stores, and the performance should be 50% of peak, or 13.2
+GFLOP/sec.  The observed performance is slightly below 12.8 GFLOP/sec.
 
 
 
@@ -255,3 +256,15 @@ stores in memory, so the arithmetic store intensity if :math:`\frac{1}{4}`.
 ``y[i] = a * x[i] + y[i]``
 --------------------------
 
+Scalar multiplication with vector addition is the first example of peak
+arithmetic performance.  The example code block is shown below:
+
+.. code:: c
+
+   float a, x[N], y[N];
+
+   for (int = 0; i < N; i++)
+      y[i] = a * x[i] + y[i];
+
+Each iteration requires two loads (8 bytes) and one store (4 bytes), but now
+yields two FLOPs (one addition and one multiplication),
