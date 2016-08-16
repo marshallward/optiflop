@@ -233,7 +233,7 @@ require four cycles to complete, yielding the 50% peak performance result.
 ----------------------
 
 Addition of two independent vectors introduces an additional layer of
-complexity, although the net result is similar.  The example code block is
+complexity, although the net result is the same.  The example code block is
 shown below.
 
 .. code:: c
@@ -250,6 +250,26 @@ For these values of arithmetic intensity, the calculation should be bounded by
 both loads and stores, and the performance should be 50% of peak, or 13.2
 GFLOP/sec.  The observed performance is slightly below 12.8 GFLOP/sec.
 
+This is confirmed in the assembly code, shown below.
+
+.. code:: asm
+
+	..B1.40:
+			  vmovups   (%rdi,%rdx,4), %ymm0
+			  vmovups   32(%rdi,%rdx,4), %ymm3
+			  vaddps    (%r14,%rdx,4), %ymm0, %ymm2
+			  vaddps    32(%r14,%rdx,4), %ymm3, %ymm4
+			  vmovups   %ymm2, (%r14,%rdx,4)
+			  vmovups   %ymm4, 32(%r14,%rdx,4)
+			  addq      $16, %rdx
+			  cmpq      %r8, %rdx
+			  jb        ..B1.40
+
+This block contains 14 micro-ops: 2 adds, 4 moves, 6 load/stores, and 2 loop
+increments, which requires at least 4 cycles.  So performance is already
+limited to 50% of peak.
+
+
 
 
 
@@ -257,7 +277,7 @@ GFLOP/sec.  The observed performance is slightly below 12.8 GFLOP/sec.
 --------------------------
 
 Scalar multiplication with vector addition is the first example of peak
-arithmetic performance.  The example code block is shown below:
+arithmetic performance on one port.  The example code block is shown below:
 
 .. code:: c
 
