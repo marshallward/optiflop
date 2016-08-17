@@ -5,6 +5,7 @@ Roofline examples
 We present a hierarchy of calculations with different arithmetic intensities,
 and compare their performance with the upper bound based on roofline modelling
 
+
 Peak performance
 ================
 
@@ -35,8 +36,8 @@ all 8 cores are active.  The non-turbo (TSC) frequency is 2.6 GHz.
 
 Since the Sandy Bridge architecture supports the AVX instruction set, it
 supports arithmetic over packed 256-bit (32-byte) registers.  For 4-byte
-single-precision floating point numbers, we can compute over 8 values
-simultaneously, so that :math:`N_\text{vec} = 8`.
+single-precision floating point numbers, we can compute 8 simultaneous values,
+so that :math:`N_\text{vec} = 8`.
 
 The Sandy Bridge scheduler contains six independent ports for simultaneous
 operations, including independent ports for addition and multiplication.  Under
@@ -44,10 +45,6 @@ optimal conditions, the Sandy Bridge is capable of concurrent AVX addition and
 multiplication, enabling it compute two vectorised floating point operations
 (FLOPS) over an AVX register per cycle, so that the peak value of
 :math:`N_\text{ops}` is two.
-
-Sandy Bridge also provides two separate ports for the simultaneous loading of
-two values from the L1 cache, as well as additional arithmetic logic unit (ALU)
-ports, shared with the addition and multiplication ports.
 
 The peak performance, in GFLOPS per second, on Raijin is summarised on the
 following table:
@@ -79,19 +76,43 @@ TSC        20.8     20.8     41.6     10.4     10.4     20.8
 Minimum peak arithmetic intensity
 ---------------------------------
 
-Need to show that :math:`\frac{1}{4}` is the peak L1 arithmetic intensity.
+(Clean this up)
+
+Sandy Bridge provides two separate ports for the
+loading values from the L1 cache to registers, and a single port for storing
+registers to L1 cache.  Each 32-byte AVX load or store requires two cycles, or
+one half of the register.  (Smaller registers such as SSE can be loaded in a
+single cycle.)
+
+For a perfectly pipelined operation, we can continuously load 16 bytes per
+cycle over two ports, and store 16 bytes per cycle over one port.  These
+represent the fastest memory bounds on the platform.
+
+The peak performance of
+an arithmetic operation is 8 FLOPs per cycle.  So that the minimum arithmetic
+load and store intensities are 1/4 and 1/2, respectively.
+
+If our arithmetic load intensity is less than 1/4, such as an inefficient
+pipeline whose bandwidth is less than 32 bytes per cycle, then it takes longer
+than one cycle to populate our AVX register and we cannot guarantee completion
+of an 8-FLOP AVX instruction each cycle.  This is a L1-memory-bound operation.
+If our load intensity is greater than 1/4, such as when register values are
+re-used and fewer loads are required, then we are instead limited by the number
+of arithmetic operations per cycle across the
+
 
 
 Register arithmetic
 ===================
 
-The most idealised example is repeated arithmetic on registers, where the
-memory transfer is effectively zero and the arithmetic intensity is effectively
-infinite.  In other words, the performance is compute-bound and is bounded by
+The most idealised example is explicit arithmetic on registers, where the
+memory transfer is effectively zero and the arithmetic intensity is therefore
+infinite.  In other words, the performance is compute-bound and is limited by
 the CPU's peak performance.
 
 We present two cases relevant to the Sandy Bridge architecture: addition and
 concurrent multiply/add operations.
+
 
 Addition over registers
 -----------------------
@@ -271,8 +292,6 @@ limited to 50% of peak.
 
 
 
-
-
 ``y[i] = a * x[i] + y[i]``
 --------------------------
 
@@ -288,3 +307,17 @@ arithmetic performance on one port.  The example code block is shown below:
 
 Each iteration requires two loads (8 bytes) and one store (4 bytes), but now
 yields two FLOPs (one addition and one multiplication),
+
+
+Conclusions
+===========
+
+Considerations for performance:
+
+* Arithmetic load intensity (32 bytes/cycle)
+* Arithmetic store intensity (16 bytes/cycle)
+* Micro-op decoding (4/cycle)
+* Available ports
+* Optimal pipelining
+
+Roofline analyses only address the first two points.
