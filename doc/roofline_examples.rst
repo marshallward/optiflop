@@ -28,8 +28,8 @@ formula:
 
 .. math::
 
-   f = 2600 MHz + \left(4 + \left\lfloor \frac{8 - n}{2} \right\rfloor \right)
-         \times 100 MHz
+   f = 2600 \text{MHz} + \left(4 + \left\lfloor \frac{8 - n}{2} \right\rfloor
+   \right) \times 100 \text{MHz}
 
 so that :math:`f` is equal to 3.3 GHz when one core is active, and 3.0 GHz when
 all 8 cores are active.  The non-turbo (TSC) frequency is 2.6 GHz.
@@ -52,14 +52,10 @@ following table:
 =====    ======   ======   ======   ======   ======   ======
 Cores    SP Add   SP Mul   SP MAC   DP Add   DP Mul   DP MAC
 =====    ======   ======   ======   ======   ======   ======
-1          26.4     26.4     52.8     13.2     13.2     26.4
-2          26.4     26.4     52.8     13.2     13.2     26.4
-3          25.6     25.6     51.2     12.8     12.8     25.6
-4          25.6     25.6     51.2     12.8     12.8     25.6
-5          24.8     24.8     49.6     12.4     12.4     24.8
-6          24.8     24.8     49.6     12.4     12.4     24.8
-7          24.0     24.0     48.0     12.0     12.0     24.0
-8          24.0     24.0     48.0     12.0     12.0     24.0
+1-2        26.4     26.4     52.8     13.2     13.2     26.4
+3-4        25.6     25.6     51.2     12.8     12.8     25.6
+5-6        24.8     24.8     49.6     12.4     12.4     24.8
+7-8        24.0     24.0     48.0     12.0     12.0     24.0
 TSC        20.8     20.8     41.6     10.4     10.4     20.8
 =====    ======   ======   ======   ======   ======   ======
 
