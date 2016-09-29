@@ -4,13 +4,13 @@
 
 #define BYTEALIGN 32
 
-double axpy(float, float *, float *, int, int);
-void dummy(float, float *, float *);
+double axpy(float, float, float *, float *, int, int);
+void dummy(float, float, float *, float *);
 
 int main(int argc, char **argv)
 {
     float *x, *y;
-    float a;
+    float a, b;
 
     float rt; // runtime
 
@@ -29,6 +29,7 @@ int main(int argc, char **argv)
     // y = _mm_malloc(n * sizeof(float), BYTEALIGN);
 
     a = 2.;
+    b = 3.;
     for (i = 0; i < n; i++) {
         x[i] = 1.;
         y[i] = 2.;
@@ -37,9 +38,9 @@ int main(int argc, char **argv)
     /* a x + y */
 
     // Warmup
-    // rt = axpy(a, x, y, n, 1);
+    // rt = axpy(a, b, x, y, n, 1);
 
-    rt = axpy(a, x, y, n, r);
+    rt = axpy(a, b, x, y, n, r);
 
     // TODO: Do the "vector triad" version:
     //  1. (x) Do iterations inside `axpy`, get absolute number
@@ -48,20 +49,20 @@ int main(int argc, char **argv)
 
     //rt = 0.;
     //do {
-    //    rt += axpy(a, x, y, n, 1);
+    //    rt += axpy(a, b, x, y, n, 1);
     //    r++;
-    //    // rt = axpy(a, x, y, n, r);
+    //    // rt = axpy(a, b, x, y, n, r);
     //    // r = 2 * r;
     //} while(rt < 0.2);
 
     printf("mean axpy time: %.12f\n", rt / r);
-    printf("GFLOP/sec estimate: %.12f\n", (double) n * r / rt / 1e9);
+    printf("GFLOP/sec estimate: %.12f\n", (double) 2. * n * r / rt / 1e9);
 
     return 0;
 }
 
 
-double axpy(float a, float *x, float *y, int n, int r_max)
+double axpy(float a, float b, float *x, float *y, int n, int r_max)
 {
     __builtin_assume_aligned(x, BYTEALIGN);
     __builtin_assume_aligned(y, BYTEALIGN);
@@ -78,10 +79,11 @@ double axpy(float a, float *x, float *y, int n, int r_max)
         for (i = 0; i < n; i++)
             //y[i] = a * y[i];
             //y[i] = y[i] + y[i];
-            y[i] = x[i] + y[i];
-            //y[i] = a * x[i] + y[i];
+            //y[i] = x[i] + y[i];
+            y[i] = a * x[i] + y[i];
+            //y[i] = a * x[i] + b * y[i];
         // To prevent outer loop removal during optimisation
-        if (y[midpt] < 0.) dummy(a, x, y);
+        if (y[midpt] < 0.) dummy(a, b, x, y);
     }
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
 
