@@ -18,7 +18,7 @@ def roofline():
 
     fig, ax = plt.subplots()
 
-    ax.set_title('Single-core roofline (Raijin, E5-2670)')
+    ax.set_title('Single-core roofline (Raijin, E5-2670, 3.3 GHz)')
     ax.set_xlabel('Arithmetic Intensity (FLOPs / byte)')
     ax.set_ylabel('Performance (GFLOPs / sec)')
 
@@ -102,14 +102,15 @@ def roofline():
     tx = 1. / 2.
     ax.plot([ai_min, ai_dram], [bw_dram * ai_min, bw_dram * ai_dram],
             color='g', linestyle='-')
-    ax.plot([ai_dram, ai_max], [bw_dram * ai_dram, bw_dram * ai_max],
+    ax.plot([ai_dram, 2. * ai_dram], [bw_dram * ai_dram, bw_dram * 2. * ai_dram],
+            color='g', linestyle='--')
+    ax.plot([2. * ai_dram, ai_max], [bw_dram * 2. * ai_dram, bw_dram * ai_max],
             color='g', linestyle=':')
     ax.text(tx, bw_dram * tx * 1.15,
             'DRAM ({:.1f} GB/sec)'.format(bw_dram / 1e9),
             rotation=45., ha='center', va='center')
 
-
-    plt.savefig('roofline.png')
+    plt.savefig('roofline.svg')
 
 
 def cpufreq(n):

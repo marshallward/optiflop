@@ -12,7 +12,7 @@ The purpose of these microbenchmarks is to provide the baseline parameters for
 a `roofline performance model`_.  Roofline models relate model performance,
 typically FLOPs per second, to the memory bandwidth required for the
 calculation, or the *arithmetic intensity*.  The arithmetic intensity is
-typically defined as number of FLOPS that can be performed per bytes
+typically defined as number of FLOPs that can be performed per bytes
 transferred from memory (usually DRAM).
 
 An example roofline diagram for a single CPU core on Raijin, as produced by the
