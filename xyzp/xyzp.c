@@ -59,17 +59,18 @@ int main(int argc, char **argv)
     //} while(rt < 0.2);
 
     printf("mean xyzp time: %.12f\n", rt / r);
-    printf("GFLOP/sec estimate: %.12f\n", (double) 3. * n * r / rt / 1e9);
+    printf("GFLOP/sec estimate: %.12f\n", (double) 2. * n * r / rt / 1e9);
 
     return 0;
 }
 
 
 double xyzp(float a, float b, float c, float *x, float *y, float *z,
-            int n, int r_max)
+                   int n, int r_max)
 {
     __builtin_assume_aligned(x, BYTEALIGN);
     __builtin_assume_aligned(y, BYTEALIGN);
+    __builtin_assume_aligned(z, BYTEALIGN);
 
     int i, r;
     struct timespec ts_start, ts_end;
@@ -80,12 +81,19 @@ double xyzp(float a, float b, float c, float *x, float *y, float *z,
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
     for (r = 0; r < r_max; r++) {
-        for (i = 0; i < n; i++)
-            z[i] = x[i] * y[i] + z[i];
+        //for (i = 0; i < n; i++)
+            //z[i] = x[i] + y[i] + z[i];
+            //z[i] = x[i] * y[i] + z[i];
             //z[i] = a * x[i] + y[i] + z[i];
             //z[i] = a * x[i] + b * y[i] + z[i];
             //z[i] = a * x[i] + b * y[i] + c * z[i];
         // To prevent outer loop removal during optimisation
+        for (i = 0; i < n; i++)
+            z[i] = z[i] + a * x[i];
+
+        //for (i = 0; i < n; i++)
+        //    z[i] = z[i] + a * x[i];
+ 
         if (y[midpt] < 0.) dummy(a, x, y, z);
     }
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);

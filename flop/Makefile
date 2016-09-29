@@ -1,4 +1,4 @@
-TARGET=gnu
+TARGET=gcc
 ARCH=haswell
 
 # TODO: Clean this up (maybe templates?)

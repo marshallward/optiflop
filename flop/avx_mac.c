@@ -13,6 +13,10 @@ const double TEST_MUL_DIV = 0.70710678118654752440;
 
 const uint64_t N = 100000000;
 
+#define USE_RDTSC
+//const double CPUFREQ = 2.593966925e9;     // My desktop?
+const double CPUFREQ = 2.601e9;             // Raijin (?)
+
 /* Headers */
 float reduce_AVX(__m256);
 
@@ -25,7 +29,12 @@ int main(int argc, char *argv[])
     const __m256 mul0 = _mm256_set1_ps((float)TEST_MUL_MUL);
     const __m256 mul1 = _mm256_set1_ps((float)TEST_MUL_DIV);
 
+#ifdef USE_RDTSC
+    uint64_t rax0, rdx0, rax1, rdx1;
+    uint64_t t0, t1;
+#else
     struct timespec ts_start, ts_end;
+#endif
     double runtime;
     int i;
     float result;
@@ -51,7 +60,21 @@ int main(int argc, char *argv[])
      * Rely on pipelining and latency difference (3 vs 5 cycles) for 2x FLOPs
      */
 
+#ifdef USE_RDTSC
+    __asm__ __volatile__ (
+        "cpuid\n"
+        "rdtsc\n"
+        "movq %%rax, %0\n"
+        "movq %%rdx, %1\n"
+        : "=r" (rax0), "=r" (rdx0)
+        :: "%rax", "%rbx", "%rcx", "%rdx");
+        // "movq %%rdx, %0\n"
+        // "movq %%rax, %1\n"
+        // : "=r" (rdx), "=r" (rax) :: "%rax", "%rdx");
+#else
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
+#endif
+
 #pragma distribute_point
     for (i = 0; i < N; i++) {
         r6 = _mm256_mul_ps(r6, mul0);
@@ -91,7 +114,6 @@ int main(int argc, char *argv[])
         r5 = _mm256_sub_ps(r5, sub0);
 
         /* repeat */
-        
         r6 = _mm256_mul_ps(r6, mul0);
         r0 = _mm256_add_ps(r0, add0);
 
@@ -128,7 +150,24 @@ int main(int argc, char *argv[])
         rB = _mm256_mul_ps(rB, mul1);
         r5 = _mm256_sub_ps(r5, sub0);
     }
+#ifdef USE_RDTSC
+    __asm__ __volatile__ (
+            "rdtscp\n"
+            "movq %%rax, %0\n"
+            "movq %%rdx, %1\n"
+            "cpuid\n"
+            : "=r" (rax1), "=r" (rdx1)
+            :: "%rax", "%rbx", "%rcx", "%rdx" );
+
+    t0 = (rdx0 << 32) | rax0;
+    t1 = (rdx1 << 32) | rax1;
+    runtime = (t1 - t0) / CPUFREQ;
+    printf("TSC count: %lu\n", t1 - t0);
+#else
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
+    runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
+             + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
+#endif
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and print the result. */
@@ -150,9 +189,6 @@ int main(int argc, char *argv[])
 
     /* Sum of AVX registers */
     result = reduce_AVX(r0);
-
-    runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
-        + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
 
     printf("result: %f\n", result);
     printf("runtime: %.12f\n", runtime);
