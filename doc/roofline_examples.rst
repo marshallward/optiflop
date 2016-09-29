@@ -302,7 +302,20 @@ arithmetic performance on one port.  The example code block is shown below:
       y[i] = a * x[i] + y[i];
 
 Each iteration requires two loads (8 bytes) and one store (4 bytes), but now
-yields two FLOPs (one addition and one multiplication),
+yields two FLOPs (one addition and one multiplication)
+
+
+Results summary
+---------------
+
+==========================    =======  ========    ===========    ===========
+Operation                     Load AI  Store AI    Peak FLOP/s    Obs. FLOP/s
+==========================    =======  ========    ===========    ===========
+``y[i] = a * y[i]``           1/4      1/4         x
+``y[i] = y[i] + y[i]``        1/4      1/4         x
+``y[i] = x[i] + y[i]``        1/8      1/4         x
+``y[i] = a * x[i] + y[i]``    1/4      1/2         x
+==========================    =======  ========    ===========    ===========
 
 
 Conclusions
