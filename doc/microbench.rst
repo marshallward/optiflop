@@ -949,25 +949,24 @@ relative to the balanced concurrent add/multiply operations.
 ========================================= =======  ========    =====    =====
 Operation                                 Load AI  Store AI    Pred.    Obs.
 ========================================= =======  ========    =====    =====
-``z[i] = x[i] + y[i] + z[i]``             1/6      1/2         17.6     16.23
-``z[i] = x[i] * y[i] + z[i]``             1/6      1/2         17.6     15.75
-``z[i] = a * x[i] + y[i] + z[i]``         1/4      3/4         26.4     20.97
-``z[i] = a * x[i] + b * y[i] + z[i]``     1/3      1           35.2     26.06
-``z[i] = a * x[i] + b * y[i] + c * z[i]`` 5/12     5/4         44.0     30.50
+``z[i] = x[i] + y[i] + z[i]``             1/6      1/2         17.6     17.16
+``z[i] = x[i] * y[i] + z[i]``             1/6      1/2         17.6     17.16
+``z[i] = a * x[i] + y[i] + z[i]``         1/4      3/4         26.4     25.72
+``z[i] = a * x[i] + b * y[i] + z[i]``     1/3      1           35.2     33.97
+``z[i] = a * x[i] + b * y[i] + c * z[i]`` 5/12     5/4         44.0     39.34
 ========================================= =======  ========    =====    =====
 
-The first two cases match the predicted performance, since both are limited by
-L1 load bandwidth speeds.  As the number of FLOPs per line is increased, there
-is an increase in performance, but it is nonetheless lower than the
-predictions.  There is no longer a
+NOTE: FIXED A BUG! Need to rewrite the paragraph below
 
-There are still outstanding questions on how to apply roofline modelling to
-these results, so we will not provide an assembly instruction breakdown,
-although some early investigation suggests that there is a shortage of
-available registers required to properly unroll the loops and account for the
-arithmetic latency.  However, more investigation is required to understand
-these results.  At best, we can only say that roofline modelling is capable of
-providing reliable upper bounds on performance.
+These results are largely consistent with the two-vector tests.  The observed
+performance is very close to the peak performance as predicted by the roofline
+model.  The first four examples are all within 96% of peak performance, and the
+final example is 89% of peak, noting that it also produces the highest
+performance using both addition and multiplication ports.
+
+These results encourage us to begin investigating arrays with more complex
+indexing and internal dependencies, and to apply the model to more realistic
+model calculations.
 
 
 Roofline summary
