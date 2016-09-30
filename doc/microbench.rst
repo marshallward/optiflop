@@ -6,7 +6,7 @@ Roofline benchmarks
 :organization: National Computational Infrastructure
 :contact: marshall.ward@anu.edu.au
 :status: Draft (incomplete)
-:date: 18 September 2016
+:date: 30 September 2016
 
 .. contents::
 
@@ -24,10 +24,10 @@ bandwidth required for the calculation.  This is characteristed by defining an
 *arithmetic intensity*, which is defined as number of FLOPs that can be
 computer per bytes transferred to or from memory.
 
-An example roofline diagram for a single CPU core on Raijin is shown below.
+An example roofline diagram for a single CPU core on Raijin is shown in Figure
+1.
 
 .. figure:: roofline.svg
-   :width: 16cm
 
    Single-core roofline diagram for a Sandy Bridge CPU core on Raijin.
 
@@ -665,7 +665,7 @@ Scalar-vector multiplication is shown in the code block below.
        y[i] = a * y[i];
 
 For each iteration, there is one 4-byte load, one FLOP, and one 4-byte store,
-so that the arithmetic load and store intensities are :math:`\frac{1}{4}`..
+so that the arithmetic load and store intensities are :math:`\frac{1}{4}`.
 Based on our roofline diagram, this operation is bounded by L1-store bandwidth
 and the performance is bounded by 13.2 GFLOP/sec.  The observed peak
 performance is slightly below 12.8 GFLOP/sec.
@@ -956,8 +956,6 @@ Operation                                 Load AI  Store AI    Pred.    Obs.
 ``z[i] = a * x[i] + b * y[i] + c * z[i]`` 5/12     5/4         44.0     39.34
 ========================================= =======  ========    =====    =====
 
-NOTE: FIXED A BUG! Need to rewrite the paragraph below
-
 These results are largely consistent with the two-vector tests.  The observed
 performance is very close to the peak performance as predicted by the roofline
 model.  The first four examples are all within 96% of peak performance, and the
@@ -978,21 +976,18 @@ In our investigation of roofline modelling, we have achieved the following:
   without the need of a profiler.
 
 - We can independently assess the peak performance of a machine through
-  instrumentation, rather than relying on hardware specifications.
+  instrumentation of low-level assembly code, rather than relying on hardware
+  specifications.
 
 - We have identified several kernel calculations which are capable of using
   both addition and multiplication ports of the Sandy Bridge architecture, and
-  perform calcuations at speeds up to double of the reported peak values.
+  perform calcuations at speeds much higher than Raijin's reported peak values.
 
-- Roofline analysis has proven capable of reliably predicting the performance
-  of simple linear calculation kernels involving up to two vectors.
+- Roofline analysis was able to reliably predict the performance of simple
+  linear calculation kernels involving up to three vectors.
 
-- Independent assessment of the arithmetic intensity of loads and stores was
-  required to accurately predict the peak performance.
-
-- Applying roofline modelling to three-vector calculations is still a
-  challenge, and will require more mature methods of defining and applying
-  arithmetic intensity across more heterogeneous expressions.
+- Arithmetic intensity of loads and stores must both be considered in order to
+  accurately predict the peak performance.
 
 The following work needs to be done to mature our understanding of roofline
 modelling

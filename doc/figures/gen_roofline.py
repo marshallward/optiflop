@@ -110,7 +110,8 @@ def roofline():
             'DRAM ({:.1f} GB/sec)'.format(bw_dram / 1e9),
             rotation=45., ha='center', va='center')
 
-    plt.savefig('roofline.svg')
+    for ext in ('svg', 'pdf'):
+        plt.savefig('roofline.{}'.format(ext))
 
 
 def cpufreq(n):
