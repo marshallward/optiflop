@@ -93,8 +93,8 @@ formula:
 
 .. math::
 
-   f = 2600 \text{MHz} + \left(4 + \left\lfloor \frac{8 - n}{2} \right\rfloor
-   \right) \times 100 \text{MHz}
+   f = 2601 \ \text{MHz} + \left(4 + \left\lfloor \frac{8 - n}{2} \right\rfloor
+   \right) \times 100 \ \text{MHz}
 
 so that :math:`f` is equal to 3.3 GHz when one core is active, and 3.0 GHz when
 all 8 cores are active.  The non-turbo (TSC) frequency is 2.601 GHz.
@@ -132,6 +132,37 @@ TSC        20.8     20.8     41.6     10.4     10.4     20.8
 - *TSC*: Time Stamp Counter, referring to the non-turbo TSC frequency
 
 .. TODO Haswell 12-core peak flops
+
+
+Memory (RAM) Bandwidth
+++++++++++++++++++++++
+
+Raijin nodes use DDR3-1600 RAM.  Peak memory performance is
+
+.. math::
+
+   B_\text{peak} = f_\text{mem} \times N_\text{DDR} \times N_\text{bus}
+                     \times N_\text{channels}
+
+The physical clock speed is 800 MHz, and DDR performs two sends per cycle.  The
+bus width is 64 bits, and we can use up for 4 channels at once (although not
+necessarily all to the same CPU).
+
+The maximum burst rate (using all channels) is
+
+.. math::
+
+   B_\text{peak} &= 800 \ \text{MHz} \times 2 \times 8 \ \text{bytes} \times 4 \\
+                 &= 51.2 \ \text{GB/sec} (409 \ \text{Gb/sec}) \\
+                 &= ~47.7 \ \text{GiB/sec} (~381 \ \text{Gib/sec})
+
+The single-chanel transfer rate is
+
+.. math::
+
+   B_\text{peak} &= 800 \ \text{MHz} \times 2 \times 8 \ \text{bytes} \\
+                 &= 12.8 \ \text{GB/sec} (102.4 \ \text{Gb/sec}) \\
+                 &= ~11.9 \ \text{GiB/sec} (~95.4 \ \text{Gib/sec})
 
 
 Minimum peak arithmetic intensity
