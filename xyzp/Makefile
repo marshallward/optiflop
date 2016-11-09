@@ -3,13 +3,16 @@
 CC=icc
 CFLAGS=-xavx -O2
 
-all: xyzp
+all: xyzp dxyzp
 
 xyzp: xyzp.o dummy.o
+	$(CC) -o $@ -lrt $^
+
+dxyzp: dxyzp.o ddummy.o
 	$(CC) -o $@ -lrt $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	$(RM) xyzp xyzp.o dummy.o
+	$(RM) xyzp dxypz *.o

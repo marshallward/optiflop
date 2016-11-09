@@ -80,7 +80,8 @@ double axpy(float a, float b, float *x, float *y, int n, int r_max)
             //y[i] = a * y[i];
             //y[i] = y[i] + y[i];
             //y[i] = x[i] + y[i];
-            y[i] = a * x[i] + y[i];
+            //y[i] = a * x[i] + y[i];
+            y[i] = a * x[i] * y[i];
             //y[i] = a * x[i] + b * y[i];
         // To prevent outer loop removal during optimisation
         if (y[midpt] < 0.) dummy(a, b, x, y);

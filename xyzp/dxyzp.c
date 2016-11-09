@@ -4,15 +4,15 @@
 
 #define BYTEALIGN 32
 
-double xyzp(float, float, float, float *, float *, float *, int, int);
-void dummy(float, float *, float *, float *);
+double xyzp(double, double, double, double *, double *, double *, int, int);
+void dummy(double, double *, double *, double *);
 
 int main(int argc, char **argv)
 {
-    float *x, *y, *z;
-    float a, b, c;
+    double *x, *y, *z;
+    double a, b, c;
 
-    float rt; // runtime
+    double rt; // runtime
 
     int n;  // Vector length
     int r;  // Repeat counter
@@ -22,12 +22,12 @@ int main(int argc, char **argv)
     n = atoi(argv[1]);
     r = atoi(argv[2]);
 
-    posix_memalign((void *) &x, BYTEALIGN, n * sizeof(float));
-    posix_memalign((void *) &y, BYTEALIGN, n * sizeof(float));
-    posix_memalign((void *) &z, BYTEALIGN, n * sizeof(float));
-    
-    // x = _mm_malloc(n * sizeof(float), BYTEALIGN);
-    // y = _mm_malloc(n * sizeof(float), BYTEALIGN);
+    posix_memalign((void *) &x, BYTEALIGN, n * sizeof(double));
+    posix_memalign((void *) &y, BYTEALIGN, n * sizeof(double));
+    posix_memalign((void *) &z, BYTEALIGN, n * sizeof(double));
+
+    // x = _mm_malloc(n * sizeof(double), BYTEALIGN);
+    // y = _mm_malloc(n * sizeof(double), BYTEALIGN);
 
     a = 2.;
     b = 3.;
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 }
 
 
-double xyzp(float a, float b, float c, float *x, float *y, float *z,
+double xyzp(double a, double b, double c, double *x, double *y, double *z,
             int n, int r_max)
 {
     __builtin_assume_aligned(x, BYTEALIGN);
@@ -74,21 +74,25 @@ double xyzp(float a, float b, float c, float *x, float *y, float *z,
 
     int i, r;
     struct timespec ts_start, ts_end;
-    float runtime;
+    double runtime;
 
     int midpt = n / 2;
-    float sum;
+    double sum;
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
     for (r = 0; r < r_max; r++) {
+        //#pragma unroll(8)
         for (i = 0; i < n; i++)
-            z[i] = x[i] + y[i] + z[i];
+            //z[i] = x[i] + y[i] + z[i];
             //z[i] = x[i] * y[i] + z[i];
             //z[i] = a * x[i] + y[i] + z[i];
             //z[i] = a * x[i] + b * y[i] + z[i];
             //z[i] = a * x[i] + b * y[i] + c * z[i];
-            //z[i] = a * (x[i] + c) + b * (y[i] + c);
             //z[i] = a * x[i] + b * y[i] + c;
+            z[i] = 0.25 * x[i] * y[i];
+            //z[i] = 0.25 + x[i] + y[i];
+            //z[i] = a * x[i] * y[i];
+            //z[i] = a + x[i] + y[i];
         // To prevent outer loop removal during optimisation
         if (y[midpt] < 0.) dummy(a, x, y, z);
     }
