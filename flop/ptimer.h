@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <time.h>
-#include <unistd.h>
+#include <stdint.h> /* uint64_t */
+#include <time.h> /* clockid_t, timespec */
+
 
 /* Generic Timer */
 
@@ -22,6 +21,11 @@ void timer_start(struct Timer *b);
 void timer_stop(struct Timer *b);
 double timer_runtime(struct Timer *b);
 
+typedef void (*timer_start_t) (struct Timer *t);
+typedef void (*timer_stop_t) (struct Timer *t);
+typedef double (*timer_runtime_t) (struct Timer *t);
+
+
 /* TSC Timer */
 
 typedef struct _TscTimer
@@ -32,18 +36,18 @@ typedef struct _TscTimer
     uint64_t rax0, rdx0, rax1, rdx1;
 } TscTimer;
 
+void timer_create_tsc(TscTimer *d);
 void timer_start_tsc(TscTimer *d);
 void timer_stop_tsc(TscTimer *d);
 double timer_runtime_tsc(TscTimer *d);
 
 struct ITimer tsc_vtable =
 {
-    &timer_start_tsc, /* you might get a warning here about incompatible pointer types */
-    &timer_stop_tsc,  /* you can ignore it, or perform a cast to get rid of it */
-    &timer_runtime_tsc,
+    (timer_start_t) &timer_start_tsc,
+    (timer_stop_t) &timer_stop_tsc,
+    (timer_runtime_t) &timer_runtime_tsc,
 };
 
-void timer_create_tsc(TscTimer *d);
 
 /* POSIX Timer */
 
@@ -55,6 +59,7 @@ typedef struct _PosixTimer
     struct timespec ts_start, ts_end;
 } PosixTimer;
 
+void timer_create_posix(PosixTimer *d);
 void timer_start_posix(PosixTimer *d);
 void timer_stop_posix(PosixTimer *d);
 double timer_runtime_posix(PosixTimer *d);
@@ -65,5 +70,3 @@ struct ITimer posix_vtable =
     &timer_stop_posix,  /* you can ignore it, or perform a cast to get rid of it */
     &timer_runtime_posix,
 };
-
-void timer_create_posix(PosixTimer *d);
