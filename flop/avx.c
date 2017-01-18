@@ -9,9 +9,9 @@
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
-const uint64_t N = 100000000;
+const uint64_t N = 1000000000;
 
-//#define USE_RDTSC
+#define USE_RDTSC
 //const double CPUFREQ = 2.593966925e9;     // My desktop?
 const double CPUFREQ = 2.601e9;             // Raijin (?)
 
@@ -30,12 +30,6 @@ int main(int argc, char *argv[])
         uint64_t i, j;
         float result;
 
-//#ifdef USE_RDTSC
-//        uint64_t rax0, rdx0, rax1, rdx1;
-//        uint64_t t0, t1;
-//#else
-//        struct timespec ts_start, ts_end;
-//#endif
         double runtime;
 
 #ifdef USE_RDTSC
@@ -86,20 +80,6 @@ int main(int argc, char *argv[])
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
 
-//#ifdef USE_RDTSC
-//        __asm__ __volatile__ (
-//            "cpuid\n"
-//            "rdtsc\n"
-//            "movq %%rax, %0\n"
-//            "movq %%rdx, %1\n"
-//            : "=r" (rax0), "=r" (rdx0)
-//            :: "%rax", "%rbx", "%rcx", "%rdx");
-//            // "movq %%rdx, %0\n"
-//            // "movq %%rax, %1\n"
-//            // : "=r" (rdx), "=r" (rax) :: "%rax", "%rdx");
-//#else
-//        clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
-//#endif
         (*get_starttime)(time);
         for (i = 0; i < N; i++) {
             for (j = 0; j < 4; j++)
@@ -110,24 +90,6 @@ int main(int argc, char *argv[])
         }
         (*get_endtime)(time);
         runtime = (*get_runtime)(time);
-//#ifdef USE_RDTSC
-//        __asm__ __volatile__ (
-//                "rdtscp\n"
-//                "movq %%rax, %0\n"
-//                "movq %%rdx, %1\n"
-//                "cpuid\n"
-//                : "=r" (rax1), "=r" (rdx1)
-//                :: "%rax", "%rbx", "%rcx", "%rdx" );
-//
-//        t0 = (rdx0 << 32) | rax0;
-//        t1 = (rdx1 << 32) | rax1;
-//        runtime = (t1 - t0) / CPUFREQ;
-//        printf("TSC count: %lu\n", t1 - t0);
-//#else
-//        clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
-//        runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
-//                 + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
-//#endif
 
         /* In order to prevent removal of the prior loop by optimisers,
          * sum the register values and print the result. */
