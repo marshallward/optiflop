@@ -18,8 +18,9 @@ def roofline():
 
     fig, ax = plt.subplots()
 
+    ax.set_title('Single-core roofline (Raijin, E5-2670, 3.3 GHz)')
     ax.set_xlabel('Arithmetic Intensity (FLOPs / byte)')
-    ax.set_ylabel('Performance (FLOPs / sec)')
+    ax.set_ylabel('Performance (GFLOPs / sec)')
 
     ax.set_xscale('log')
     ax.set_yscale('log')
@@ -49,27 +50,37 @@ def roofline():
 
     # Plot peak performance
     ai_min = np.min(ai_grid)
-    ai_l1l = P_peak / bw_l1l
-    ai_l1s = P_peak / bw_l1s
     ai_max = np.max(ai_grid)
 
-    ax.axhline(P_peak / n_avx, color='k', linestyle=':')
-    ax.text(2., P_peak / n_avx * 1.1, 'Serial')
+    ai_l1l = P_peak / bw_l1l
+    ai_l1s = P_peak / bw_l1s
+    ai_dram = P_peak / bw_dram
 
+    # Serialised peak
+    ax.axhline(P_peak / n_avx, color='k', linestyle=':')
+    ax.text(1., P_peak / n_avx * 1.1, 'Peak Serial')
+
+    # Single-port single-precision AVX peak
     ax.plot([ai_min, ai_l1l], [P_peak, P_peak],
             color='k', linestyle=':')
     ax.plot([ai_l1l, ai_max], [P_peak, P_peak],
             color='k', linestyle='-')
-    ax.text(1. / 32., P_peak * 1.1, 'SP AVX')
+    ax.text(1. / 48., P_peak * 1.1, 'Peak AVX (SP)')
 
-    ax.axhline(2. * P_peak, color='k', linestyle='--')
-    ax.text(1. / 32., 2. * P_peak * 1.1, 'SP MAC')
+    # Concurrent single-precision add/multiply peak
+    ax.plot([ai_min, 2. * ai_l1l], [2. * P_peak, 2. * P_peak],
+            color='k', linestyle=':')
+    ax.plot([2. * ai_l1l, ai_max], [2. * P_peak, 2. * P_peak],
+            color='k', linestyle='-')
+    ax.text(1. / 48., 2. * P_peak * 1.1, 'Peak Add/Mult (SP)')
 
     # L1 load bound
     tx = 1. / 16.
     ax.plot([ai_min, ai_l1l], [bw_l1l * ai_min, bw_l1l * ai_l1l],
             color='r', linestyle='-')
-    ax.plot([ai_l1l, ai_max], [bw_l1l * ai_l1l, bw_l1l * ai_max],
+    ax.plot([ai_l1l, 2. * ai_l1l], [bw_l1l * ai_l1l, bw_l1l * 2. * ai_l1l],
+            color='r', linestyle='--')
+    ax.plot([2. * ai_l1l, ai_max], [bw_l1l * 2. * ai_l1l, bw_l1l * ai_max],
             color='r', linestyle=':')
     ax.text(tx, bw_l1l * tx * 1.15,
             'L1 Load ({:.1f} GB/sec)'.format(bw_l1l / 1e9),
@@ -77,19 +88,30 @@ def roofline():
 
     # L1 store bound
     tx = 1. / 8.
-    ax.plot(ai_grid, bw_l1s * ai_grid, color='b', linestyle='--')
+    ax.plot([ai_min, ai_l1s], [bw_l1s * ai_min, bw_l1s * ai_l1s],
+            color='b', linestyle='-')
+    ax.plot([ai_l1s, 2. * ai_l1s], [bw_l1s * ai_l1s, bw_l1s * 2. * ai_l1s],
+            color='b', linestyle='--')
+    ax.plot([2. * ai_l1s, ai_max], [bw_l1s * 2. * ai_l1s, bw_l1s * ai_max],
+            color='b', linestyle=':')
     ax.text(tx, bw_l1s * tx * 1.15,
             'L1 Store ({:.1f} GB/sec)'.format(bw_l1s / 1e9),
             rotation=45., ha='center', va='center')
 
+    # DRAM bound
     tx = 1. / 2.
-    ax.plot(ai_grid, bw_dram * ai_grid, color='g', linestyle='--')
+    ax.plot([ai_min, ai_dram], [bw_dram * ai_min, bw_dram * ai_dram],
+            color='g', linestyle='-')
+    ax.plot([ai_dram, 2. * ai_dram], [bw_dram * ai_dram, bw_dram * 2. * ai_dram],
+            color='g', linestyle='--')
+    ax.plot([2. * ai_dram, ai_max], [bw_dram * 2. * ai_dram, bw_dram * ai_max],
+            color='g', linestyle=':')
     ax.text(tx, bw_dram * tx * 1.15,
             'DRAM ({:.1f} GB/sec)'.format(bw_dram / 1e9),
             rotation=45., ha='center', va='center')
 
-
-    plt.savefig('roofline.png')
+    for ext in ('svg', 'pdf'):
+        plt.savefig('roofline.{}'.format(ext))
 
 
 def cpufreq(n):

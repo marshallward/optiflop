@@ -1,2 +1,2 @@
-report.html: roofline_examples.rst
+report.html: microbench.rst
 	rst2html --math-output mathjax $< $@
