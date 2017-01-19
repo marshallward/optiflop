@@ -4,7 +4,8 @@
 #include <stdint.h>     /* uint64_t */
 #include <stdio.h>      /* printf */
 #include <time.h>       /* timespec, clock_gettime */
-#include "gettime.h"
+
+#include "ptimer.h"
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
@@ -12,8 +13,6 @@ const double TEST_ADD_SUB = 1.414213562373095;
 const uint64_t N = 1000000000;
 
 #define USE_RDTSC
-//const double CPUFREQ = 2.593966925e9;     // My desktop?
-const double CPUFREQ = 2.601e9;             // Raijin (?)
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -32,33 +31,18 @@ int main(int argc, char *argv[])
 
         double runtime;
 
+        struct Timer *t;
+
 #ifdef USE_RDTSC
-        /* TODO: Make some sort of hash table */
-        void (*get_starttime) (struct RDTSC_TimeContext *);
-        void (*get_endtime) (struct RDTSC_TimeContext *);
-        double (*get_runtime) (struct RDTSC_TimeContext *);
-        struct RDTSC_TimeContext *time;
+        TscTimer t_tsc;
+        timer_create_tsc(&t_tsc);
 
-        printf("starting rdtsc...\n");
-
-        time = malloc(sizeof(struct RDTSC_TimeContext));
-        time->cpufreq = CPUFREQ;
-        get_starttime = &rdtsc_starttime;
-        get_endtime = &rdtsc_endtime;
-        get_runtime = &rdtsc_runtime;
+        t = (struct Timer *) &t_tsc;
 #else
-        void (*get_starttime) (struct POSIX_TimeContext *);
-        void (*get_endtime) (struct POSIX_TimeContext *);
-        double (*get_runtime) (struct POSIX_TimeContext *);
-        struct POSIX_TimeContext *time;
+        PosixTimer t_posix;
+        timer_create_posix(&t_posix);
 
-        printf("starting posix...\n");
-
-        time = malloc(sizeof(struct POSIX_TimeContext));
-        time->clock = CLOCK_MONOTONIC_RAW;
-        get_starttime = &posix_starttime;
-        get_endtime = &posix_endtime;
-        get_runtime = &posix_runtime;
+        t = (struct Timer *) &t_posix;
 #endif
 
         /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
@@ -80,7 +64,7 @@ int main(int argc, char *argv[])
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
 
-        (*get_starttime)(time);
+        timer_start(t);
         for (i = 0; i < N; i++) {
             for (j = 0; j < 4; j++)
                 r[j] = _mm256_add_ps(r[j], add0);
@@ -88,8 +72,8 @@ int main(int argc, char *argv[])
             for (j = 0; j < 4; j++)
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
-        (*get_endtime)(time);
-        runtime = (*get_runtime)(time);
+        timer_stop(t);
+        runtime = timer_runtime(t);
 
         /* In order to prevent removal of the prior loop by optimisers,
          * sum the register values and print the result. */

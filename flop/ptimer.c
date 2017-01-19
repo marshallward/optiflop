@@ -68,7 +68,7 @@ struct ITimer tsc_vtable =
 void timer_create_tsc(TscTimer *d)
 {
     d->super.vtable = &tsc_vtable;
-    d->cpufreq = 2.59e9;
+    d->cpufreq = 2.601e9;
 }
 
 /* POSIX Timer */
@@ -100,31 +100,4 @@ void timer_create_posix(PosixTimer *d)
 {
     d->super.vtable = &posix_vtable;
     d->clock = CLOCK_MONOTONIC_RAW;
-}
-
-/* Test function */
-
-int main(void)
-{
-    TscTimer d1;
-    timer_create_tsc(&d1);
-
-    PosixTimer d2;
-    timer_create_posix(&d2);
-
-    struct Timer *b1_ptr = (struct Timer *)&d1;
-    struct Timer *b2_ptr = (struct Timer *)&d2;
-
-    timer_start(b1_ptr);  /* calls derived1_dance */
-    timer_start(b2_ptr);  /* calls derived2_dance */
-
-    sleep(3);
-
-    timer_stop(b1_ptr);  /* calls derived1_jump */
-    timer_stop(b2_ptr);  /* calls derived2_jump */
-
-    printf("TSC Runtime: %f\n", timer_runtime(b1_ptr));
-    printf("POSIX Runtime: %f\n", timer_runtime(b2_ptr));
-
-    return 0;
 }

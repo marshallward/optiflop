@@ -22,13 +22,13 @@ LDFLAGS=-lrt
 
 all: avx avx_mac
 
-avx: avx.o gettime.o
+avx: avx.o ptimer.o
 	$(CC) $(LDFLAGS) -o $@ $^
 
-avx.o: avx.c gettime.h
+avx.o: avx.c ptimer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-gettime.o: gettime.c gettime.h
+ptimer.o: ptimer.c ptimer.h
 	$(CC) -O2 -c -o $@ $<
 
 avx_add: avx_add.c
@@ -38,4 +38,4 @@ avx_mac: avx_mac.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	$(RM) avx_add avx_mac avx avx.o gettime.o
+	$(RM) avx_add avx_mac avx avx.o ptimer.o
