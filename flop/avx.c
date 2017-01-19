@@ -11,7 +11,6 @@ const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 1000000000;
-const int use_tsc = 1;
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -30,19 +29,8 @@ int main(int argc, char *argv[])
 
         double runtime;
 
-        struct Timer *t;
-
-        if (use_tsc) {
-            TscTimer t_tsc;
-            timer_create_tsc(&t_tsc);
-
-            t = (struct Timer *) &t_tsc;
-        } else {
-            PosixTimer t_posix;
-            timer_create_posix(&t_posix);
-
-            t = (struct Timer *) &t_posix;
-        }
+        Timer *t;
+        t = mtimer_create(TIMER_TSC);
 
         /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
          * Some compiler optimisers (gcc) will remove the operations.
@@ -63,7 +51,7 @@ int main(int argc, char *argv[])
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
 
-        timer_start(t);
+        t->start(t);
         for (i = 0; i < N; i++) {
             for (j = 0; j < 4; j++)
                 r[j] = _mm256_add_ps(r[j], add0);
@@ -71,8 +59,8 @@ int main(int argc, char *argv[])
             for (j = 0; j < 4; j++)
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
-        timer_stop(t);
-        runtime = timer_runtime(t);
+        t->stop(t);
+        runtime = t->runtime(t);
 
         /* In order to prevent removal of the prior loop by optimisers,
          * sum the register values and print the result. */
