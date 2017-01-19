@@ -11,8 +11,7 @@ const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 
 const uint64_t N = 1000000000;
-
-#define USE_RDTSC
+const int use_tsc = 1;
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -33,17 +32,17 @@ int main(int argc, char *argv[])
 
         struct Timer *t;
 
-#ifdef USE_RDTSC
-        TscTimer t_tsc;
-        timer_create_tsc(&t_tsc);
+        if (use_tsc) {
+            TscTimer t_tsc;
+            timer_create_tsc(&t_tsc);
 
-        t = (struct Timer *) &t_tsc;
-#else
-        PosixTimer t_posix;
-        timer_create_posix(&t_posix);
+            t = (struct Timer *) &t_tsc;
+        } else {
+            PosixTimer t_posix;
+            timer_create_posix(&t_posix);
 
-        t = (struct Timer *) &t_posix;
-#endif
+            t = (struct Timer *) &t_posix;
+        }
 
         /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
          * Some compiler optimisers (gcc) will remove the operations.
