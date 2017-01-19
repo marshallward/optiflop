@@ -8,16 +8,16 @@
 /* Generic Timer */
 
 struct Timer;
-struct ITimer
+typedef struct _ITimer
 {
     void (*start)(struct Timer *);
     void (*stop)(struct Timer *);
     double (*runtime)(struct Timer *);
-};
+} ITimer;
 
 struct Timer
 {
-    struct ITimer *vtable;
+    ITimer *vtable;
 };
 
 void timer_start(struct Timer *b);

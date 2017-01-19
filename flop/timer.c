@@ -58,7 +58,7 @@ double timer_runtime_tsc(TscTimer *d)
     return (t1 - t0) / d->cpufreq;
 }
 
-struct ITimer tsc_vtable =
+ITimer tsc_vtable =
 {
     (timer_start_t) &timer_start_tsc,
     (timer_stop_t) &timer_stop_tsc,
@@ -89,7 +89,7 @@ double timer_runtime_posix(PosixTimer *d)
             + (double) (d->ts_end.tv_nsec - d->ts_start.tv_nsec) / 1e9;
 }
 
-struct ITimer posix_vtable =
+ITimer posix_vtable =
 {
     (timer_start_t) &timer_start_posix,
     (timer_stop_t) &timer_stop_posix,
