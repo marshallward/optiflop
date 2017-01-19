@@ -5,7 +5,7 @@
 #include <stdio.h>      /* printf */
 #include <time.h>       /* timespec, clock_gettime */
 
-#include "ptimer.h"
+#include "timer.h"
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;

@@ -3,7 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "ptimer.h"
+#include "timer.h"
 
 /* Generic Timer */
 
