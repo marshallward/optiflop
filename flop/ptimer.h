@@ -1,3 +1,6 @@
+#ifndef _PTIMER_H_
+#define _PTIMER_H_
+
 #include <stdint.h> /* uint64_t */
 #include <time.h> /* clockid_t, timespec */
 
@@ -41,14 +44,6 @@ void timer_start_tsc(TscTimer *d);
 void timer_stop_tsc(TscTimer *d);
 double timer_runtime_tsc(TscTimer *d);
 
-struct ITimer tsc_vtable =
-{
-    (timer_start_t) &timer_start_tsc,
-    (timer_stop_t) &timer_stop_tsc,
-    (timer_runtime_t) &timer_runtime_tsc,
-};
-
-
 /* POSIX Timer */
 
 typedef struct _PosixTimer
@@ -64,9 +59,4 @@ void timer_start_posix(PosixTimer *d);
 void timer_stop_posix(PosixTimer *d);
 double timer_runtime_posix(PosixTimer *d);
 
-struct ITimer posix_vtable =
-{
-    &timer_start_posix, /* you might get a warning here about incompatible pointer types */
-    &timer_stop_posix,  /* you can ignore it, or perform a cast to get rid of it */
-    &timer_runtime_posix,
-};
+#endif

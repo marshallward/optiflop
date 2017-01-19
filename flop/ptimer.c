@@ -58,6 +58,13 @@ double timer_runtime_tsc(TscTimer *d)
     return (t1 - t0) / d->cpufreq;
 }
 
+struct ITimer tsc_vtable =
+{
+    (timer_start_t) &timer_start_tsc,
+    (timer_stop_t) &timer_stop_tsc,
+    (timer_runtime_t) &timer_runtime_tsc,
+};
+
 void timer_create_tsc(TscTimer *d)
 {
     d->super.vtable = &tsc_vtable;
@@ -81,6 +88,13 @@ double timer_runtime_posix(PosixTimer *d)
     return (double) (d->ts_end.tv_sec - d->ts_start.tv_sec)
             + (double) (d->ts_end.tv_nsec - d->ts_start.tv_nsec) / 1e9;
 }
+
+struct ITimer posix_vtable =
+{
+    (timer_start_t) &timer_start_posix,
+    (timer_stop_t) &timer_stop_posix,
+    (timer_runtime_t) &timer_runtime_posix,
+};
 
 void timer_create_posix(PosixTimer *d)
 {
