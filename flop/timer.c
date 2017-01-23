@@ -1,16 +1,14 @@
-#include <stdio.h>
-#include <stdint.h>
+#include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* malloc */
 #include <time.h>
-#include <unistd.h>
 
 #include "timer.h"
 
 /* Put this somewhere else... */
 
-const size_t TimerContextSize[TIMER_MAX] = {
-    sizeof(*((TimerContext *) NULL)->tc_posix),
-    sizeof(*((TimerContext *) NULL)->tc_tsc),
+const size_t timer_context_size[TIMER_MAX] = {
+    sizeof(*((timer_context_t *) NULL)->tc_posix),
+    sizeof(*((timer_context_t *) NULL)->tc_tsc),
 };
 
 /* Method lookup tables */
@@ -42,7 +40,7 @@ Timer * mtimer_create(TimerType type)
     Timer *t;
 
     t = malloc(sizeof(Timer));
-    t->context.tc_untyped = malloc(TimerContextSize[type]);
+    t->context.tc_untyped = malloc(timer_context_size[type]);
 
     timer_init_funcs[type](t);
 
@@ -58,7 +56,7 @@ Timer * mtimer_create(TimerType type)
 
 void timer_init_tsc(Timer *t)
 {
-    t->context.tc_tsc = malloc(sizeof(TimerContextTsc));
+    t->context.tc_tsc = malloc(sizeof(timer_context_tsc_t));
     t->context.tc_tsc->cpufreq = 2.601e9;
 }
 
@@ -101,7 +99,7 @@ double timer_runtime_tsc(Timer *t)
 
 void timer_init_posix(Timer *t)
 {
-    t->context.tc_posix = malloc(sizeof(TimerContextPosix));
+    t->context.tc_posix = malloc(sizeof(timer_context_posix_t));
     t->context.tc_posix->clock = CLOCK_MONOTONIC_RAW;
 }
 
@@ -122,11 +120,3 @@ double timer_runtime_posix(Timer *t)
             + (double) (t->context.tc_posix->ts_end.tv_nsec
                             - t->context.tc_posix->ts_start.tv_nsec) / 1e9;
 }
-
-/*
-void timer_create_posix(Timer *d)
-{
-    d->super.vtable = &posix_vtable;
-    d->clock = CLOCK_MONOTONIC_RAW;
-}
-*/

@@ -15,30 +15,28 @@ typedef enum _timer_t {
 } TimerType;
 
 
-typedef struct _TimerContextTsc
-{
+typedef struct _timer_context_tsc_t {
     double cpufreq;
     uint64_t rax0, rdx0, rax1, rdx1;
-} TimerContextTsc;
+} timer_context_tsc_t;
 
 
-typedef struct _TimerContextPosix
-{
+typedef struct _timer_context_posix_t {
     clockid_t clock;
     struct timespec ts_start, ts_end;
-} TimerContextPosix;
+} timer_context_posix_t;
 
 
-typedef union _TimerContext {
+typedef union _timer_context_t {
     void *tc_untyped;
-    TimerContextPosix *tc_posix;
-    TimerContextTsc *tc_tsc;
-} TimerContext;
+    timer_context_posix_t *tc_posix;
+    timer_context_tsc_t *tc_tsc;
+} timer_context_t;
 
 
 typedef struct _Timer {
     TimerType type; /* Unneeded? */
-    TimerContext context;
+    timer_context_t context;
 
     void (*start)();
     void (*stop)();
