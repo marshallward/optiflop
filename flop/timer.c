@@ -7,8 +7,8 @@
 /* Put this somewhere else... */
 
 const size_t timer_context_size[TIMER_MAX] = {
-    sizeof(*((timer_context_t *) NULL)->tc_posix),
-    sizeof(*((timer_context_t *) NULL)->tc_tsc),
+    sizeof(timer_context_posix_t),
+    sizeof(timer_context_tsc_t),
 };
 
 /* Method lookup tables */
