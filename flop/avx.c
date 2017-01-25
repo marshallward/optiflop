@@ -15,8 +15,8 @@ const double TEST_MUL_DIV = 0.70710678118654752440;
 const uint64_t N = 1000000000;
 
 /* Headers */
-void avx_add(float *, double *);
-void avx_mac(float *, double *);
+double avx_add();
+double avx_mac();
 float reduce_AVX(__m256);
 
 
@@ -25,22 +25,20 @@ int main(int argc, char *argv[])
     float result;
     double runtime;
 
-    avx_add(&result, &runtime);
+    runtime = avx_add();
 
     printf("avx_add\n");
     printf("-------\n");
-    printf("result: %f\n", result);
     printf("runtime: %.12f\n", runtime);
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
     printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
 
     printf("\n");
 
-    avx_mac(&result, &runtime);
+    runtime = avx_mac();
 
     printf("avx_mac\n");
     printf("-------\n");
-    printf("result: %f\n", result);
     printf("runtime: %.12f\n", runtime);
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
     printf("gflops: %.12f\n", N * 8 * 48 / (runtime * 1e9));
@@ -49,7 +47,8 @@ int main(int argc, char *argv[])
 }
 
 
-void avx_add(float *result, double *runtime)
+//void avx_add(float *result, double *runtime)
+double avx_add()
 {
     #pragma omp parallel
     {
@@ -57,6 +56,11 @@ void avx_add(float *result, double *runtime)
 
         const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
         const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
+
+        // Declare as volatile to prevent removal during optimisation
+        volatile float result;
+        double runtime;
+
         uint64_t i, j;
         Timer *t;
 
@@ -90,7 +94,7 @@ void avx_add(float *result, double *runtime)
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
         t->stop(t);
-        *runtime = t->runtime(t);
+        runtime = t->runtime(t);
 
         /* In order to prevent removal of the prior loop by optimisers,
          * sum the register values and print the result. */
@@ -101,12 +105,14 @@ void avx_add(float *result, double *runtime)
         r[0] = _mm256_add_ps(r[0], r[1]);
 
         /* Sum of AVX registers */
-        *result = reduce_AVX(r[0]);
+        result = reduce_AVX(r[0]);
+
+        return runtime;
     }
 }
 
 
-void avx_mac(float *result, double *runtime)
+double avx_mac()
 {
     __m256 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, rA, rB;
 
@@ -114,6 +120,10 @@ void avx_mac(float *result, double *runtime)
     const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
     const __m256 mul0 = _mm256_set1_ps((float)TEST_MUL_MUL);
     const __m256 mul1 = _mm256_set1_ps((float)TEST_MUL_DIV);
+
+    // Declare as volatile to prevent removal during optimisation
+    volatile float result;
+    double runtime;
 
     int i;
     Timer *t;
@@ -218,7 +228,7 @@ void avx_mac(float *result, double *runtime)
         r5 = _mm256_sub_ps(r5, sub0);
     }
     t->stop(t);
-    *runtime = t->runtime(t);
+    runtime = t->runtime(t);
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and print the result. */
@@ -239,7 +249,9 @@ void avx_mac(float *result, double *runtime)
     r0 = _mm256_add_ps(r0, r2);
 
     /* Sum of AVX registers */
-    *result = reduce_AVX(r0);
+    result = reduce_AVX(r0);
+
+    return runtime;
 }
 
 
