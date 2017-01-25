@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     printf("result: %f\n", result);
     printf("runtime: %.12f\n", runtime);
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
+    printf("gflops: %.12f\n", N * 8 * 48 / (runtime * 1e9));
 
     return 0;
 }

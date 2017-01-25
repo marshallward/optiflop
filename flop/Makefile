@@ -20,7 +20,7 @@ endif
 
 LDFLAGS=-lrt
 
-all: avx avx_mac
+all: avx
 
 avx: avx.o timer.o
 	$(CC) $(LDFLAGS) -o $@ $^
@@ -31,11 +31,5 @@ avx.o: avx.c timer.h
 timer.o: timer.c timer.h
 	$(CC) -O2 -c -o $@ $<
 
-avx_add: avx_add.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-avx_mac: avx_mac.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
 clean:
-	$(RM) avx_add avx_mac avx avx.o timer.o
+	$(RM) avx avx.o timer.o
