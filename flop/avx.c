@@ -9,13 +9,47 @@
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
+const double TEST_MUL_MUL = 1.4142135623730950488;
+const double TEST_MUL_DIV = 0.70710678118654752440;
 
 const uint64_t N = 1000000000;
 
 /* Headers */
+void avx_add(float *, double *);
+void avx_mac(float *, double *);
 float reduce_AVX(__m256);
 
+
 int main(int argc, char *argv[])
+{
+    float result;
+    double runtime;
+
+    avx_add(&result, &runtime);
+
+    printf("avx_add\n");
+    printf("-------\n");
+    printf("result: %f\n", result);
+    printf("runtime: %.12f\n", runtime);
+    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+    printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
+
+    printf("\n");
+
+    avx_mac(&result, &runtime);
+
+    printf("avx_mac\n");
+    printf("-------\n");
+    printf("result: %f\n", result);
+    printf("runtime: %.12f\n", runtime);
+    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+    printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
+
+    return 0;
+}
+
+
+void avx_add(float *result, double *runtime)
 {
     #pragma omp parallel
     {
@@ -23,13 +57,9 @@ int main(int argc, char *argv[])
 
         const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
         const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
-
         uint64_t i, j;
-        float result;
-
-        double runtime;
-
         Timer *t;
+
         t = mtimer_create(TIMER_TSC);
 
         /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
@@ -60,7 +90,7 @@ int main(int argc, char *argv[])
                 r[j] = _mm256_sub_ps(r[j], sub0);
         }
         t->stop(t);
-        runtime = t->runtime(t);
+        *runtime = t->runtime(t);
 
         /* In order to prevent removal of the prior loop by optimisers,
          * sum the register values and print the result. */
@@ -71,15 +101,145 @@ int main(int argc, char *argv[])
         r[0] = _mm256_add_ps(r[0], r[1]);
 
         /* Sum of AVX registers */
-        result = reduce_AVX(r[0]);
-
-        printf("result: %f\n", result);
-        printf("runtime: %.12f\n", runtime);
-        /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-        printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
+        *result = reduce_AVX(r[0]);
     }
+}
 
-    return 0;
+
+void avx_mac(float *result, double *runtime)
+{
+    __m256 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, rA, rB;
+
+    const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
+    const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
+    const __m256 mul0 = _mm256_set1_ps((float)TEST_MUL_MUL);
+    const __m256 mul1 = _mm256_set1_ps((float)TEST_MUL_DIV);
+
+    int i;
+    Timer *t;
+
+    t = mtimer_create(TIMER_TSC);
+
+    /* Scatter values over AVX registers */
+
+    /* Choose non-exact sums (r + a) - b, (r * a) / c */
+    r0 = _mm256_set1_ps(1.0f);
+    r1 = _mm256_set1_ps(1.2f);
+    r2 = _mm256_set1_ps(1.3f);
+    r3 = _mm256_set1_ps(1.5f);
+    r4 = _mm256_set1_ps(1.7f);
+    r5 = _mm256_set1_ps(1.8f);
+
+    r6 = _mm256_set1_ps(1.0f);
+    r7 = _mm256_set1_ps(1.3f);
+    r8 = _mm256_set1_ps(1.5f);
+    r9 = _mm256_set1_ps(1.8f);
+    rA = _mm256_set1_ps(2.0f);
+    rB = _mm256_set1_ps(2.6f);
+
+    /* Add over registers r0-r5, multiply over r6-rB
+     * Rely on pipelining and latency difference (3 vs 5 cycles) for 2x FLOPs
+     */
+
+    t->start(t);
+#pragma distribute_point
+    for (i = 0; i < N; i++) {
+        r6 = _mm256_mul_ps(r6, mul0);
+        r0 = _mm256_add_ps(r0, add0);
+
+        r7 = _mm256_mul_ps(r7, mul0);
+        r1 = _mm256_add_ps(r1, add0);
+
+        r8 = _mm256_mul_ps(r8, mul0);
+        r2 = _mm256_add_ps(r2, add0);
+
+        r9 = _mm256_mul_ps(r9, mul0);
+        r3 = _mm256_add_ps(r3, add0);
+
+        rA = _mm256_mul_ps(rA, mul0);
+        r4 = _mm256_add_ps(r4, add0);
+
+        rB = _mm256_mul_ps(rB, mul0);
+        r5 = _mm256_add_ps(r5, add0);
+
+        r6 = _mm256_mul_ps(r6, mul1);
+        r0 = _mm256_sub_ps(r0, sub0);
+
+        r7 = _mm256_mul_ps(r7, mul1);
+        r1 = _mm256_sub_ps(r1, sub0);
+
+        r8 = _mm256_mul_ps(r8, mul1);
+        r2 = _mm256_sub_ps(r2, sub0);
+
+        r9 = _mm256_mul_ps(r9, mul1);
+        r3 = _mm256_sub_ps(r3, sub0);
+
+        rA = _mm256_mul_ps(rA, mul1);
+        r4 = _mm256_sub_ps(r4, sub0);
+
+        rB = _mm256_mul_ps(rB, mul1);
+        r5 = _mm256_sub_ps(r5, sub0);
+
+        /* repeat */
+        r6 = _mm256_mul_ps(r6, mul0);
+        r0 = _mm256_add_ps(r0, add0);
+
+        r7 = _mm256_mul_ps(r7, mul0);
+        r1 = _mm256_add_ps(r1, add0);
+
+        r8 = _mm256_mul_ps(r8, mul0);
+        r2 = _mm256_add_ps(r2, add0);
+
+        r9 = _mm256_mul_ps(r9, mul0);
+        r3 = _mm256_add_ps(r3, add0);
+
+        rA = _mm256_mul_ps(rA, mul0);
+        r4 = _mm256_add_ps(r4, add0);
+
+        rB = _mm256_mul_ps(rB, mul0);
+        r5 = _mm256_add_ps(r5, add0);
+
+        r6 = _mm256_mul_ps(r6, mul1);
+        r0 = _mm256_sub_ps(r0, sub0);
+
+        r7 = _mm256_mul_ps(r7, mul1);
+        r1 = _mm256_sub_ps(r1, sub0);
+
+        r8 = _mm256_mul_ps(r8, mul1);
+        r2 = _mm256_sub_ps(r2, sub0);
+
+        r9 = _mm256_mul_ps(r9, mul1);
+        r3 = _mm256_sub_ps(r3, sub0);
+
+        rA = _mm256_mul_ps(rA, mul1);
+        r4 = _mm256_sub_ps(r4, sub0);
+
+        rB = _mm256_mul_ps(rB, mul1);
+        r5 = _mm256_sub_ps(r5, sub0);
+    }
+    t->stop(t);
+    *runtime = t->runtime(t);
+
+    /* In order to prevent removal of the prior loop by optimisers,
+     * sum the register values and print the result. */
+
+    /* Binomial reduction sum */
+    r0 = _mm256_add_ps(r0, r6);
+    r1 = _mm256_add_ps(r1, r7);
+    r2 = _mm256_add_ps(r2, r8);
+    r3 = _mm256_add_ps(r3, r9);
+    r4 = _mm256_add_ps(r4, rA);
+    r5 = _mm256_add_ps(r5, rB);
+
+    r0 = _mm256_add_ps(r0, r3);
+    r1 = _mm256_add_ps(r1, r4);
+    r2 = _mm256_add_ps(r2, r5);
+
+    r0 = _mm256_add_ps(r0, r1);
+    r0 = _mm256_add_ps(r0, r2);
+
+    /* Sum of AVX registers */
+    *result = reduce_AVX(r0);
 }
 
 

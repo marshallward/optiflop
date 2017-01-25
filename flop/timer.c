@@ -4,7 +4,7 @@
 
 #include "timer.h"
 
-/* Put this somewhere else... */
+/* Global function tables and struct sizes */
 
 const size_t timer_context_size[TIMER_MAX] = {
     sizeof(timer_context_posix_t),
