@@ -42,22 +42,23 @@ Timer * mtimer_create(TimerType type)
     t = malloc(sizeof(Timer));
     t->context.tc_untyped = malloc(timer_context_size[type]);
 
-    timer_init_funcs[type](t);
-
     t->start = timer_start_funcs[type];
     t->stop = timer_stop_funcs[type];
     t->runtime = timer_runtime_funcs[type];
+
+    timer_init_funcs[type](t);
 
     return t;
 }
 
 
-/* TSC Timer */
+/* TSC Timer methods */
 
 void timer_init_tsc(Timer *t)
 {
     t->context.tc_tsc = malloc(sizeof(timer_context_tsc_t));
-    t->context.tc_tsc->cpufreq = 2.601e9;
+    //t->context.tc_tsc->cpufreq = 2.601e9;
+    timer_set_tsc_freq(t);
 }
 
 void timer_start_tsc(Timer *t)
@@ -95,7 +96,27 @@ double timer_runtime_tsc(Timer *t)
 }
 
 
-/* POSIX Timer */
+/* TSC support functions */
+
+void timer_set_tsc_freq(Timer *t)
+{
+    uint64_t t0, t1;
+    struct timespec req;
+    req.tv_sec = 1;
+    req.tv_nsec = 0;
+
+    t->start(t);
+    nanosleep(&req, NULL);
+    t->stop(t);
+
+    t0 = (t->context.tc_tsc->rdx0 << 32) | t->context.tc_tsc->rax0;
+    t1 = (t->context.tc_tsc->rdx1 << 32) | t->context.tc_tsc->rax1;
+
+    t->context.tc_tsc->cpufreq = (double) (t1 - t0);
+}
+
+
+/* POSIX Timer methods */
 
 void timer_init_posix(Timer *t)
 {

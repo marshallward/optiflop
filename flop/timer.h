@@ -45,6 +45,7 @@ typedef struct _Timer {
 
 
 /* Generic Timer methods */
+
 Timer * mtimer_create(TimerType);
 
 /* TSC Timer methods */
@@ -54,6 +55,9 @@ void timer_start_tsc(Timer *t);
 void timer_stop_tsc(Timer *t);
 double timer_runtime_tsc(Timer *t);
 
+/* TSC support functions */
+
+void timer_set_tsc_freq(Timer *t);
 
 /* POSIX Timer methods */
 
