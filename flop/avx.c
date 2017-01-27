@@ -2,7 +2,6 @@
 
 #include <immintrin.h>  /* __m256, _m256_* */
 #include <stdint.h>     /* uint64_t */
-#include <stdio.h>      /* printf */
 #include <time.h>       /* timespec, clock_gettime */
 
 #include "timer.h"
@@ -15,39 +14,8 @@ const double TEST_MUL_DIV = 0.70710678118654752440;
 const uint64_t N = 1000000000;
 
 /* Headers */
-double avx_add();
-double avx_mac();
 float reduce_AVX(__m256);
 
-
-int main(int argc, char *argv[])
-{
-    float result;
-    double runtime;
-
-    runtime = avx_add();
-
-    printf("avx_add\n");
-    printf("-------\n");
-    printf("runtime: %.12f\n", runtime);
-    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
-
-    printf("\n");
-
-    runtime = avx_mac();
-
-    printf("avx_mac\n");
-    printf("-------\n");
-    printf("runtime: %.12f\n", runtime);
-    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("gflops: %.12f\n", N * 8 * 48 / (runtime * 1e9));
-
-    return 0;
-}
-
-
-//void avx_add(float *result, double *runtime)
 double avx_add()
 {
     #pragma omp parallel

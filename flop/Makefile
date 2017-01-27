@@ -20,10 +20,13 @@ endif
 
 LDFLAGS=-lrt
 
-all: avx
+all: flop
 
-avx: avx.o timer.o
+flop: flop.o avx.o timer.o
 	$(CC) $(LDFLAGS) -o $@ $^
+
+flop.o: flop.c avx.h
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
