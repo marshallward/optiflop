@@ -11,25 +11,28 @@
 
 int main(int argc, char *argv[])
 {
-    double runtime;
+    #pragma omp parallel
+    {
+        double runtime;
 
-    runtime = avx_add();
+        runtime = avx_add();
 
-    printf("avx_add\n");
-    printf("-------\n");
-    printf("runtime: %.12f\n", runtime);
-    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
+        printf("avx_add\n");
+        printf("-------\n");
+        printf("runtime: %.12f\n", runtime);
+        /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+        printf("gflops: %.12f\n", N * 8 * 8 / (runtime * 1e9));
 
-    printf("\n");
+        printf("\n");
 
-    runtime = avx_mac();
+        runtime = avx_mac();
 
-    printf("avx_mac\n");
-    printf("-------\n");
-    printf("runtime: %.12f\n", runtime);
-    /* (iterations) * (8 flops / register) * (48 registers / iteration) */
-    printf("gflops: %.12f\n", N * 8 * 48 / (runtime * 1e9));
+        printf("avx_mac\n");
+        printf("-------\n");
+        printf("runtime: %.12f\n", runtime);
+        /* (iterations) * (8 flops / register) * (48 registers / iteration) */
+        printf("gflops: %.12f\n", N * 8 * 48 / (runtime * 1e9));
+    }
 
     return 0;
 }

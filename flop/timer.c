@@ -57,8 +57,8 @@ Timer * mtimer_create(TimerType type)
 void timer_init_tsc(Timer *t)
 {
     t->context.tc_tsc = malloc(sizeof(timer_context_tsc_t));
+    t->context.tc_tsc->cpufreq = timer_get_tsc_freq(t);
     //t->context.tc_tsc->cpufreq = 2.601e9;
-    timer_set_tsc_freq(t);
 }
 
 void timer_start_tsc(Timer *t)
@@ -98,7 +98,7 @@ double timer_runtime_tsc(Timer *t)
 
 /* TSC support functions */
 
-void timer_set_tsc_freq(Timer *t)
+double timer_get_tsc_freq(Timer *t)
 {
     uint64_t t0, t1;
     struct timespec req;
@@ -112,7 +112,7 @@ void timer_set_tsc_freq(Timer *t)
     t0 = (t->context.tc_tsc->rdx0 << 32) | t->context.tc_tsc->rax0;
     t1 = (t->context.tc_tsc->rdx1 << 32) | t->context.tc_tsc->rax1;
 
-    t->context.tc_tsc->cpufreq = (double) (t1 - t0);
+    return (double) (t1 - t0);
 }
 
 

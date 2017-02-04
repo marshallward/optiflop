@@ -11,72 +11,69 @@ const double TEST_ADD_SUB = 1.414213562373095;
 const double TEST_MUL_MUL = 1.4142135623730950488;
 const double TEST_MUL_DIV = 0.70710678118654752440;
 
-const uint64_t N = 1000000000;
+const uint64_t N = 100000000;
 
 /* Headers */
 float reduce_AVX(__m256);
 
 double avx_add()
 {
-    #pragma omp parallel
-    {
-        __m256 r[4];
+    __m256 r[4];
 
-        const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
-        const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
+    const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
+    const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
 
-        // Declare as volatile to prevent removal during optimisation
-        volatile float result;
-        double runtime;
+    // Declare as volatile to prevent removal during optimisation
+    volatile float result;
+    double runtime;
 
-        uint64_t i, j;
-        Timer *t;
+    uint64_t i, j;
+    Timer *t;
 
-        t = mtimer_create(TIMER_TSC);
+    t = mtimer_create(TIMER_TSC);
 
-        /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
-         * Some compiler optimisers (gcc) will remove the operations.
-         */
-        r[0] = _mm256_set1_ps(1.0f);
-        r[1] = _mm256_set1_ps(1.2f);
-        r[2] = _mm256_set1_ps(1.3f);
-        r[3] = _mm256_set1_ps(1.5f);
+    /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
+     * Some compiler optimisers (gcc) will remove the operations.
+     */
+    r[0] = _mm256_set1_ps(1.0f);
+    r[1] = _mm256_set1_ps(1.2f);
+    r[2] = _mm256_set1_ps(1.3f);
+    r[3] = _mm256_set1_ps(1.5f);
 
-        /* Add and subtract two nearly-equal double-precision numbers */
+    /* Add and subtract two nearly-equal double-precision numbers */
 
-        /* Warmup */
-        for (i = 0; i < N; i++) {
-            for (j = 0; j < 4; j++)
-                r[j] = _mm256_add_ps(r[j], add0);
+    /* Warmup */
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < 4; j++)
+            r[j] = _mm256_add_ps(r[j], add0);
 
-            for (j = 0; j < 4; j++)
-                r[j] = _mm256_sub_ps(r[j], sub0);
-        }
-
-        t->start(t);
-        for (i = 0; i < N; i++) {
-            for (j = 0; j < 4; j++)
-                r[j] = _mm256_add_ps(r[j], add0);
-
-            for (j = 0; j < 4; j++)
-                r[j] = _mm256_sub_ps(r[j], sub0);
-        }
-        t->stop(t);
-        runtime = t->runtime(t);
-
-        /* In order to prevent removal of the prior loop by optimisers,
-         * sum the register values and print the result. */
-
-        /* Binomial reduction sum */
-        r[0] = _mm256_add_ps(r[0], r[2]);
-        r[1] = _mm256_add_ps(r[1], r[3]);
-        r[0] = _mm256_add_ps(r[0], r[1]);
-
-        /* Sum of AVX registers */
-        result = reduce_AVX(r[0]);
-
-        return runtime;
+        for (j = 0; j < 4; j++)
+            r[j] = _mm256_sub_ps(r[j], sub0);
     }
+
+    t->start(t);
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < 4; j++)
+            r[j] = _mm256_add_ps(r[j], add0);
+
+        for (j = 0; j < 4; j++)
+            r[j] = _mm256_sub_ps(r[j], sub0);
+    }
+    t->stop(t);
+    runtime = t->runtime(t);
+
+    /* In order to prevent removal of the prior loop by optimisers,
+     * sum the register values and print the result. */
+
+    /* Binomial reduction sum */
+    r[0] = _mm256_add_ps(r[0], r[2]);
+    r[1] = _mm256_add_ps(r[1], r[3]);
+    r[0] = _mm256_add_ps(r[0], r[1]);
+
+    /* Sum of AVX registers */
+    result = reduce_AVX(r[0]);
+
+    return runtime;
 }
 
 
@@ -93,7 +90,7 @@ double avx_mac()
     volatile float result;
     double runtime;
 
-    int i;
+    uint64_t i;
     Timer *t;
 
     t = mtimer_create(TIMER_TSC);

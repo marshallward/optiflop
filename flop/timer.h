@@ -57,7 +57,7 @@ double timer_runtime_tsc(Timer *t);
 
 /* TSC support functions */
 
-void timer_set_tsc_freq(Timer *t);
+double timer_get_tsc_freq(Timer *t);
 
 /* POSIX Timer methods */
 
