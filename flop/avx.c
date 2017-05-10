@@ -121,80 +121,34 @@ double avx_mac()
      */
 
     t->start(t);
-#pragma distribute_point
     for (i = 0; i < N; i++) {
-        r6 = _mm256_mul_ps(r6, mul0);
         r0 = _mm256_add_ps(r0, add0);
-
-        r7 = _mm256_mul_ps(r7, mul0);
         r1 = _mm256_add_ps(r1, add0);
-
-        r8 = _mm256_mul_ps(r8, mul0);
         r2 = _mm256_add_ps(r2, add0);
-
-        r9 = _mm256_mul_ps(r9, mul0);
         r3 = _mm256_add_ps(r3, add0);
-
-        rA = _mm256_mul_ps(rA, mul0);
         r4 = _mm256_add_ps(r4, add0);
-
-        rB = _mm256_mul_ps(rB, mul0);
         r5 = _mm256_add_ps(r5, add0);
 
-        r6 = _mm256_mul_ps(r6, mul1);
-        r0 = _mm256_sub_ps(r0, sub0);
-
-        r7 = _mm256_mul_ps(r7, mul1);
-        r1 = _mm256_sub_ps(r1, sub0);
-
-        r8 = _mm256_mul_ps(r8, mul1);
-        r2 = _mm256_sub_ps(r2, sub0);
-
-        r9 = _mm256_mul_ps(r9, mul1);
-        r3 = _mm256_sub_ps(r3, sub0);
-
-        rA = _mm256_mul_ps(rA, mul1);
-        r4 = _mm256_sub_ps(r4, sub0);
-
-        rB = _mm256_mul_ps(rB, mul1);
-        r5 = _mm256_sub_ps(r5, sub0);
-
-        /* repeat */
         r6 = _mm256_mul_ps(r6, mul0);
-        r0 = _mm256_add_ps(r0, add0);
-
         r7 = _mm256_mul_ps(r7, mul0);
-        r1 = _mm256_add_ps(r1, add0);
-
         r8 = _mm256_mul_ps(r8, mul0);
-        r2 = _mm256_add_ps(r2, add0);
-
         r9 = _mm256_mul_ps(r9, mul0);
-        r3 = _mm256_add_ps(r3, add0);
-
         rA = _mm256_mul_ps(rA, mul0);
-        r4 = _mm256_add_ps(r4, add0);
-
         rB = _mm256_mul_ps(rB, mul0);
-        r5 = _mm256_add_ps(r5, add0);
+
+        r0 = _mm256_sub_ps(r0, sub0);
+        r1 = _mm256_sub_ps(r1, sub0);
+        r2 = _mm256_sub_ps(r2, sub0);
+        r3 = _mm256_sub_ps(r3, sub0);
+        r4 = _mm256_sub_ps(r4, sub0);
+        r5 = _mm256_sub_ps(r5, sub0);
 
         r6 = _mm256_mul_ps(r6, mul1);
-        r0 = _mm256_sub_ps(r0, sub0);
-
         r7 = _mm256_mul_ps(r7, mul1);
-        r1 = _mm256_sub_ps(r1, sub0);
-
         r8 = _mm256_mul_ps(r8, mul1);
-        r2 = _mm256_sub_ps(r2, sub0);
-
         r9 = _mm256_mul_ps(r9, mul1);
-        r3 = _mm256_sub_ps(r3, sub0);
-
         rA = _mm256_mul_ps(rA, mul1);
-        r4 = _mm256_sub_ps(r4, sub0);
-
         rB = _mm256_mul_ps(rB, mul1);
-        r5 = _mm256_sub_ps(r5, sub0);
     }
     t->stop(t);
     runtime = t->runtime(t);

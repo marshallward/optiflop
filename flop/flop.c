@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
         printf("avx_mac\n");
         printf("-------\n");
         printf("runtime: %.12f\n", runtime);
-        /* (iterations) * (8 flops / register) * (48 registers / iteration) */
-        printf("gflops: %.12f\n", N * 8 * 48 / (runtime * 1e9));
+        /* (iterations) * (8 flops / register) * (24 registers / iteration) */
+        printf("gflops: %.12f\n", N * 8 * 24 / (runtime * 1e9));
     }
 
     return 0;
