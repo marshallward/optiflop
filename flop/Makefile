@@ -15,7 +15,7 @@ ifeq ($(TARGET), intel)
 	CFLAGS=-O2
 else # gnu
 	CC=gcc
-	CFLAGS=-march=$(ARCH) -O2 -funroll-loops
+	CFLAGS=-march=$(ARCH) -O2
 endif
 
 LDFLAGS=-lrt

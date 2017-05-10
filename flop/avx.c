@@ -53,11 +53,15 @@ double avx_add()
 
     t->start(t);
     for (i = 0; i < N; i++) {
-        for (j = 0; j < 4; j++)
-            r[j] = _mm256_add_ps(r[j], add0);
+        r[0] = _mm256_add_ps(r[0], add0);
+        r[1] = _mm256_add_ps(r[1], add0);
+        r[2] = _mm256_add_ps(r[2], add0);
+        r[3] = _mm256_add_ps(r[3], add0);
 
-        for (j = 0; j < 4; j++)
-            r[j] = _mm256_sub_ps(r[j], sub0);
+        r[0] = _mm256_sub_ps(r[0], sub0);
+        r[1] = _mm256_sub_ps(r[1], sub0);
+        r[2] = _mm256_sub_ps(r[2], sub0);
+        r[3] = _mm256_sub_ps(r[3], sub0);
     }
     t->stop(t);
     runtime = t->runtime(t);
