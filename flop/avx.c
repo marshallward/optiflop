@@ -210,7 +210,8 @@ void * avx_add_thread(void *tid)
 
     printf("Thread %ld avx_add runtime: %.12f\n", (long) tid, runtime);
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("Thread %ld avx_add gflops: %.12f\n",N * 8 * 8 / (runtime * 1e9));
+    printf("Thread %ld avx_add gflops: %.12f\n",
+            (long) tid, N * 8 * 8 / (runtime * 1e9));
 
     pthread_exit(NULL);
 }
