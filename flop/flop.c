@@ -6,6 +6,7 @@
 #include <time.h>       /* timespec, clock_gettime */
 
 // pthread testing
+#define __USE_GNU   /* (Optional) pthread_attr_setaffinity_np declaration */
 #include <pthread.h>
 #define N_THREADS 1
 
@@ -49,17 +50,20 @@ int main(int argc, char *argv[])
     /* pthread implementation */
     pthread_t threads[N_THREADS];
     pthread_attr_t attr;
+    cpu_set_t cpus;
+
     void *status;
     long t;
 
-    // "The final draft of the POSIX standard specifies that threads should be
-    // created as joinable."  But we specify it anyway.
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     /* avx_add */
 
     for (t = 0; t < N_THREADS; t++) {
+        CPU_ZERO(&cpus);
+        CPU_SET(t, &cpus);
+        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
         pthread_create(&threads[t], &attr, avx_add_thread, (void *) t);
     }
 
