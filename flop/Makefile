@@ -23,10 +23,10 @@ LDFLAGS=-lrt
 all: flop
 
 flop: flop.o avx.o timer.o
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -pthread -o $@ $^
 
 flop.o: flop.c avx.h
-	$(CC) -c -o $@ $<
+	$(CC) -c -pthread -o $@ $<
 
 avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
