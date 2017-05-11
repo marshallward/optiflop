@@ -4,6 +4,9 @@
 #include <stdint.h>     /* uint64_t */
 #include <time.h>       /* timespec, clock_gettime */
 
+#include <pthread.h>    /* pthread_exit */
+#include <stdio.h>      /* printf (until I learn how to save pthread output */
+
 #include "timer.h"
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
@@ -12,6 +15,9 @@ const double TEST_MUL_MUL = 1.4142135623730950488;
 const double TEST_MUL_DIV = 0.70710678118654752440;
 
 const uint64_t N = 100000000;
+
+/* pthread variables */
+
 
 /* Headers */
 float reduce_AVX(__m256);
@@ -191,4 +197,35 @@ float reduce_AVX(__m256 x) {
         result += v.val[i];
 
     return result;
+}
+
+/* Could probably generalise these to a single function with function pointer
+ * but leave alone for now */
+
+void * avx_add_thread(void *tid)
+{
+    double runtime;
+
+    runtime = avx_add();
+
+    printf("Thread %ld avx_add runtime: %.12f\n", (long) tid, runtime);
+    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+    printf("Thread %ld avx_add gflops: %.12f\n",N * 8 * 8 / (runtime * 1e9));
+
+    pthread_exit(NULL);
+}
+
+
+void * avx_mac_thread(void *tid)
+{
+    double runtime;
+
+    runtime = avx_mac();
+
+    printf("Thread %ld avx_mac runtime: %.12f\n", (long) tid, runtime);
+    /* (iterations) * (8 flops / register) * (24 registers / iteration) */
+    printf("Thread %ld avx_mac gflops: %.12f\n",
+            (long) tid, N * 8 * 24 / (runtime * 1e9));
+
+    pthread_exit(NULL);
 }
