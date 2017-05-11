@@ -38,9 +38,12 @@ int main(int argc, char *argv[])
     /* avx_add */
 
     for (t = 0; t < nthreads; t++) {
-        CPU_ZERO(&cpus);
-        CPU_SET(t, &cpus);
-        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+        /* TODO: Better way to keep processes off the busy threads */
+        if (nthreads > 1) {
+            CPU_ZERO(&cpus);
+            CPU_SET(t, &cpus);
+            pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+        }
         pthread_create(&threads[t], &attr, avx_add_thread, (void *) t);
     }
 
@@ -50,9 +53,11 @@ int main(int argc, char *argv[])
     /* avx_mac */
 
     for (t = 0; t < nthreads; t++) {
-        CPU_ZERO(&cpus);
-        CPU_SET(t, &cpus);
-        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+        if (nthreads > 1) {
+            CPU_ZERO(&cpus);
+            CPU_SET(t, &cpus);
+            pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+        }
         pthread_create(&threads[t], &attr, avx_mac_thread, (void *) t);
     }
 
