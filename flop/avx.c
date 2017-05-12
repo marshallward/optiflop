@@ -16,9 +16,6 @@ const double TEST_MUL_DIV = 0.70710678118654752440;
 
 const uint64_t N = 100000000;
 
-/* pthread variables */
-
-
 /* Headers */
 float reduce_AVX(__m256);
 
@@ -36,7 +33,7 @@ double avx_add()
     uint64_t i, j;
     Timer *t;
 
-    t = mtimer_create(TIMER_TSC);
+    t = mtimer_create(TIMER_POSIX);
 
     /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
      * Some compiler optimisers (gcc) will remove the operations.
@@ -197,36 +194,4 @@ float reduce_AVX(__m256 x) {
         result += v.val[i];
 
     return result;
-}
-
-/* Could probably generalise these to a single function with function pointer
- * but leave alone for now */
-
-void * avx_add_thread(void *tid)
-{
-    double runtime;
-
-    runtime = avx_add();
-
-    printf("Thread %ld avx_add runtime: %.12f\n", (long) tid, runtime);
-    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("Thread %ld avx_add gflops: %.12f\n",
-            (long) tid, N * 8 * 8 / (runtime * 1e9));
-
-    pthread_exit(NULL);
-}
-
-
-void * avx_mac_thread(void *tid)
-{
-    double runtime;
-
-    runtime = avx_mac();
-
-    printf("Thread %ld avx_mac runtime: %.12f\n", (long) tid, runtime);
-    /* (iterations) * (8 flops / register) * (24 registers / iteration) */
-    printf("Thread %ld avx_mac gflops: %.12f\n",
-            (long) tid, N * 8 * 24 / (runtime * 1e9));
-
-    pthread_exit(NULL);
 }

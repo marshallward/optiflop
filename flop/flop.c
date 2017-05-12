@@ -3,6 +3,7 @@
 #include <immintrin.h>  /* __m256, _m256_* */
 #include <stdint.h>     /* uint64_t */
 #include <stdio.h>      /* printf */
+#include <string.h>     /* strcpy */
 #include <time.h>       /* timespec, clock_gettime */
 
 // pthread testing
@@ -13,10 +14,46 @@
 #include "avx.h"
 
 
+typedef struct _thread_arg_t {
+    long tid;
+    char name[7];   /* TODO: Dynamic length */
+    double (*bench)();
+    long flops;
+} thread_arg_t;
+
+
+void * bench_thread(void *tinfo)
+{
+    long tid;
+    char name[7];
+    double runtime;
+    long flops;
+
+    tid = (long) ((thread_arg_t *) tinfo)->tid;
+    strcpy(name, ((thread_arg_t *) tinfo)->name);
+    runtime = (*((thread_arg_t *) tinfo)->bench)();
+    flops = ((thread_arg_t *) tinfo)->flops;
+
+    printf("Thread %ld %s runtime: %.12f\n", (long) tid, name, runtime);
+    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+    printf("Thread %ld %s gflops: %.12f\n",
+            (long) tid, name, flops / (runtime * 1e9));
+
+    pthread_exit(NULL);
+}
+
+
 int main(int argc, char *argv[])
 {
-    double runtime;
+    /* pthread implementation */
+    pthread_t *threads;
+    pthread_attr_t attr;
+    cpu_set_t cpus;
     int nthreads;
+    thread_arg_t *t_args;
+
+    void *status;
+    long t;
 
     /* TODO: proper getopt */
     if (argc == 2)
@@ -24,13 +61,8 @@ int main(int argc, char *argv[])
     else
         nthreads = 1;
 
-    /* pthread implementation */
-    pthread_t threads[nthreads];
-    pthread_attr_t attr;
-    cpu_set_t cpus;
-
-    void *status;
-    long t;
+    threads = malloc(nthreads * sizeof(pthread_t));
+    t_args = malloc(nthreads * sizeof(thread_arg_t));
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -44,7 +76,11 @@ int main(int argc, char *argv[])
             CPU_SET(t, &cpus);
             pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
         }
-        pthread_create(&threads[t], &attr, avx_add_thread, (void *) t);
+        t_args[t].tid = t;
+        strcpy(t_args[t].name, "avx_add");
+        t_args[t].bench = &avx_add;
+        t_args[t].flops = N * 8 * 8;
+        pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
     }
 
     for (t = 0; t < nthreads; t++)
@@ -58,12 +94,18 @@ int main(int argc, char *argv[])
             CPU_SET(t, &cpus);
             pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
         }
-        pthread_create(&threads[t], &attr, avx_mac_thread, (void *) t);
+        t_args[t].tid = t;
+        strcpy(t_args[t].name, "avx_mac");
+        t_args[t].bench = &avx_mac;
+        t_args[t].flops = N * 8 * 24;
+        pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
     }
 
     for (t = 0; t < nthreads; t++)
         pthread_join(threads[t], &status);
 
     pthread_attr_destroy(&attr);
+    free(threads);
+
     pthread_exit(NULL);
 }

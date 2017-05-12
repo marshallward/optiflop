@@ -5,9 +5,6 @@
 extern const uint64_t N;
 
 double avx_add(void);
-void * avx_add_thread(void *);
-
 double avx_mac(void);
-void * avx_mac_thread(void *);
 
 #endif
