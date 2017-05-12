@@ -15,8 +15,8 @@
 
 
 typedef struct _thread_arg_t {
-    long tid;
-    char name[7];   /* TODO: Dynamic length */
+    int tid;
+    char name[7];   /* TODO: Dynamic length (or just ditch it) */
     double (*bench)();
     long flops;
 } thread_arg_t;
@@ -24,20 +24,19 @@ typedef struct _thread_arg_t {
 
 void * bench_thread(void *tinfo)
 {
-    long tid;
+    int tid;
     char name[7];
     double runtime;
     long flops;
 
-    tid = (long) ((thread_arg_t *) tinfo)->tid;
+    tid = (int) ((thread_arg_t *) tinfo)->tid;
     strcpy(name, ((thread_arg_t *) tinfo)->name);
     runtime = (*((thread_arg_t *) tinfo)->bench)();
     flops = ((thread_arg_t *) tinfo)->flops;
 
-    printf("Thread %ld %s runtime: %.12f\n", (long) tid, name, runtime);
+    printf("Thread %i %s runtime: %.12f\n", tid, name, runtime);
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    printf("Thread %ld %s gflops: %.12f\n",
-            (long) tid, name, flops / (runtime * 1e9));
+    printf("Thread %i %s gflops: %.12f\n", tid, name, flops / (runtime * 1e9));
 
     pthread_exit(NULL);
 }
@@ -53,7 +52,7 @@ int main(int argc, char *argv[])
     thread_arg_t *t_args;
 
     void *status;
-    long t;
+    int t;
 
     /* TODO: proper getopt */
     if (argc == 2)
@@ -76,10 +75,12 @@ int main(int argc, char *argv[])
             CPU_SET(t, &cpus);
             pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
         }
+
         t_args[t].tid = t;
         strcpy(t_args[t].name, "avx_add");
         t_args[t].bench = &avx_add;
         t_args[t].flops = N * 8 * 8;
+
         pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
     }
 
