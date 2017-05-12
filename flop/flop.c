@@ -64,6 +64,8 @@ int main(int argc, char *argv[])
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
+    pthread_barrier_init(&timer_barrier, NULL, nthreads);
+
     /* avx_add */
 
     for (t = 0; t < nthreads; t++) {

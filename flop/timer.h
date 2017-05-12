@@ -4,6 +4,7 @@
 #include <stdint.h> /* uint64_t */
 #include <time.h> 	/* clockid_t, timespec */
 
+extern pthread_barrier_t timer_barrier;
 
 /* Timer definition */
 

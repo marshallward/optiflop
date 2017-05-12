@@ -4,9 +4,6 @@
 #include <stdint.h>     /* uint64_t */
 #include <time.h>       /* timespec, clock_gettime */
 
-#include <pthread.h>    /* pthread_exit */
-#include <stdio.h>      /* printf (until I learn how to save pthread output */
-
 #include "timer.h"
 
 const double TEST_ADD_ADD = 1.4142135623730950488;

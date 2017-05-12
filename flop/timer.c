@@ -1,8 +1,12 @@
-#include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* malloc */
+#include <stdint.h>     /* uint64_t */
+#include <stdlib.h>     /* malloc */
+#include <pthread.h>    /* pthread_barrier_t */
 #include <time.h>
 
 #include "timer.h"
+
+/* pthread support */
+pthread_barrier_t timer_barrier;
 
 /* Global function tables and struct sizes */
 
@@ -63,6 +67,7 @@ void timer_init_tsc(Timer *t)
 
 void timer_start_tsc(Timer *t)
 {
+    pthread_barrier_wait(&timer_barrier);
     __asm__ __volatile__ (
         "cpuid\n"
         "rdtsc\n"
@@ -126,6 +131,7 @@ void timer_init_posix(Timer *t)
 
 void timer_start_posix(Timer *t)
 {
+    pthread_barrier_wait(&timer_barrier);
     clock_gettime(t->context.tc_posix->clock, &(t->context.tc_posix->ts_start));
 }
 
