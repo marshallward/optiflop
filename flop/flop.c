@@ -9,6 +9,7 @@
 // pthread testing
 #define __USE_GNU   /* (Optional) pthread_attr_setaffinity_np declaration */
 #include <pthread.h>
+#include <omp.h>
 
 #include "timer.h"
 #include "avx.h"
@@ -50,12 +51,23 @@ int main(int argc, char *argv[])
     void *status;
     int t;
     double *runtimes;
+    int nprocs;
 
     /* TODO: proper getopt */
     if (argc == 2)
         nthreads = (int) strtol(argv[1], (char **) NULL, 10);
     else
         nthreads = 1;
+
+    /* TODO: Get number of procs without OpenMP */
+    nprocs = omp_get_num_procs();
+    if (nthreads > nprocs) {
+        printf("flop: Number of threads (%i) exceeds maximum core count (%i).\n",
+               nthreads, nprocs);
+        return -1;
+    }
+
+    /* End command line argument parsing */
 
     threads = malloc(nthreads * sizeof(pthread_t));
     t_args = malloc(nthreads * sizeof(thread_arg_t));
