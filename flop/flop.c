@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
     runtimes = malloc(nthreads * sizeof(double));
     flops = malloc(nthreads * sizeof(double));
 
+    pthread_mutex_init(&runtime_mutex, NULL);
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
@@ -138,6 +139,7 @@ int main(int argc, char *argv[])
     }
 
     pthread_attr_destroy(&attr);
+    pthread_mutex_destroy(&runtime_mutex);
     free(threads);
 
     pthread_exit(NULL);

@@ -1,9 +1,14 @@
 /* FLOP test (based heavily on Alex Yee source) */
 
 #include <immintrin.h>  /* __m256, _m256_* */
+#include <pthread.h>    /* pthread_* */
 #include <stdint.h>     /* uint64_t */
 
 #include "timer.h"
+
+pthread_barrier_t timer_barrier;
+pthread_mutex_t runtime_mutex;
+volatile int runtime_flag;
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
@@ -41,9 +46,12 @@ void avx_add(double *runtime, double *flops)
     /* Add and subtract two nearly-equal double-precision numbers */
 
     // XXX: Barrier will hang if some threads reach 0.5s before others
+    runtime_flag = 0;
     niter = 1000;
     do {
         niter *= 2;
+
+        pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < niter; i++) {
             r[0] = _mm256_add_ps(r[0], add0);
@@ -58,7 +66,16 @@ void avx_add(double *runtime, double *flops)
         }
         t->stop(t);
         *runtime = t->runtime(t);
-    } while (*runtime < 0.5);
+
+        /* Set runtime flag if any thread exceeds runtime limit */
+        /* (Do I really need the mutex here?) */
+        if (*runtime > 0.5) {
+            pthread_mutex_lock(&runtime_mutex);
+            runtime_flag = 1;
+            pthread_mutex_unlock(&runtime_mutex);
+        }
+        pthread_barrier_wait(&timer_barrier);
+    } while (!runtime_flag);
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the results as volatile. */
@@ -72,7 +89,6 @@ void avx_add(double *runtime, double *flops)
     result = reduce_AVX(r[0]);
 
     *flops = niter * 8 * 8 / *runtime;
-    //return runtime;
 }
 
 
@@ -116,9 +132,12 @@ void avx_mac(double *runtime, double *flops)
      */
 
     // XXX: Barrier will hang if some threads reach 0.5s before others
+    runtime_flag = 0;
     niter = 1000;
     do {
         niter *= 2;
+
+        pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < niter; i++) {
             r0 = _mm256_add_ps(r0, add0);
@@ -151,7 +170,16 @@ void avx_mac(double *runtime, double *flops)
         }
         t->stop(t);
         *runtime = t->runtime(t);
-    } while (*runtime < 0.5);
+
+        /* Set runtime flag if any thread exceeds runtime limit */
+        /* (Do I really need the mutex here?) */
+        if (*runtime > 0.5) {
+            pthread_mutex_lock(&runtime_mutex);
+            runtime_flag = 1;
+            pthread_mutex_unlock(&runtime_mutex);
+        }
+        pthread_barrier_wait(&timer_barrier);
+    } while (!runtime_flag);
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
@@ -175,7 +203,6 @@ void avx_mac(double *runtime, double *flops)
     result = reduce_AVX(r0);
 
     *flops = niter * 8 * 24 / *runtime;
-    //return runtime;
 }
 
 
