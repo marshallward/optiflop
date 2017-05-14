@@ -62,7 +62,6 @@ void timer_init_tsc(Timer *t)
 {
     t->context.tc_tsc = malloc(sizeof(timer_context_tsc_t));
     t->context.tc_tsc->cpufreq = timer_get_tsc_freq(t);
-    //t->context.tc_tsc->cpufreq = 2.601e9;
 }
 
 void timer_start_tsc(Timer *t)
