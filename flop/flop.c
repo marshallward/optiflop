@@ -17,8 +17,9 @@
 
 typedef struct _thread_arg_t {
     int tid;
-    double (*bench)();
+    void (*bench)(double *, double *);
     double runtime;
+    double flops;
 } thread_arg_t;
 
 
@@ -27,13 +28,15 @@ void * bench_thread(void *arg)
     thread_arg_t *tinfo;
     int tid;
     double runtime;
+    double flops;
 
     tinfo = (thread_arg_t *) arg;
     tid = tinfo->tid;
-    runtime = (*((thread_arg_t *) tinfo)->bench)();
+    (*((thread_arg_t *) tinfo)->bench)(&runtime, &flops);
 
     /* Save output */
     tinfo->runtime = runtime;
+    tinfo->flops = flops;
 
     pthread_exit(NULL);
 }
@@ -44,15 +47,13 @@ int main(int argc, char *argv[])
     pthread_t *threads;
     pthread_attr_t attr;
     cpu_set_t cpus;
-    int nthreads;
+    int nthreads, nprocs;
     thread_arg_t *t_args;
-
     void *status;
-    int t;
-    double *runtimes;
-    int nprocs;
 
+    int t;
     int optflag;
+    double *runtimes, *flops;
 
     /* getopt */
 
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
     threads = malloc(nthreads * sizeof(pthread_t));
     t_args = malloc(nthreads * sizeof(thread_arg_t));
     runtimes = malloc(nthreads * sizeof(double));
+    flops = malloc(nthreads * sizeof(double));
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -104,11 +106,11 @@ int main(int argc, char *argv[])
     for (t = 0; t < nthreads; t++) {
         pthread_join(threads[t], &status);
         runtimes[t] = t_args[t].runtime;
+        flops[t] = t_args[t].flops;
 
         printf("Thread %i avx_add runtime: %.12f\n", t, runtimes[t]);
         /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-        printf("Thread %i avx_add gflops: %.12f\n",
-               t, N * 8 * 8 / (runtimes[t] * 1e9));
+        printf("Thread %i avx_add gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
     /* avx_mac */
@@ -128,11 +130,11 @@ int main(int argc, char *argv[])
     for (t = 0; t < nthreads; t++) {
         pthread_join(threads[t], &status);
         runtimes[t] = t_args[t].runtime;
+        flops[t] = t_args[t].flops;
 
         printf("Thread %i avx_mac runtime: %.12f\n", t, runtimes[t]);
         /* (iterations) * (8 flops / register) * (24 registers / iteration) */
-        printf("Thread %i avx_mac gflops: %.12f\n",
-               t, N * 8 * 24 / (runtimes[t] * 1e9));
+        printf("Thread %i avx_mac gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
     pthread_attr_destroy(&attr);
