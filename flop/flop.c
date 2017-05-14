@@ -4,7 +4,7 @@
 #include <stdint.h>     /* uint64_t */
 #include <stdio.h>      /* printf */
 #include <string.h>     /* strcpy */
-#include <time.h>       /* timespec, clock_gettime */
+#include <unistd.h>     /* getopt */
 
 // pthread testing
 #define __USE_GNU   /* (Optional) pthread_attr_setaffinity_np declaration */
@@ -41,7 +41,6 @@ void * bench_thread(void *arg)
 
 int main(int argc, char *argv[])
 {
-    /* pthread implementation */
     pthread_t *threads;
     pthread_attr_t attr;
     cpu_set_t cpus;
@@ -53,21 +52,29 @@ int main(int argc, char *argv[])
     double *runtimes;
     int nprocs;
 
-    /* TODO: proper getopt */
-    if (argc == 2)
-        nthreads = (int) strtol(argv[1], (char **) NULL, 10);
-    else
-        nthreads = 1;
+    int optflag;
 
-    /* TODO: Get number of procs without OpenMP */
+    /* getopt */
+
+    nthreads = 1;
+    while ((optflag = getopt(argc, argv, "p:")) != -1) {
+        switch(optflag) {
+            case 'p':
+                nthreads = (int) strtol(optarg, (char **) NULL, 10);
+                break;
+            default:
+                abort();
+        }
+    }
+
     nprocs = omp_get_num_procs();
     if (nthreads > nprocs) {
-        printf("flop: Number of threads (%i) exceeds maximum core count (%i).\n",
-               nthreads, nprocs);
+        printf("flop: Number of threads (%i) exceeds maximum "
+               "core count (%i).\n", nthreads, nprocs);
         return -1;
     }
 
-    /* End command line argument parsing */
+    /* Thread setup */
 
     threads = malloc(nthreads * sizeof(pthread_t));
     t_args = malloc(nthreads * sizeof(thread_arg_t));

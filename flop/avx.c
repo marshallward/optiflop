@@ -2,7 +2,6 @@
 
 #include <immintrin.h>  /* __m256, _m256_* */
 #include <stdint.h>     /* uint64_t */
-#include <time.h>       /* timespec, clock_gettime */
 
 #include "timer.h"
 
