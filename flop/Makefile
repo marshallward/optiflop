@@ -1,5 +1,5 @@
-TARGET=intel
-ARCH=haswell
+TARGET=gcc
+ARCH=sandybridge
 
 # TODO: Clean this up (maybe templates?)
 ifeq ($(ARCH), sandybridge)
@@ -12,7 +12,7 @@ endif
 
 ifeq ($(TARGET), intel)
 	CC=icc
-	CFLAGS=-O2
+	CFLAGS=-O2 -xavx
 else # gnu
 	CC=gcc
 	CFLAGS=-march=$(ARCH) -O2
@@ -32,7 +32,7 @@ avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 axpy.o: axpy.c timer.h
-	$(CC) $(CFLAGS) -xavx -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 timer.o: timer.c timer.h
 	$(CC) -O2 -c -o $@ $<
