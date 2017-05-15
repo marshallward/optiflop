@@ -13,6 +13,7 @@
 
 #include "timer.h"
 #include "avx.h"
+#include "axpy.h"
 
 
 typedef struct _thread_arg_t {
@@ -134,6 +135,28 @@ int main(int argc, char *argv[])
 
         printf("Thread %i avx_mac runtime: %.12f\n", t, runtimes[t]);
         printf("Thread %i avx_mac gflops: %.12f\n", t, flops[t] /  1e9);
+    }
+
+    /* axpy */
+    for (t = 0; t < nthreads; t++) {
+        if (nthreads > 1) {
+            CPU_ZERO(&cpus);
+            CPU_SET(t, &cpus);
+            pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+        }
+
+        t_args[t].tid = t;
+        t_args[t].bench = &axpy_main;
+        pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
+    }
+
+    for (t = 0; t < nthreads; t++) {
+        pthread_join(threads[t], &status);
+        runtimes[t] = t_args[t].runtime;
+        flops[t] = t_args[t].flops;
+
+        printf("Thread %i avx_add runtime: %.12f\n", t, runtimes[t]);
+        printf("Thread %i avx_add gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
     pthread_attr_destroy(&attr);

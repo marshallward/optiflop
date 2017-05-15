@@ -22,7 +22,7 @@ LDFLAGS=-lrt
 
 all: flop
 
-flop: flop.o avx.o timer.o
+flop: flop.o avx.o timer.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
 
 flop.o: flop.c avx.h
@@ -31,8 +31,14 @@ flop.o: flop.c avx.h
 avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+axpy.o: axpy.c timer.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 timer.o: timer.c timer.h
 	$(CC) -O2 -c -o $@ $<
 
+dummy.o: dummy.c
+	$(CC) -c -o $@ $<
+
 clean:
-	$(RM) flop flop.o avx.o timer.o
+	$(RM) flop flop.o avx.o timer.o axpy.o

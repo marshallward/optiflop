@@ -45,7 +45,6 @@ void avx_add(double *runtime, double *flops)
 
     /* Add and subtract two nearly-equal double-precision numbers */
 
-    // XXX: Barrier will hang if some threads reach 0.5s before others
     runtime_flag = 0;
     niter = 1000;
     do {
@@ -132,7 +131,6 @@ void avx_mac(double *runtime, double *flops)
      * OOO execution, and latency difference (3 vs 5 cycles) for 2x FLOPs
      */
 
-    // XXX: Barrier will hang if some threads reach 0.5s before others
     runtime_flag = 0;
     niter = 1000;
     do {
