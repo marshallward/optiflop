@@ -1,4 +1,4 @@
-TARGET=gcc
+TARGET=intel
 ARCH=haswell
 
 # TODO: Clean this up (maybe templates?)
@@ -32,7 +32,7 @@ avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 axpy.o: axpy.c timer.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -xavx -c -o $@ $<
 
 timer.o: timer.c timer.h
 	$(CC) -O2 -c -o $@ $<

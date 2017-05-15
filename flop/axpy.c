@@ -23,7 +23,7 @@ void axpy_main(double *runtime, double *flops)
     // TODO: Safe argv parsing
     // n = atoi(argv[1]);
     // r = atoi(argv[2]);
-    n = 2000;
+    n = 3200;
     r = 100000;
 
     posix_memalign((void *) &x, BYTEALIGN, n * sizeof(float));
