@@ -110,7 +110,6 @@ int main(int argc, char *argv[])
         flops[t] = t_args[t].flops;
 
         printf("Thread %i avx_add runtime: %.12f\n", t, runtimes[t]);
-        /* (iterations) * (8 flops / register) * (8 registers / iteration) */
         printf("Thread %i avx_add gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
@@ -134,7 +133,6 @@ int main(int argc, char *argv[])
         flops[t] = t_args[t].flops;
 
         printf("Thread %i avx_mac runtime: %.12f\n", t, runtimes[t]);
-        /* (iterations) * (8 flops / register) * (24 registers / iteration) */
         printf("Thread %i avx_mac gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
