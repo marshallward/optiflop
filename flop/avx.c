@@ -3,7 +3,6 @@
 #include <immintrin.h>  /* __m256, _m256_* */
 #include <pthread.h>    /* pthread_* */
 #include <stdint.h>     /* uint64_t */
-#include <stdio.h>
 
 #include "timer.h"
 
@@ -198,8 +197,6 @@ void avx_mac(double *runtime, double *flops)
 
     /* Sum of AVX registers */
     result = reduce_AVX(r[0]);
-    printf("result: %f\n", result);
-
 
     /* (iterations) * (8 flops / register) * (24 registers / iteration) */
     *flops = niter * 8 * 24 / *runtime;
