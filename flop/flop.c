@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
     }
 
     /* axpy */
+
     for (t = 0; t < nthreads; t++) {
         if (nthreads > 1) {
             CPU_ZERO(&cpus);
@@ -155,8 +156,8 @@ int main(int argc, char *argv[])
         runtimes[t] = t_args[t].runtime;
         flops[t] = t_args[t].flops;
 
-        printf("Thread %i avx_add runtime: %.12f\n", t, runtimes[t]);
-        printf("Thread %i avx_add gflops: %.12f\n", t, flops[t] /  1e9);
+        printf("Thread %i axpy runtime: %.12f\n", t, runtimes[t]);
+        printf("Thread %i axpy gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
     pthread_attr_destroy(&attr);

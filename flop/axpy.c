@@ -6,7 +6,7 @@
 
 #define BYTEALIGN 32
 
-double axpy(float, float, float *, float *, int, int);
+double axpy(float, float, float *, float *, int, double *);
 void dummy(float, float, float *, float *);
 
 void axpy_main(double *runtime, double *flops)
@@ -20,11 +20,7 @@ void axpy_main(double *runtime, double *flops)
     int r;  // Repeat counter
     int i;  // Loop counter
 
-    // TODO: Safe argv parsing
-    // n = atoi(argv[1]);
-    // r = atoi(argv[2]);
     n = 3200;
-    r = 100000;
 
     posix_memalign((void *) &x, BYTEALIGN, n * sizeof(float));
     posix_memalign((void *) &y, BYTEALIGN, n * sizeof(float));
@@ -41,30 +37,13 @@ void axpy_main(double *runtime, double *flops)
 
     /* a x + y */
 
-    // Warmup
-    // rt = axpy(a, b, x, y, n, 1);
-
-    rt = axpy(a, b, x, y, n, r);
-
-    // TODO: Do the "vector triad" version:
-    //  1. (x) Do iterations inside `axpy`, get absolute number
-    //  2. Replace `rt`, don't append the time increases
-    //  3. Step up `r` exponentially
-
-    //rt = 0.;
-    //do {
-    //    rt += axpy(a, b, x, y, n, 1);
-    //    r++;
-    //    // rt = axpy(a, b, x, y, n, r);
-    //    // r = 2 * r;
-    //} while(rt < 0.2);
+    rt = axpy(a, b, x, y, n, flops);
 
     *runtime = rt;
-    *flops = 2. * n * r / rt;
 }
 
 
-double axpy(float a, float b, float *x, float *y, int n, int r_max)
+double axpy(float a, float b, float *x, float *y, int n, double *flops)
 {
     __builtin_assume_aligned(x, BYTEALIGN);
     __builtin_assume_aligned(y, BYTEALIGN);
@@ -77,24 +56,33 @@ double axpy(float a, float b, float *x, float *y, int n, int r_max)
     int midpt = n / 2;
     float sum;
 
-    //clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
+    int runtime_flag;
+    int r_max;
+
     t = mtimer_create(TIMER_POSIX);
 
+    r_max = 1000;
+    runtime_flag = 0;
     t->start(t);
-    for (r = 0; r < r_max; r++) {
-        for (i = 0; i < n; i++)
-            //y[i] = a * y[i];
-            //y[i] = y[i] + y[i];
-            //y[i] = x[i] + y[i];
-            y[i] = a * x[i] + y[i];
-            //y[i] = a * x[i] * y[i];
-            //y[i] = a * x[i] + b * y[i];
-        // To prevent outer loop removal during optimisation
-        if (y[midpt] < 0.) dummy(a, b, x, y);
-    }
-    //clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
-    t->stop(t);
-    runtime = t->runtime(t);
+    do {
+        r_max *= 2;
+        for (r = 0; r < r_max; r++) {
+            for (i = 0; i < n; i++)
+                //y[i] = a * y[i];
+                //y[i] = y[i] + y[i];
+                //y[i] = x[i] + y[i];
+                y[i] = a * x[i] + y[i];
+                //y[i] = a * x[i] * y[i];
+                //y[i] = a * x[i] + b * y[i];
+            // To prevent outer loop removal during optimisation
+            if (y[midpt] < 0.) dummy(a, b, x, y);
+        }
+        t->stop(t);
+        runtime = t->runtime(t);
+        if (runtime > 0.5) runtime_flag = 1;
+        printf("state: %f %i %i\n", runtime, runtime_flag, r_max);
+    } while (!runtime_flag);
 
+    *flops = 2. * n * r / runtime;
     return runtime;
 }
