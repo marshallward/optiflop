@@ -17,7 +17,6 @@ void axpy_main(double *runtime, double *flops)
     float rt; // runtime
 
     int n;  // Vector length
-    int r;  // Repeat counter
     int i;  // Loop counter
 
     n = 3200;
@@ -63,9 +62,9 @@ double axpy(float a, float b, float *x, float *y, int n, double *flops)
 
     r_max = 1000;
     runtime_flag = 0;
-    t->start(t);
     do {
         r_max *= 2;
+        t->start(t);
         for (r = 0; r < r_max; r++) {
             for (i = 0; i < n; i++)
                 //y[i] = a * y[i];
@@ -79,10 +78,10 @@ double axpy(float a, float b, float *x, float *y, int n, double *flops)
         }
         t->stop(t);
         runtime = t->runtime(t);
+
         if (runtime > 0.5) runtime_flag = 1;
-        printf("state: %f %i %i\n", runtime, runtime_flag, r_max);
     } while (!runtime_flag);
 
-    *flops = 2. * n * r / runtime;
+    *flops = 2. * n * r_max / runtime;
     return runtime;
 }

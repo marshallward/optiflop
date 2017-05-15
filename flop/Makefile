@@ -1,4 +1,4 @@
-TARGET=gcc
+TARGET=intel
 ARCH=sandybridge
 
 # TODO: Clean this up (maybe templates?)
