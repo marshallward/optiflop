@@ -32,7 +32,7 @@ avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 axpy.o: axpy.c timer.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -funroll-loops --param max-unroll-times=2 -c -o $@ $<
 
 timer.o: timer.c timer.h
 	$(CC) -O2 -c -o $@ $<
