@@ -1,4 +1,4 @@
-TARGET=intel
+TARGET=gcc
 ARCH=sandybridge
 
 # TODO: Clean this up (maybe templates?)
@@ -15,7 +15,7 @@ ifeq ($(TARGET), intel)
 	CFLAGS=-O2 -xavx
 else # gnu
 	CC=gcc
-	CFLAGS=-march=$(ARCH) -O2
+	CFLAGS=-march=$(ARCH) -O3
 endif
 
 LDFLAGS=-lrt

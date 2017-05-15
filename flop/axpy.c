@@ -42,7 +42,8 @@ void axpy_main(double *runtime, double *flops)
 }
 
 
-double axpy(float a, float b, float *x, float *y, int n, double *flops)
+double axpy(float a, float b, float * restrict x, float * restrict y,
+            int n, double *flops)
 {
     __builtin_assume_aligned(x, BYTEALIGN);
     __builtin_assume_aligned(y, BYTEALIGN);
