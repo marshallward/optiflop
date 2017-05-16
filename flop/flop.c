@@ -2,7 +2,7 @@
 
 #include <stdint.h>     /* uint64_t */
 #include <stdio.h>      /* printf */
-#include <string.h>     /* strcpy */
+#include <stdlib.h>     /* strtol, malloc */
 #include <unistd.h>     /* getopt */
 
 // pthread testing
@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <omp.h>
 
+#include "timer.h"
 #include "avx.h"
 #include "axpy.h"
 
@@ -92,8 +93,8 @@ int main(int argc, char *argv[])
     /* TODO: Combine name and bench into a struct, or add to t_args? */
 
     int b;
-    const bench_ptr_t benchmarks[] = {&avx_add, &avx_mac, &axpy_main, NULL};
-    const char * benchnames[] = {"avx_add", "avx_mac", "axpy", NULL};
+    const bench_ptr_t benchmarks[] = {&avx_add, &avx_mac, &axpy_main, 0};
+    const char * benchnames[] = {"avx_add", "avx_mac", "axpy", 0};
 
     for (b = 0; benchmarks[b]; b++) {
 
