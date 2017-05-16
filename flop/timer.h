@@ -1,6 +1,7 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
+#include <pthread.h> /* pthread_* */
 #include <stdint.h> /* uint64_t */
 #include <time.h> 	/* clockid_t, timespec */
 
