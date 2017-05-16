@@ -1,6 +1,5 @@
 /* FLOP test (based heavily on Alex Yee source) */
 
-#include <immintrin.h>  /* __m256, _m256_* */
 #include <stdint.h>     /* uint64_t */
 #include <stdio.h>      /* printf */
 #include <string.h>     /* strcpy */
@@ -11,7 +10,6 @@
 #include <pthread.h>
 #include <omp.h>
 
-#include "timer.h"
 #include "avx.h"
 #include "axpy.h"
 
