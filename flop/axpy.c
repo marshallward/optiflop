@@ -42,11 +42,12 @@ void axpy_main(double *runtime, double *flops)
 }
 
 
-double axpy(float a, float b, float * restrict x, float * restrict y,
+//double axpy(float a, float b, float * restrict x, float * restrict y,
+double axpy(float a, float b, float * x_in, float * y_in,
             int n, double *flops)
 {
-    float *xa = __builtin_assume_aligned(x, BYTEALIGN);
-    float *ya = __builtin_assume_aligned(y, BYTEALIGN);
+    float *x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    float *y = __builtin_assume_aligned(y_in, BYTEALIGN);
 
     int i, r;
     struct timespec ts_start, ts_end;
@@ -71,13 +72,11 @@ double axpy(float a, float b, float * restrict x, float * restrict y,
                 //y[i] = a * y[i];
                 //y[i] = y[i] + y[i];
                 //y[i] = x[i] + y[i];
-                //y[i] = a * x[i] + y[i];
+                y[i] = a * x[i] + y[i];
                 //y[i] = a * x[i] * y[i];
                 //y[i] = a * x[i] + b * y[i];
-                ya[i] = a * xa[i] + ya[i];
             // To prevent outer loop removal during optimisation
-            //if (y[midpt] < 0.) dummy(a, b, x, y);
-            if (y[midpt] < 0.) dummy(a, b, xa, ya);
+            if (y[midpt] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);

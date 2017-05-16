@@ -1,26 +1,24 @@
-TARGET=gcc
-ARCH=sandybridge
-
 # TODO: Clean this up (maybe templates?)
 ifeq ($(ARCH), sandybridge)
-	ARCH=corei7-avx
+	GCC_ARCH=corei7-avx
 else ifeq ($(ARCH), haswell)
-	ARCH=core-avx2
+	GCC_ARCH=core-avx2
 else # Roll the dice...
-	ARCH=native
-endif
-
-ifeq ($(TARGET), intel)
-	CC=icc
-	CFLAGS=-O2 -xavx
-else # gnu
-	CC=gcc
-	CFLAGS=-march=$(ARCH) -O3
+	GCC_ARCH=native
 endif
 
 LDFLAGS=-lrt
 
-all: flop
+all: gcc
+
+gcc: CC=gcc
+gcc: CFLAGS=-march=$(GCC_ARCH) -O3
+gcc: LOOP=-funroll-loops --param max-unroll-times=2
+gcc: flop
+
+intel: CC=icc
+intel: CFLAGS=-xavx -O2
+intel: flop
 
 flop: flop.o avx.o timer.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
@@ -32,7 +30,7 @@ avx.o: avx.c timer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 axpy.o: axpy.c timer.h
-	$(CC) $(CFLAGS) -funroll-loops --param max-unroll-times=2 -c -o $@ $<
+	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
 timer.o: timer.c timer.h
 	$(CC) -O2 -c -o $@ $<
