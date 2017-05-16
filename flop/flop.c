@@ -15,10 +15,11 @@
 #include "avx.h"
 #include "axpy.h"
 
+typedef void (*bench_ptr_t) (double *, double *);
 
 typedef struct _thread_arg_t {
     int tid;
-    void (*bench)(double *, double *);
+    bench_ptr_t bench;
     double runtime;
     double flops;
 } thread_arg_t;
@@ -89,75 +90,39 @@ int main(int argc, char *argv[])
 
     pthread_barrier_init(&timer_barrier, NULL, nthreads);
 
-    /* avx_add */
+    /* General benchmark loop */
+    /* TODO: Combine name and bench into a struct, or add to t_args? */
 
-    for (t = 0; t < nthreads; t++) {
-        /* TODO: Better way to keep processes off the busy threads */
-        if (nthreads > 1) {
-            CPU_ZERO(&cpus);
-            CPU_SET(t, &cpus);
-            pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+    int b;
+    const bench_ptr_t benchmarks[] = {&avx_add, &avx_mac, &axpy_main, NULL};
+    const char * benchnames[] = {"avx_add", "avx_mac", "axpy", NULL};
+
+    for (b = 0; benchmarks[b]; b++) {
+
+        for (t = 0; t < nthreads; t++) {
+            /* TODO: Better way to keep processes off the busy threads */
+            if (nthreads > 1) {
+                CPU_ZERO(&cpus);
+                CPU_SET(t, &cpus);
+                pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+            }
+
+            t_args[t].tid = t;
+            t_args[t].bench = benchmarks[b];
+
+            pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
         }
 
-        t_args[t].tid = t;
-        t_args[t].bench = &avx_add;
+        for (t = 0; t < nthreads; t++) {
+            pthread_join(threads[t], &status);
+            runtimes[t] = t_args[t].runtime;
+            flops[t] = t_args[t].flops;
 
-        pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
-    }
-
-    for (t = 0; t < nthreads; t++) {
-        pthread_join(threads[t], &status);
-        runtimes[t] = t_args[t].runtime;
-        flops[t] = t_args[t].flops;
-
-        printf("Thread %i avx_add runtime: %.12f\n", t, runtimes[t]);
-        printf("Thread %i avx_add gflops: %.12f\n", t, flops[t] /  1e9);
-    }
-
-    /* avx_mac */
-
-    for (t = 0; t < nthreads; t++) {
-        if (nthreads > 1) {
-            CPU_ZERO(&cpus);
-            CPU_SET(t, &cpus);
-            pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+            printf("Thread %i %s runtime: %.12f\n",
+                   t, benchnames[b], runtimes[t]);
+            printf("Thread %i %s gflops: %.12f\n",
+                   t, benchnames[b], flops[t] /  1e9);
         }
-
-        t_args[t].tid = t;
-        t_args[t].bench = &avx_mac;
-        pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
-    }
-
-    for (t = 0; t < nthreads; t++) {
-        pthread_join(threads[t], &status);
-        runtimes[t] = t_args[t].runtime;
-        flops[t] = t_args[t].flops;
-
-        printf("Thread %i avx_mac runtime: %.12f\n", t, runtimes[t]);
-        printf("Thread %i avx_mac gflops: %.12f\n", t, flops[t] /  1e9);
-    }
-
-    /* axpy */
-
-    for (t = 0; t < nthreads; t++) {
-        if (nthreads > 1) {
-            CPU_ZERO(&cpus);
-            CPU_SET(t, &cpus);
-            pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
-        }
-
-        t_args[t].tid = t;
-        t_args[t].bench = &axpy_main;
-        pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
-    }
-
-    for (t = 0; t < nthreads; t++) {
-        pthread_join(threads[t], &status);
-        runtimes[t] = t_args[t].runtime;
-        flops[t] = t_args[t].flops;
-
-        printf("Thread %i axpy runtime: %.12f\n", t, runtimes[t]);
-        printf("Thread %i axpy gflops: %.12f\n", t, flops[t] /  1e9);
     }
 
     pthread_attr_destroy(&attr);
