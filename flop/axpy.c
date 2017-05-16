@@ -56,8 +56,13 @@ double axpy(float a, float b, float * x_in, float * y_in,
     int i, r;
     int r_max;
 
+    // TODO: Create a macro somewhere else
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
     x = __builtin_assume_aligned(x_in, BYTEALIGN);
     y = __builtin_assume_aligned(y_in, BYTEALIGN);
+#else
+    x = x_in; y = y_in;
+#endif
 
     t = mtimer_create(TIMER_POSIX);
 
