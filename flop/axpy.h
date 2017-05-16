@@ -1,5 +1,5 @@
-#ifndef _AXPY_H_
-#define _AXPY_H_
+#ifndef AXPY_H_
+#define AXPY_H_
 
 void axpy_main(double *, double *);
 
