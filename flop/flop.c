@@ -9,7 +9,6 @@
 #include <pthread.h>
 #include <omp.h>
 
-#include "timer.h"
 #include "avx.h"
 #include "axpy.h"
 
