@@ -1,6 +1,5 @@
 /* FLOP test (based heavily on Alex Yee source) */
 
-#include <stdint.h>     /* uint64_t */
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* strtol, malloc */
 #include <unistd.h>     /* getopt */
