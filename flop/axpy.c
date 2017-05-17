@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h> /* timespec, clock_gettime */
 
-#include "timer.h"
+#include "stopwatch.h"
 
 #define BYTEALIGN 32
 
@@ -49,7 +49,7 @@ double axpy(float a, float b, float * x_in, float * y_in,
     int midpt = n / 2;
     float sum;
 
-    Timer *t;
+    Stopwatch *t;
     float runtime;
     int runtime_flag;
 
@@ -64,7 +64,7 @@ double axpy(float a, float b, float * x_in, float * y_in,
     x = x_in; y = y_in;
 #endif
 
-    t = mtimer_create(TIMER_POSIX);
+    t = stopwatch_create(TIMER_POSIX);
 
     r_max = 1000;
     runtime_flag = 0;

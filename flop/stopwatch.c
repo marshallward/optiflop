@@ -2,70 +2,70 @@
 #include <stdlib.h>     /* malloc */
 #include <time.h>
 
-#include "timer.h"
+#include "stopwatch.h"
 
 /* Global function tables and struct sizes */
 
-const size_t timer_context_size[TIMER_MAX] = {
-    sizeof(timer_context_posix_t),
-    sizeof(timer_context_tsc_t),
+const size_t stopwatch_context_size[TIMER_MAX] = {
+    sizeof(stopwatch_context_posix_t),
+    sizeof(stopwatch_context_tsc_t),
 };
 
 /* Method lookup tables */
-void (*timer_init_funcs[TIMER_MAX])(Timer *t) = {
-    timer_init_posix,
-    timer_init_tsc,
+void (*stopwatch_init_funcs[TIMER_MAX])(Stopwatch *t) = {
+    stopwatch_init_posix,
+    stopwatch_init_tsc,
 };
 
-void (*timer_start_funcs[TIMER_MAX])(Timer *t) = {
-    timer_start_posix,
-    timer_start_tsc,
+void (*stopwatch_start_funcs[TIMER_MAX])(Stopwatch *t) = {
+    stopwatch_start_posix,
+    stopwatch_start_tsc,
 };
 
-void (*timer_stop_funcs[TIMER_MAX])(Timer *t) = {
-    timer_stop_posix,
-    timer_stop_tsc,
+void (*stopwatch_stop_funcs[TIMER_MAX])(Stopwatch *t) = {
+    stopwatch_stop_posix,
+    stopwatch_stop_tsc,
 };
 
-double (*timer_runtime_funcs[TIMER_MAX])(Timer *t) = {
-    timer_runtime_posix,
-    timer_runtime_tsc,
+double (*stopwatch_runtime_funcs[TIMER_MAX])(Stopwatch *t) = {
+    stopwatch_runtime_posix,
+    stopwatch_runtime_tsc,
 };
 
-void (*timer_destroy_funcs[TIMER_MAX])(Timer *t) = {
-    timer_destroy_posix,
-    timer_destroy_tsc,
+void (*stopwatch_destroy_funcs[TIMER_MAX])(Stopwatch *t) = {
+    stopwatch_destroy_posix,
+    stopwatch_destroy_tsc,
 };
 
-/* Generic Timer methods */
+/* Generic Stopwatch methods */
 
-Timer * mtimer_create(TimerType type)
+Stopwatch * stopwatch_create(TimerType type)
 {
-    Timer *t;
+    Stopwatch *t;
 
-    t = malloc(sizeof(Timer));
-    t->context.tc_untyped = malloc(timer_context_size[type]);
+    t = malloc(sizeof(Stopwatch));
+    t->context.tc_untyped = malloc(stopwatch_context_size[type]);
 
-    t->start = timer_start_funcs[type];
-    t->stop = timer_stop_funcs[type];
-    t->runtime = timer_runtime_funcs[type];
-    t->destroy = timer_destroy_funcs[type];
+    t->start = stopwatch_start_funcs[type];
+    t->stop = stopwatch_stop_funcs[type];
+    t->runtime = stopwatch_runtime_funcs[type];
+    t->destroy = stopwatch_destroy_funcs[type];
 
-    timer_init_funcs[type](t);
+    stopwatch_init_funcs[type](t);
 
     return t;
 }
 
 
-/* TSC Timer methods */
+/* TSC Stopwatch methods */
 
-void timer_init_tsc(Timer *t)
+void stopwatch_init_tsc(Stopwatch *t)
 {
-    t->context.tc_tsc = malloc(sizeof(timer_context_tsc_t));
-    t->context.tc_tsc->cpufreq = timer_get_tsc_freq(t);
+    t->context.tc_tsc = malloc(sizeof(stopwatch_context_tsc_t));
+    t->context.tc_tsc->cpufreq = stopwatch_get_tsc_freq(t);
 }
 
-void timer_start_tsc(Timer *t)
+void stopwatch_start_tsc(Stopwatch *t)
 {
     __asm__ __volatile__ (
         "cpuid\n"
@@ -77,7 +77,7 @@ void timer_start_tsc(Timer *t)
     );
 }
 
-void timer_stop_tsc(Timer *t)
+void stopwatch_stop_tsc(Stopwatch *t)
 {
     __asm__ __volatile__ (
         "cpuid\n"
@@ -89,7 +89,7 @@ void timer_stop_tsc(Timer *t)
     );
 }
 
-double timer_runtime_tsc(Timer *t)
+double stopwatch_runtime_tsc(Stopwatch *t)
 {
     uint64_t t0, t1;
 
@@ -99,14 +99,14 @@ double timer_runtime_tsc(Timer *t)
     return (t1 - t0) / t->context.tc_tsc->cpufreq;
 }
 
-void timer_destroy_tsc(Timer *t)
+void stopwatch_destroy_tsc(Stopwatch *t)
 {
     free(t->context.tc_tsc);
 }
 
 /* TSC support functions */
 
-double timer_get_tsc_freq(Timer *t)
+double stopwatch_get_tsc_freq(Stopwatch *t)
 {
     uint64_t t0, t1;
     struct timespec req;
@@ -123,25 +123,25 @@ double timer_get_tsc_freq(Timer *t)
     return (double) (t1 - t0);
 }
 
-/* POSIX Timer methods */
+/* POSIX Stopwatch methods */
 
-void timer_init_posix(Timer *t)
+void stopwatch_init_posix(Stopwatch *t)
 {
-    t->context.tc_posix = malloc(sizeof(timer_context_posix_t));
+    t->context.tc_posix = malloc(sizeof(stopwatch_context_posix_t));
     t->context.tc_posix->clock = CLOCK_MONOTONIC_RAW;
 }
 
-void timer_start_posix(Timer *t)
+void stopwatch_start_posix(Stopwatch *t)
 {
     clock_gettime(t->context.tc_posix->clock, &(t->context.tc_posix->ts_start));
 }
 
-void timer_stop_posix(Timer *t)
+void stopwatch_stop_posix(Stopwatch *t)
 {
     clock_gettime(t->context.tc_posix->clock, &(t->context.tc_posix->ts_end));
 }
 
-double timer_runtime_posix(Timer *t)
+double stopwatch_runtime_posix(Stopwatch *t)
 {
     return (double) (t->context.tc_posix->ts_end.tv_sec
                             - t->context.tc_posix->ts_start.tv_sec)
@@ -149,7 +149,7 @@ double timer_runtime_posix(Timer *t)
                             - t->context.tc_posix->ts_start.tv_nsec) / 1e9;
 }
 
-void timer_destroy_posix(Timer *t)
+void stopwatch_destroy_posix(Stopwatch *t)
 {
     free(t->context.tc_posix);
 }

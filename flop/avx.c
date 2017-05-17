@@ -4,7 +4,7 @@
 #include <pthread.h>    /* pthread_* */
 #include <stdint.h>     /* uint64_t */
 
-#include "timer.h"
+#include "stopwatch.h"
 
 pthread_barrier_t timer_barrier;
 pthread_mutex_t runtime_mutex;
@@ -31,9 +31,9 @@ void avx_add(double *runtime, double *flops)
 
     uint64_t i, j;
     long niter;
-    Timer *t;
+    Stopwatch *t;
 
-    t = mtimer_create(TIMER_POSIX);
+    t = stopwatch_create(TIMER_POSIX);
 
     /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
      * Some compiler optimisers (gcc) will remove the operations.
@@ -109,9 +109,9 @@ void avx_mac(double *runtime, double *flops)
 
     uint64_t i;
     long niter;
-    Timer *t;
+    Stopwatch *t;
 
-    t = mtimer_create(TIMER_POSIX);
+    t = stopwatch_create(TIMER_POSIX);
 
     /* Scatter values over AVX registers */
 
