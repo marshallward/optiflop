@@ -4,14 +4,8 @@
 
 #include "stopwatch.h"
 
-/* Global function tables and struct sizes */
-
-const size_t stopwatch_context_size[TIMER_MAX] = {
-    sizeof(stopwatch_context_posix_t),
-    sizeof(stopwatch_context_tsc_t),
-};
-
 /* Method lookup tables */
+
 void (*stopwatch_init_funcs[TIMER_MAX])(Stopwatch *t) = {
     stopwatch_init_posix,
     stopwatch_init_tsc,
@@ -37,6 +31,23 @@ void (*stopwatch_destroy_funcs[TIMER_MAX])(Stopwatch *t) = {
     stopwatch_destroy_tsc,
 };
 
+/* Context definitions */
+
+struct _stopwatch_context_tsc_t {
+    double cpufreq;
+    uint64_t rax0, rdx0, rax1, rdx1;
+};
+
+struct _stopwatch_context_posix_t {
+    clockid_t clock;
+    struct timespec ts_start, ts_end;
+};
+
+const size_t stopwatch_context_size[TIMER_MAX] = {
+    sizeof(stopwatch_context_posix_t),
+    sizeof(stopwatch_context_tsc_t),
+};
+
 /* Generic Stopwatch methods */
 
 Stopwatch * stopwatch_create(TimerType type)
@@ -56,8 +67,7 @@ Stopwatch * stopwatch_create(TimerType type)
     return t;
 }
 
-
-/* TSC Stopwatch methods */
+/* TSC methods */
 
 void stopwatch_init_tsc(Stopwatch *t)
 {

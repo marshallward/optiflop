@@ -14,25 +14,14 @@ typedef enum _stopwatch_t {
     TIMER_MAX,
 } TimerType;
 
-
-typedef struct _stopwatch_context_tsc_t {
-    double cpufreq;
-    uint64_t rax0, rdx0, rax1, rdx1;
-} stopwatch_context_tsc_t;
-
-
-typedef struct _stopwatch_context_posix_t {
-    clockid_t clock;
-    struct timespec ts_start, ts_end;
-} stopwatch_context_posix_t;
-
+typedef struct _stopwatch_context_posix_t stopwatch_context_posix_t;
+typedef struct _stopwatch_context_tsc_t stopwatch_context_tsc_t;
 
 typedef union _stopwatch_context_t {
     void *tc_untyped;
     stopwatch_context_posix_t *tc_posix;
     stopwatch_context_tsc_t *tc_tsc;
 } stopwatch_context_t;
-
 
 typedef struct _Stopwatch {
     stopwatch_context_t context;
@@ -42,7 +31,6 @@ typedef struct _Stopwatch {
     double (*runtime)();
     void (*destroy)();
 } Stopwatch;
-
 
 /* Generic Timer methods */
 
@@ -55,8 +43,6 @@ void stopwatch_start_tsc(Stopwatch *t);
 void stopwatch_stop_tsc(Stopwatch *t);
 double stopwatch_runtime_tsc(Stopwatch *t);
 void stopwatch_destroy_tsc(Stopwatch *t);
-
-/* TSC support functions */
 
 double stopwatch_get_tsc_freq(Stopwatch *t);
 
