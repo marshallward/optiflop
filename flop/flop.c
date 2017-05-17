@@ -1,13 +1,13 @@
 /* FLOP test (based heavily on Alex Yee source) */
 
+#define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
+
+#include <omp.h>        /* omp_get_num_procs */
+#include <pthread.h>    /* pthread_*, CPU_* */
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* strtol, malloc */
 #include <unistd.h>     /* getopt */
 
-// pthread testing
-#define __USE_GNU   /* (Optional) pthread_attr_setaffinity_np declaration */
-#include <pthread.h>
-#include <omp.h>
 
 #include "avx.h"
 #include "axpy.h"
