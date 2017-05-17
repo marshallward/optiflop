@@ -90,5 +90,9 @@ double axpy(float a, float b, float * x_in, float * y_in,
     } while (!runtime_flag);
 
     *flops = 2. * n * r_max / runtime;
+
+    /* Cleanup */
+    t->destroy(t);
+
     return runtime;
 }

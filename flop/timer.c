@@ -32,6 +32,10 @@ double (*timer_runtime_funcs[TIMER_MAX])(Timer *t) = {
     timer_runtime_tsc,
 };
 
+void (*timer_destroy_funcs[TIMER_MAX])(Timer *t) = {
+    timer_destroy_posix,
+    timer_destroy_tsc,
+};
 
 /* Generic Timer methods */
 
@@ -45,6 +49,7 @@ Timer * mtimer_create(TimerType type)
     t->start = timer_start_funcs[type];
     t->stop = timer_stop_funcs[type];
     t->runtime = timer_runtime_funcs[type];
+    t->destroy = timer_destroy_funcs[type];
 
     timer_init_funcs[type](t);
 
@@ -94,6 +99,10 @@ double timer_runtime_tsc(Timer *t)
     return (t1 - t0) / t->context.tc_tsc->cpufreq;
 }
 
+void timer_destroy_tsc(Timer *t)
+{
+    free(t->context.tc_tsc);
+}
 
 /* TSC support functions */
 
@@ -113,7 +122,6 @@ double timer_get_tsc_freq(Timer *t)
 
     return (double) (t1 - t0);
 }
-
 
 /* POSIX Timer methods */
 
@@ -139,4 +147,9 @@ double timer_runtime_posix(Timer *t)
                             - t->context.tc_posix->ts_start.tv_sec)
             + (double) (t->context.tc_posix->ts_end.tv_nsec
                             - t->context.tc_posix->ts_start.tv_nsec) / 1e9;
+}
+
+void timer_destroy_posix(Timer *t)
+{
+    free(t->context.tc_posix);
 }

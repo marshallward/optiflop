@@ -41,6 +41,7 @@ typedef struct _Timer {
     void (*start)();
     void (*stop)();
     double (*runtime)();
+    void (*destroy)();
 } Timer;
 
 
@@ -54,6 +55,7 @@ void timer_init_tsc(Timer *t);
 void timer_start_tsc(Timer *t);
 void timer_stop_tsc(Timer *t);
 double timer_runtime_tsc(Timer *t);
+void timer_destroy_tsc(Timer *t);
 
 /* TSC support functions */
 
@@ -65,5 +67,6 @@ void timer_init_posix(Timer *t);
 void timer_start_posix(Timer *t);
 void timer_stop_posix(Timer *t);
 double timer_runtime_posix(Timer *t);
+void timer_destroy_posix(Timer *t);
 
 #endif /* timer.h */

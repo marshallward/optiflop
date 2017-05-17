@@ -89,6 +89,9 @@ void avx_add(double *runtime, double *flops)
 
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
     *flops = niter * 8 * 8 / *runtime;
+
+    /* Cleanup */
+    t->destroy(t);
 }
 
 
@@ -198,6 +201,9 @@ void avx_mac(double *runtime, double *flops)
 
     /* (iterations) * (8 flops / register) * (24 registers / iteration) */
     *flops = niter * 8 * 24 / *runtime;
+
+    /* Cleanup */
+    t->destroy(t);
 }
 
 
