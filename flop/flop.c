@@ -8,7 +8,6 @@
 #include <stdlib.h>     /* strtol, malloc */
 #include <unistd.h>     /* getopt */
 
-
 #include "avx.h"
 #include "axpy.h"
 
@@ -16,21 +15,20 @@ typedef void (*bench_ptr_t) (double *, double *);
 
 typedef struct _thread_arg_t {
     int tid;
+    double min_runtime;
     bench_ptr_t bench;
+
     double runtime;
     double flops;
 } thread_arg_t;
 
-
 void * bench_thread(void *arg)
 {
     thread_arg_t *tinfo;
-    int tid;
     double runtime;
     double flops;
 
     tinfo = (thread_arg_t *) arg;
-    tid = tinfo->tid;
     (*((thread_arg_t *) tinfo)->bench)(&runtime, &flops);
 
     /* Save output */
@@ -40,27 +38,31 @@ void * bench_thread(void *arg)
     pthread_exit(NULL);
 }
 
-
 int main(int argc, char *argv[])
 {
     pthread_t *threads;
     pthread_attr_t attr;
     cpu_set_t cpus;
     int nthreads, nprocs;
+    double min_runtime;
     thread_arg_t *t_args;
     void *status;
 
-    int t;
+    int b, t;
     int optflag;
     double *runtimes, *flops;
 
     /* getopt */
 
     nthreads = 1;
-    while ((optflag = getopt(argc, argv, "p:")) != -1) {
+    min_runtime = 0.5;
+    while ((optflag = getopt(argc, argv, "p:r:")) != -1) {
         switch(optflag) {
             case 'p':
                 nthreads = (int) strtol(optarg, (char **) NULL, 10);
+                break;
+            case 'r':
+                min_runtime = strtod(optarg, NULL);
                 break;
             default:
                 abort();
@@ -90,12 +92,10 @@ int main(int argc, char *argv[])
     /* General benchmark loop */
     /* TODO: Combine name and bench into a struct, or add to t_args? */
 
-    int b;
     const bench_ptr_t benchmarks[] = {&avx_add, &avx_mac, &axpy_main, 0};
     const char * benchnames[] = {"avx_add", "avx_mac", "axpy", 0};
 
     for (b = 0; benchmarks[b]; b++) {
-
         for (t = 0; t < nthreads; t++) {
             /* TODO: Better way to keep processes off the busy threads */
             if (nthreads > 1) {
@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
             }
 
             t_args[t].tid = t;
+            t_args[t].min_runtime = min_runtime;
             t_args[t].bench = benchmarks[b];
 
             pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
