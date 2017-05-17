@@ -35,7 +35,6 @@ typedef union _stopwatch_context_t {
 
 
 typedef struct _Stopwatch {
-    TimerType type; /* Unneeded? */
     stopwatch_context_t context;
 
     void (*start)();
