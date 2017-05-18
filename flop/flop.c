@@ -4,23 +4,14 @@
 
 #include <omp.h>        /* omp_get_num_procs */
 #include <pthread.h>    /* pthread_*, CPU_* */
+#include <sched.h>      /* CPU_* */
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* strtol, malloc */
 #include <unistd.h>     /* getopt */
 
+#include "flop.h"
 #include "avx.h"
 #include "axpy.h"
-
-typedef void (*bench_ptr_t) (double *, double *);
-
-typedef struct _thread_arg_t {
-    int tid;
-    double min_runtime;
-    bench_ptr_t bench;
-
-    double runtime;
-    double flops;
-} thread_arg_t;
 
 void * bench_thread(void *arg)
 {
@@ -51,10 +42,12 @@ int main(int argc, char *argv[])
     int b, t;
     int optflag;
 
-    /* getopt */
-
+    /* Default values */
     nthreads = 1;
     min_runtime = 0.5;
+
+    /* Command line parser */
+
     while ((optflag = getopt(argc, argv, "p:r:")) != -1) {
         switch(optflag) {
             case 'p':
