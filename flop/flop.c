@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     /* Default values */
     nthreads = 1;
-    min_runtime = 0.5;
+    min_runtime = 0.1;
 
     /* Command line parser */
 
