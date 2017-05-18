@@ -4,6 +4,7 @@
 #include <pthread.h>    /* pthread_* */
 #include <stdint.h>     /* uint64_t */
 
+#include "avx.h"
 #include "stopwatch.h"
 
 pthread_barrier_t timer_barrier;

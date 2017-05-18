@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h> /* timespec, clock_gettime */
 
+#include "axpy.h"
 #include "stopwatch.h"
 
 #define BYTEALIGN 32
