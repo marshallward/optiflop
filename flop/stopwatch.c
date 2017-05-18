@@ -118,6 +118,9 @@ void stopwatch_destroy_tsc(Stopwatch *t)
 
 double stopwatch_get_tsc_freq(Stopwatch *t)
 {
+    /* This appears to be accurate within a few microseconds, so there is
+     * possibly room for improvement here. */
+
     uint64_t t0, t1;
     struct timespec req;
     req.tv_sec = 1;

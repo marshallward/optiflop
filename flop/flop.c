@@ -50,7 +50,6 @@ int main(int argc, char *argv[])
 
     int b, t;
     int optflag;
-    double *runtimes, *flops;
 
     /* getopt */
 
@@ -80,8 +79,6 @@ int main(int argc, char *argv[])
 
     threads = malloc(nthreads * sizeof(pthread_t));
     t_args = malloc(nthreads * sizeof(thread_arg_t));
-    runtimes = malloc(nthreads * sizeof(double));
-    flops = malloc(nthreads * sizeof(double));
 
     pthread_mutex_init(&runtime_mutex, NULL);
     pthread_attr_init(&attr);
@@ -113,13 +110,13 @@ int main(int argc, char *argv[])
 
         for (t = 0; t < nthreads; t++) {
             pthread_join(threads[t], &status);
-            runtimes[t] = t_args[t].runtime;
-            flops[t] = t_args[t].flops;
 
             printf("Thread %i %s runtime: %.12f\n",
-                   t, benchnames[b], runtimes[t]);
+                   //t, benchnames[b], runtimes[t]);
+                   t, benchnames[b], t_args[t].runtime);
             printf("Thread %i %s gflops: %.12f\n",
-                   t, benchnames[b], flops[t] /  1e9);
+                   //t, benchnames[b], flops[t] /  1e9);
+                   t, benchnames[b], t_args[t].flops /  1e9);
         }
     }
 
