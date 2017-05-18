@@ -2,6 +2,9 @@
 #define FLOP_H_
 
 typedef struct _bench_arg_t {
+    /* Input */
+    double min_runtime;
+
     /* Output */
     double runtime;
     double flops;

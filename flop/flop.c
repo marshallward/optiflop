@@ -18,11 +18,13 @@ void * bench_thread(void *arg)
     thread_arg_t *tinfo;
     bench_arg_t *bench_args;
 
+    tinfo = (thread_arg_t *) arg;
     bench_args = malloc(sizeof(bench_arg_t));
 
-    tinfo = (thread_arg_t *) arg;
-    //(*((thread_arg_t *) tinfo)->bench)(&runtime, &flops);
-    (*((thread_arg_t *) tinfo)->bench)(bench_args);
+    /* Set inputs */
+    bench_args->min_runtime = tinfo->min_runtime;
+
+    (*(tinfo->bench))(bench_args);
 
     /* Save output */
     tinfo->runtime = bench_args->runtime;
@@ -109,10 +111,8 @@ int main(int argc, char *argv[])
             pthread_join(threads[t], &status);
 
             printf("Thread %i %s runtime: %.12f\n",
-                   //t, benchnames[b], runtimes[t]);
                    t, benchnames[b], t_args[t].runtime);
             printf("Thread %i %s gflops: %.12f\n",
-                   //t, benchnames[b], flops[t] /  1e9);
                    t, benchnames[b], t_args[t].flops /  1e9);
         }
     }

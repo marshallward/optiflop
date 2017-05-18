@@ -8,10 +8,10 @@
 
 #define BYTEALIGN 32
 
-double axpy(float, float, float *, float *, int, double *);
+double axpy(float, float, float *, float *, int, double *, double);
 void dummy(float, float, float *, float *);
 
-void axpy_main(bench_arg_t *bench_args)
+void axpy_main(bench_arg_t *args)
 {
     float *x, *y;
     float a, b;
@@ -37,16 +37,15 @@ void axpy_main(bench_arg_t *bench_args)
     }
 
     /* a x + y */
+    runtime = axpy(a, b, x, y, n, &flops, args->min_runtime);
 
-    runtime = axpy(a, b, x, y, n, &flops);
-
-    bench_args->runtime = runtime;
-    bench_args->flops = flops;
+    args->runtime = runtime;
+    args->flops = flops;
 }
 
 
 double axpy(float a, float b, float * x_in, float * y_in,
-            int n, double *flops)
+            int n, double *flops, double min_runtime)
 {
     float *x, *y;
     int midpt = n / 2;
@@ -89,7 +88,7 @@ double axpy(float a, float b, float * x_in, float * y_in,
         t->stop(t);
         runtime = t->runtime(t);
 
-        if (runtime > 0.5) runtime_flag = 1;
+        if (runtime > min_runtime) runtime_flag = 1;
     } while (!runtime_flag);
 
     *flops = 2. * n * r_max / runtime;
