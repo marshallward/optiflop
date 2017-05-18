@@ -5,6 +5,7 @@
 #include <stdint.h>     /* uint64_t */
 
 #include "avx.h"
+#include "flop.h"
 #include "stopwatch.h"
 
 pthread_barrier_t timer_barrier;
@@ -19,7 +20,8 @@ const double TEST_MUL_DIV = 0.70710678118654752440;
 /* Headers */
 float reduce_AVX(__m256);
 
-void avx_add(double *runtime, double *flops)
+//void avx_add(double *runtime, double *flops)
+void avx_add(bench_arg_t *bench_args)
 {
     // TODO: Stop using outputs as intermediate values
     __m256 r[3];
@@ -33,6 +35,8 @@ void avx_add(double *runtime, double *flops)
     uint64_t i, j;
     long niter;
     Stopwatch *t;
+
+    double runtime, flops;
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -63,11 +67,11 @@ void avx_add(double *runtime, double *flops)
             r[2] = _mm256_sub_ps(r[2], sub0);
         }
         t->stop(t);
-        *runtime = t->runtime(t);
+        runtime = t->runtime(t);
 
         /* Set runtime flag if any thread exceeds runtime limit */
         /* (Do I really need the mutex here?) */
-        if (*runtime > 0.5) {
+        if (runtime > 0.5) {
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
@@ -86,14 +90,17 @@ void avx_add(double *runtime, double *flops)
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (8 flops / register) * (8 registers / iteration) */
-    *flops = niter * 8 * 6 / *runtime;
+    flops = niter * 8 * 6 / runtime;
 
     /* Cleanup */
+    bench_args->runtime = runtime;
+    bench_args->flops = flops;
     t->destroy(t);
 }
 
 
-void avx_mac(double *runtime, double *flops)
+//void avx_mac(double *runtime, double *flops)
+void avx_mac(bench_arg_t *bench_args)
 {
     __m256 r[10];
 
@@ -108,6 +115,7 @@ void avx_mac(double *runtime, double *flops)
     uint64_t i;
     long niter;
     Stopwatch *t;
+    double runtime, flops;
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -164,11 +172,11 @@ void avx_mac(double *runtime, double *flops)
             r[9] = _mm256_mul_ps(r[9], mul1);
         }
         t->stop(t);
-        *runtime = t->runtime(t);
+        runtime = t->runtime(t);
 
         /* Set runtime flag if any thread exceeds runtime limit */
         /* (Do I really need the mutex here?) */
-        if (*runtime > 0.5) {
+        if (runtime > 0.5) {
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
@@ -193,9 +201,11 @@ void avx_mac(double *runtime, double *flops)
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (8 flops / register) * (24 registers / iteration) */
-    *flops = niter * 8 * 20 / *runtime;
+    flops = niter * 8 * 20 / runtime;
 
     /* Cleanup */
+    bench_args->runtime = runtime;
+    bench_args->flops = flops;
     t->destroy(t);
 }
 

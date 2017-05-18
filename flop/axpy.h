@@ -1,6 +1,8 @@
 #ifndef AXPY_H_
 #define AXPY_H_
 
-void axpy_main(double *, double *);
+#include "flop.h"
+
+void axpy_main(bench_arg_t *);
 
 #endif

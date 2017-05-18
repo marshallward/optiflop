@@ -3,8 +3,10 @@
 
 #include <pthread.h>    /* pthread_* */
 
-void avx_add(double *, double *);
-void avx_mac(double *, double *);
+#include "flop.h"   /* bench_arg_t */
+
+void avx_add(bench_arg_t *);
+void avx_mac(bench_arg_t *);
 
 extern pthread_barrier_t timer_barrier;
 extern pthread_mutex_t runtime_mutex;

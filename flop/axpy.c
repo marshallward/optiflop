@@ -3,6 +3,7 @@
 #include <time.h> /* timespec, clock_gettime */
 
 #include "axpy.h"
+#include "flop.h"
 #include "stopwatch.h"
 
 #define BYTEALIGN 32
@@ -10,12 +11,12 @@
 double axpy(float, float, float *, float *, int, double *);
 void dummy(float, float, float *, float *);
 
-void axpy_main(double *runtime, double *flops)
+void axpy_main(bench_arg_t *bench_args)
 {
     float *x, *y;
     float a, b;
 
-    float rt; // runtime
+    double runtime, flops;
 
     int n;  // Vector length
     int i;  // Loop counter
@@ -37,9 +38,10 @@ void axpy_main(double *runtime, double *flops)
 
     /* a x + y */
 
-    rt = axpy(a, b, x, y, n, flops);
+    runtime = axpy(a, b, x, y, n, &flops);
 
-    *runtime = rt;
+    bench_args->runtime = runtime;
+    bench_args->flops = flops;
 }
 
 

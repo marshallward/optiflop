@@ -16,15 +16,19 @@
 void * bench_thread(void *arg)
 {
     thread_arg_t *tinfo;
-    double runtime;
-    double flops;
+    bench_arg_t *bench_args;
+
+    bench_args = malloc(sizeof(bench_arg_t));
 
     tinfo = (thread_arg_t *) arg;
-    (*((thread_arg_t *) tinfo)->bench)(&runtime, &flops);
+    //(*((thread_arg_t *) tinfo)->bench)(&runtime, &flops);
+    (*((thread_arg_t *) tinfo)->bench)(bench_args);
 
     /* Save output */
-    tinfo->runtime = runtime;
-    tinfo->flops = flops;
+    tinfo->runtime = bench_args->runtime;
+    tinfo->flops = bench_args->flops;
+
+    free(bench_args);
 
     pthread_exit(NULL);
 }
