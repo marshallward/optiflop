@@ -34,7 +34,7 @@ void avx_add(bench_arg_t *args)
 
     double runtime, flops;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(TIMER_TSC);
 
     /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
      * Some compiler optimisers (gcc) will remove the operations.
@@ -112,7 +112,7 @@ void avx_mac(bench_arg_t *args)
     Stopwatch *t;
     double runtime, flops;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(TIMER_TSC);
 
     /* Scatter values over AVX registers */
 

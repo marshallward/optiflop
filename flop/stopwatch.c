@@ -90,10 +90,10 @@ void stopwatch_start_tsc(Stopwatch *t)
 void stopwatch_stop_tsc(Stopwatch *t)
 {
     __asm__ __volatile__ (
-        "cpuid\n"
-        "rdtsc\n"
+        "rdtscp\n"
         "movq %%rax, %0\n"
         "movq %%rdx, %1\n"
+        "cpuid\n"
         : "=r" (t->context.tc_tsc->rax1), "=r" (t->context.tc_tsc->rdx1)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
