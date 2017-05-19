@@ -3,7 +3,7 @@
 
 #include <pthread.h>    /* pthread_* */
 
-#include "flop.h"   /* bench_arg_t */
+#include "bench.h"   /* bench_arg_t */
 
 void avx_add(bench_arg_t *);
 void avx_mac(bench_arg_t *);

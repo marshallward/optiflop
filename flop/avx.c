@@ -5,12 +5,8 @@
 #include <stdint.h>     /* uint64_t */
 
 #include "avx.h"
-#include "flop.h"
+#include "bench.h"
 #include "stopwatch.h"
-
-pthread_barrier_t timer_barrier;
-pthread_mutex_t runtime_mutex;
-volatile int runtime_flag;
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
@@ -70,7 +66,6 @@ void avx_add(bench_arg_t *args)
         runtime = t->runtime(t);
 
         /* Set runtime flag if any thread exceeds runtime limit */
-        /* (Do I really need the mutex here?) */
         if (runtime > args->min_runtime) {
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;

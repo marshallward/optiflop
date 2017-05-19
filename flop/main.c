@@ -1,5 +1,4 @@
 /* FLOP test (based heavily on Alex Yee source) */
-
 #define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
 
 #include <omp.h>        /* omp_get_num_procs */
@@ -9,31 +8,10 @@
 #include <stdlib.h>     /* strtol, malloc */
 #include <unistd.h>     /* getopt */
 
-#include "flop.h"
+#include "bench.h"
 #include "avx.h"
 #include "axpy.h"
 
-void * bench_thread(void *arg)
-{
-    thread_arg_t *tinfo;
-    bench_arg_t *bench_args;
-
-    tinfo = (thread_arg_t *) arg;
-    bench_args = malloc(sizeof(bench_arg_t));
-
-    /* Set inputs */
-    bench_args->min_runtime = tinfo->min_runtime;
-
-    (*(tinfo->bench))(bench_args);
-
-    /* Save output */
-    tinfo->runtime = bench_args->runtime;
-    tinfo->flops = bench_args->flops;
-
-    free(bench_args);
-
-    pthread_exit(NULL);
-}
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +28,7 @@ int main(int argc, char *argv[])
 
     /* Default values */
     nthreads = 1;
-    min_runtime = 0.1;
+    min_runtime = 1e-2;
 
     /* Command line parser */
 

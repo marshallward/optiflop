@@ -20,10 +20,13 @@ intel: CC=icc
 intel: CFLAGS=-xavx -O2
 intel: flop
 
-flop: flop.o avx.o stopwatch.o axpy.o dummy.o
+flop: main.o bench.o stopwatch.o avx.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
 
-flop.o: flop.c avx.h
+main.o: main.c bench.h
+	$(CC) -c -pthread -o $@ $<
+
+bench.o: bench.c bench.h
 	$(CC) -c -pthread -o $@ $<
 
 avx.o: avx.c stopwatch.h
@@ -39,4 +42,4 @@ dummy.o: dummy.c
 	$(CC) -c -o $@ $<
 
 clean:
-	$(RM) flop flop.o avx.o stopwatch.o axpy.o dummy.o
+	$(RM) flop *.o *.h.gch

@@ -3,7 +3,7 @@
 #include <time.h> /* timespec, clock_gettime */
 
 #include "axpy.h"
-#include "flop.h"
+#include "bench.h"
 #include "stopwatch.h"
 
 #define BYTEALIGN 32

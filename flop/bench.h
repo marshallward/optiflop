@@ -1,6 +1,10 @@
 #ifndef FLOP_H_
 #define FLOP_H_
 
+#include <pthread.h>
+
+/* Types */
+
 typedef struct _bench_arg_t {
     /* Input */
     double min_runtime;
@@ -10,7 +14,6 @@ typedef struct _bench_arg_t {
     double flops;
 } bench_arg_t;
 
-//typedef void (*bench_ptr_t) (double *, double *);
 typedef void (*bench_ptr_t) (bench_arg_t *);
 
 typedef struct _thread_arg_t {
@@ -24,4 +27,10 @@ typedef struct _thread_arg_t {
     double flops;
 } thread_arg_t;
 
+/* Declarations */
+extern pthread_barrier_t timer_barrier;
+extern pthread_mutex_t runtime_mutex;
+extern volatile int runtime_flag;
+
+void * bench_thread(void *);
 #endif
