@@ -16,10 +16,20 @@ static int __init hello_start(void)
     const unsigned long long N = 10000000;
     unsigned long long i;
 
+    unsigned long long mperf, aperf;
+    unsigned int msr_id;
+
     printk(KERN_INFO "Loading KernFlops.\n");
 
     local_irq_save(irq_flags);          /* Disable interrupts */
     kernel_fpu_begin();                 /* Disable preempt, save FP state */
+
+    msr_id = 0xe7;
+    asm volatile ("rdmsr" : "=A" (mperf) : "c" (msr_id));
+    msr_id = 0xe8;
+    asm volatile ("rdmsr" : "=A" (aperf) : "c" (msr_id));
+    printk(KERN_INFO "mperf: %llu\n", mperf);
+    printk(KERN_INFO "aperf: %llu\n", aperf);
 
     __asm__ __volatile__ (
         "cpuid\n"

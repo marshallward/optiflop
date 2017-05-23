@@ -21,6 +21,11 @@ void axpy_main(bench_arg_t *args)
     int n;  // Vector length
     int i;  // Loop counter
 
+    /* Testing */
+    roof_ptr_t roof;
+    roof = &axpy;
+
+    /* TODO: Determine dynamically with L1 size */
     n = 3200;
 
     posix_memalign((void *) &x, BYTEALIGN, n * sizeof(float));
@@ -37,7 +42,7 @@ void axpy_main(bench_arg_t *args)
     }
 
     /* a x + y */
-    runtime = axpy(a, b, x, y, n, &flops, args->min_runtime);
+    runtime = (*roof)(a, b, x, y, n, &flops, args->min_runtime);
 
     args->runtime = runtime;
     args->flops = flops;

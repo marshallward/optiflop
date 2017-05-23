@@ -5,6 +5,10 @@
 
 /* Types */
 
+/* TODO: Create a type here, or reduce the number of arguments */
+typedef double (*roof_ptr_t) (float, float, float *, float *,
+                              int, double *, double);
+
 typedef struct _bench_arg_t {
     /* Input */
     double min_runtime;
