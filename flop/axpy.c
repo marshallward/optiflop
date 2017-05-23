@@ -71,7 +71,7 @@ double axpy(float a, float b, float * x_in, float * y_in,
     x = x_in; y = y_in;
 #endif
 
-    t = stopwatch_create(TIMER_TSC);
+    t = stopwatch_create(TIMER_POSIX);
 
     r_max = 1000;
     runtime_flag = 0;

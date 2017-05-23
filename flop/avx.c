@@ -16,10 +16,8 @@ const double TEST_MUL_DIV = 0.70710678118654752440;
 /* Headers */
 float reduce_AVX(__m256);
 
-//void avx_add(double *runtime, double *flops)
 void avx_add(bench_arg_t *args)
 {
-    // TODO: Stop using outputs as intermediate values
     __m256 r[3];
 
     const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
@@ -34,7 +32,7 @@ void avx_add(bench_arg_t *args)
 
     double runtime, flops;
 
-    t = stopwatch_create(TIMER_TSC);
+    t = stopwatch_create(TIMER_POSIX);
 
     /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
      * Some compiler optimisers (gcc) will remove the operations.
@@ -94,7 +92,6 @@ void avx_add(bench_arg_t *args)
 }
 
 
-//void avx_mac(double *runtime, double *flops)
 void avx_mac(bench_arg_t *args)
 {
     __m256 r[10];
@@ -112,7 +109,7 @@ void avx_mac(bench_arg_t *args)
     Stopwatch *t;
     double runtime, flops;
 
-    t = stopwatch_create(TIMER_TSC);
+    t = stopwatch_create(TIMER_POSIX);
 
     /* Scatter values over AVX registers */
 
@@ -183,7 +180,7 @@ void avx_mac(bench_arg_t *args)
     /* Sum of AVX registers */
     result = reduce_AVX(r[0]);
 
-    /* (iterations) * (8 flops / register) * (24 registers / iteration) */
+    /* (iterations) * (8 flops / register) * (10 registers / iteration) */
     flops = niter * 8 * 10 / runtime;
 
     /* Cleanup */
