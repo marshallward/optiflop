@@ -17,6 +17,7 @@ void * bench_thread(void *arg)
     bench_args = malloc(sizeof(bench_arg_t));
 
     /* Set inputs */
+    bench_args->roof = tinfo->roof;
     bench_args->min_runtime = tinfo->min_runtime;
 
     (*(tinfo->bench))(bench_args);

@@ -12,6 +12,7 @@ typedef double (*roof_ptr_t) (float, float, float *, float *,
 typedef struct _bench_arg_t {
     /* Input */
     double min_runtime;
+    roof_ptr_t roof;
 
     /* Output */
     double runtime;
@@ -24,6 +25,7 @@ typedef struct _thread_arg_t {
     /* Input */
     int tid;
     double min_runtime;
+    roof_ptr_t roof;
     bench_ptr_t bench;
 
     /* Output */

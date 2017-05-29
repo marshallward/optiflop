@@ -8,7 +8,6 @@
 
 #define BYTEALIGN 32
 
-double axpy(float, float, float *, float *, int, double *, double);
 void dummy(float, float, float *, float *);
 
 void axpy_main(bench_arg_t *args)
@@ -22,8 +21,7 @@ void axpy_main(bench_arg_t *args)
     int i;  // Loop counter
 
     /* Testing */
-    roof_ptr_t roof;
-    roof = &axpy;
+    args->roof = &axpy;
 
     /* TODO: Determine dynamically with L1 size */
     n = 3200;
@@ -42,7 +40,7 @@ void axpy_main(bench_arg_t *args)
     }
 
     /* a x + y */
-    runtime = (*roof)(a, b, x, y, n, &flops, args->min_runtime);
+    runtime = (*(args->roof))(a, b, x, y, n, &flops, args->min_runtime);
 
     args->runtime = runtime;
     args->flops = flops;
@@ -73,10 +71,9 @@ double axpy(float a, float b, float * x_in, float * y_in,
 
     t = stopwatch_create(TIMER_POSIX);
 
-    r_max = 1000;
+    r_max = 1;
     runtime_flag = 0;
     do {
-        r_max *= 2;
         t->start(t);
         for (r = 0; r < r_max; r++) {
             for (i = 0; i < n; i++)
@@ -93,7 +90,10 @@ double axpy(float a, float b, float * x_in, float * y_in,
         t->stop(t);
         runtime = t->runtime(t);
 
-        if (runtime > min_runtime) runtime_flag = 1;
+        if (runtime > min_runtime)
+            runtime_flag = 1;
+        else
+            r_max *= 2;
     } while (!runtime_flag);
 
     *flops = 2. * n * r_max / runtime;

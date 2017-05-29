@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 
     const bench_ptr_t benchmarks[] = {&avx_add, &avx_mac, &axpy_main, 0};
     const char * benchnames[] = {"avx_add", "avx_mac", "axpy", 0};
+    const roof_ptr_t roof_tests[] = {NULL, NULL, &axpy, 0};
 
     for (b = 0; benchmarks[b]; b++) {
         for (t = 0; t < nthreads; t++) {
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
             t_args[t].tid = t;
             t_args[t].min_runtime = min_runtime;
             t_args[t].bench = benchmarks[b];
+            t_args[t].roof = roof_tests[b];
 
             pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
         }
