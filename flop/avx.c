@@ -10,7 +10,7 @@
 
 /* TODO: Make this dynamic */
 #define VADDPS_LATENCY 3
-#define VMULPS_LATENCY 3
+#define VMULPS_LATENCY 5
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
