@@ -78,8 +78,8 @@ void avx_add(bench_arg_t *args)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the results as volatile. */
 
-    r[0] = _mm256_add_ps(r[0], r[2]);
-    r[0] = _mm256_add_ps(r[0], r[1]);
+    for (j = 0; j < n_avx; j++)
+        r[0] = _mm256_add_ps(r[0], r[j]);
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (8 flops / register) * (6 registers / iteration) */
@@ -169,17 +169,8 @@ void avx_mac(bench_arg_t *args)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
 
-    /* Binomial reduction sum */
-    for (i = 0; i < 5; i++)
-        r[i] = _mm256_add_ps(r[i], r[i + 5]);
-
-    for (i = 0; i < 2; i++)
-        r[i] = _mm256_add_ps(r[i], r[i + 2]);
-    r[0] = _mm256_add_ps(r[0], r[4]);
-
-    r[0] = _mm256_add_ps(r[0], r[1]);
-
-    /* Sum of AVX registers */
+    for (j = 0; j < 2 * n_avx; j++)
+        r[0] = _mm256_add_ps(r[0], r[j]);
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (8 flops / register) * (20 registers / iteration) */
