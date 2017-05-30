@@ -71,6 +71,7 @@ double axpy(float a, float b, float * x_in, float * y_in,
     r_max = 1;
     runtime_flag = 0;
     do {
+        pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
             for (i = 0; i < n; i++)
@@ -85,11 +86,16 @@ double axpy(float a, float b, float * x_in, float * y_in,
         t->stop(t);
         runtime = t->runtime(t);
 
-        if (runtime > min_runtime)
+        /* Set runtime flag if any thread exceeds runtime limit */
+        if (runtime > min_runtime) {
+            pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
-        else
+            pthread_mutex_unlock(&runtime_mutex);
+        } else {
             r_max *= 2;
+        }
 
+        pthread_barrier_wait(&timer_barrier);
     } while (!runtime_flag);
 
     *flops = 2. * n * r_max / runtime;
