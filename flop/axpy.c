@@ -8,8 +8,6 @@
 
 #define BYTEALIGN 32
 
-void dummy(float, float, float *, float *);
-
 void axpy_main(bench_arg_t *args)
 {
     float *x, *y;
@@ -84,8 +82,6 @@ double axpy(float a, float b, float * x_in, float * y_in,
                 //y[i] = a * x[i] + y[i];
                 //y[i] = a * x[i] * y[i];
                 //y[i] = a * x[i] + b * y[i];
-            // To prevent outer loop removal during optimisation
-            if (y[midpt] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -94,6 +90,7 @@ double axpy(float a, float b, float * x_in, float * y_in,
             runtime_flag = 1;
         else
             r_max *= 2;
+
     } while (!runtime_flag);
 
     *flops = 2. * n * r_max / runtime;
