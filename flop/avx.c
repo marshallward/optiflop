@@ -154,7 +154,6 @@ void avx_mac(bench_arg_t *args)
         runtime = t->runtime(t);
 
         /* Set runtime flag if any thread exceeds runtime limit */
-        /* (Do I really need the mutex here?) */
         if (runtime > args->min_runtime) {
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
