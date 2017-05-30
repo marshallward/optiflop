@@ -94,7 +94,8 @@ void avx_add(bench_arg_t *args)
 
 void avx_mac(bench_arg_t *args)
 {
-    __m256 r[10];
+    const int n_avx = VMULPS_LATENCY;
+    __m256 r[2 * n_avx];
 
     const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
     const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
@@ -105,6 +106,7 @@ void avx_mac(bench_arg_t *args)
     volatile float result;
 
     long niter, i;
+    int j;
     double runtime, flops;
     Stopwatch *t;
 
@@ -136,29 +138,17 @@ void avx_mac(bench_arg_t *args)
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < niter; i++) {
-            r[0] = _mm256_add_ps(r[0], add0);
-            r[1] = _mm256_add_ps(r[1], add0);
-            r[2] = _mm256_add_ps(r[2], add0);
-            r[3] = _mm256_add_ps(r[3], add0);
-            r[4] = _mm256_add_ps(r[4], add0);
+            for (j = 0; j < n_avx; j++)
+                r[j] = _mm256_add_ps(r[j], add0);
 
-            r[5] = _mm256_mul_ps(r[5], mul0);
-            r[6] = _mm256_mul_ps(r[6], mul0);
-            r[7] = _mm256_mul_ps(r[7], mul0);
-            r[8] = _mm256_mul_ps(r[8], mul0);
-            r[9] = _mm256_mul_ps(r[9], mul0);
+            for (j = 0; j < n_avx; j++)
+                r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul0);
 
-            r[0] = _mm256_sub_ps(r[0], sub0);
-            r[1] = _mm256_sub_ps(r[1], sub0);
-            r[2] = _mm256_sub_ps(r[2], sub0);
-            r[3] = _mm256_sub_ps(r[3], sub0);
-            r[4] = _mm256_sub_ps(r[4], sub0);
+            for (j = 0; j < n_avx; j++)
+                r[j] = _mm256_sub_ps(r[j], sub0);
 
-            r[5] = _mm256_mul_ps(r[5], mul1);
-            r[6] = _mm256_mul_ps(r[6], mul1);
-            r[7] = _mm256_mul_ps(r[7], mul1);
-            r[8] = _mm256_mul_ps(r[8], mul1);
-            r[9] = _mm256_mul_ps(r[9], mul1);
+            for (j = 0; j < n_avx; j++)
+                r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul1);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -192,7 +182,7 @@ void avx_mac(bench_arg_t *args)
     /* Sum of AVX registers */
     result = reduce_AVX(r[0]);
 
-    /* (iterations) * (8 flops / register) * (10 registers / iteration) */
+    /* (iterations) * (8 flops / register) * (20 registers / iteration) */
     flops = niter * 8 * 20 / runtime;
 
     /* Cleanup */
