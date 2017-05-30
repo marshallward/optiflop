@@ -8,6 +8,10 @@
 #include "bench.h"
 #include "stopwatch.h"
 
+/* TODO: Make this dynamic */
+#define VADDPS_LATENCY 3
+#define VMULPS_LATENCY 3
+
 const double TEST_ADD_ADD = 1.4142135623730950488;
 const double TEST_ADD_SUB = 1.414213562373095;
 const double TEST_MUL_MUL = 1.4142135623730950488;
@@ -18,7 +22,8 @@ float reduce_AVX(__m256);
 
 void avx_add(bench_arg_t *args)
 {
-    __m256 r[3];
+    const int n_avx = VADDPS_LATENCY;
+    __m256 r[n_avx];
 
     const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
     const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
@@ -26,11 +31,10 @@ void avx_add(bench_arg_t *args)
     // Declare as volatile to prevent removal during optimisation
     volatile float result;
 
-    uint64_t i, j;
-    long niter;
-    Stopwatch *t;
-
+    long niter, i;
+    int j;
     double runtime, flops;
+    Stopwatch *t;
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -45,20 +49,16 @@ void avx_add(bench_arg_t *args)
     /* Add and subtract two nearly-equal double-precision numbers */
 
     runtime_flag = 0;
-    niter = 1000;
+    niter = 1;
     do {
-        niter *= 2;
-
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < niter; i++) {
-            r[0] = _mm256_add_ps(r[0], add0);
-            r[1] = _mm256_add_ps(r[1], add0);
-            r[2] = _mm256_add_ps(r[2], add0);
+            for (j = 0; j < n_avx; j++)
+                r[j] = _mm256_add_ps(r[j], add0);
 
-            r[0] = _mm256_sub_ps(r[0], sub0);
-            r[1] = _mm256_sub_ps(r[1], sub0);
-            r[2] = _mm256_sub_ps(r[2], sub0);
+            for (j = 0; j < n_avx; j++)
+                r[j] = _mm256_sub_ps(r[j], sub0);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -68,21 +68,21 @@ void avx_add(bench_arg_t *args)
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
+        } else {
+            niter *= 2;
         }
+
         pthread_barrier_wait(&timer_barrier);
     } while (!runtime_flag);
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the results as volatile. */
 
-    /* Binomial reduction sum */
     r[0] = _mm256_add_ps(r[0], r[2]);
     r[0] = _mm256_add_ps(r[0], r[1]);
-
-    /* Sum of AVX registers */
     result = reduce_AVX(r[0]);
 
-    /* (iterations) * (8 flops / register) * (8 registers / iteration) */
+    /* (iterations) * (8 flops / register) * (6 registers / iteration) */
     flops = niter * 8 * 6 / runtime;
 
     /* Cleanup */
@@ -104,10 +104,9 @@ void avx_mac(bench_arg_t *args)
     // Declare as volatile to prevent removal during optimisation
     volatile float result;
 
-    uint64_t i;
-    long niter;
-    Stopwatch *t;
+    long niter, i;
     double runtime, flops;
+    Stopwatch *t;
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -132,10 +131,8 @@ void avx_mac(bench_arg_t *args)
      */
 
     runtime_flag = 0;
-    niter = 1000;
+    niter = 1;
     do {
-        niter *= 2;
-
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < niter; i++) {
@@ -160,7 +157,10 @@ void avx_mac(bench_arg_t *args)
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
+        } else {
+            niter *= 2;
         }
+
         pthread_barrier_wait(&timer_barrier);
     } while (!runtime_flag);
 
