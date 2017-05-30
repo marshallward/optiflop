@@ -147,6 +147,18 @@ void avx_mac(bench_arg_t *args)
             r[7] = _mm256_mul_ps(r[7], mul0);
             r[8] = _mm256_mul_ps(r[8], mul0);
             r[9] = _mm256_mul_ps(r[9], mul0);
+
+            r[0] = _mm256_sub_ps(r[0], sub0);
+            r[1] = _mm256_sub_ps(r[1], sub0);
+            r[2] = _mm256_sub_ps(r[2], sub0);
+            r[3] = _mm256_sub_ps(r[3], sub0);
+            r[4] = _mm256_sub_ps(r[4], sub0);
+
+            r[5] = _mm256_mul_ps(r[5], mul1);
+            r[6] = _mm256_mul_ps(r[6], mul1);
+            r[7] = _mm256_mul_ps(r[7], mul1);
+            r[8] = _mm256_mul_ps(r[8], mul1);
+            r[9] = _mm256_mul_ps(r[9], mul1);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -181,7 +193,7 @@ void avx_mac(bench_arg_t *args)
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (8 flops / register) * (10 registers / iteration) */
-    flops = niter * 8 * 10 / runtime;
+    flops = niter * 8 * 20 / runtime;
 
     /* Cleanup */
     args->runtime = runtime;
