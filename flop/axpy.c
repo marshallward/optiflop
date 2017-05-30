@@ -54,18 +54,17 @@ double axpy(float a, float b, float * x_in, float * y_in,
 
     Stopwatch *t;
     float runtime;
-    int runtime_flag;
 
     int i, r;
     int r_max;
 
     // TODO: Create a macro somewhere else
-#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
+    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
     x = __builtin_assume_aligned(x_in, BYTEALIGN);
     y = __builtin_assume_aligned(y_in, BYTEALIGN);
-#else
+    #else
     x = x_in; y = y_in;
-#endif
+    #endif
 
     t = stopwatch_create(TIMER_POSIX);
 
