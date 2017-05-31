@@ -72,21 +72,27 @@ int main(int argc, char *argv[])
         &axpy_main,
         &axpy_main,
         &axpy_main,
+        &axpy_main,
+        &axpy_main,
     0};
 
     const char * benchnames[] = {
         "avx_add",
         "avx_mac",
-        "y[:] = a x[:] + y[:]",
         "y[:] = x[:]",
+        "y[:] = a x[:]",
+        "y[:] = x[:] + y[:]",
+        "y[:] = a x[:] + y[:]",
         "y[:] = a x[:] + b y[:]",
     0};
 
     const roof_ptr_t roof_tests[] = {
         NULL,
         NULL,
-        &axpy,
         &roof_copy,
+        &roof_ax,
+        &roof_xpy,
+        &roof_axpy,
         &roof_axpby,
     0};
 
