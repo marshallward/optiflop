@@ -66,9 +66,29 @@ int main(int argc, char *argv[])
     /* General benchmark loop */
     /* TODO: Combine name and bench into a struct, or add to t_args? */
 
-    const bench_ptr_t benchmarks[] = {&avx_add, &avx_mac, &axpy_main, 0};
-    const char * benchnames[] = {"avx_add", "avx_mac", "axpy", 0};
-    const roof_ptr_t roof_tests[] = {NULL, NULL, &axpy, 0};
+    const bench_ptr_t benchmarks[] = {
+        &avx_add,
+        &avx_mac,
+        &axpy_main,
+        &axpy_main,
+        &axpy_main,
+    0};
+
+    const char * benchnames[] = {
+        "avx_add",
+        "avx_mac",
+        "y[:] = a x[:] + y[:]",
+        "y[:] = x[:]",
+        "y[:] = a x[:] + b y[:]",
+    0};
+
+    const roof_ptr_t roof_tests[] = {
+        NULL,
+        NULL,
+        &axpy,
+        &roof_copy,
+        &roof_axpby,
+    0};
 
     for (b = 0; benchmarks[b]; b++) {
         for (t = 0; t < nthreads; t++) {
