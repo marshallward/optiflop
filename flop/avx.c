@@ -68,11 +68,11 @@ void avx_add(bench_arg_t *args)
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
-        } else {
-            niter *= 2;
         }
 
         pthread_barrier_wait(&timer_barrier);
+        if (!runtime_flag) r_max *= 2;
+
     } while (!runtime_flag);
 
     /* In order to prevent removal of the prior loop by optimisers,
@@ -116,6 +116,8 @@ void avx_mac(bench_arg_t *args)
 
     /* Choose non-exact sums (r + a) - b, (r * a) / c */
     /* The vmulps 5-cycle latency requires 5 concurrent operations */
+    /* TODO: length based on n_avx */
+
     r[0] = _mm256_set1_ps(1.0f);
     r[1] = _mm256_set1_ps(1.2f);
     r[2] = _mm256_set1_ps(1.3f);
@@ -158,11 +160,11 @@ void avx_mac(bench_arg_t *args)
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
-        } else {
-            niter *= 2;
         }
 
         pthread_barrier_wait(&timer_barrier);
+        if (!runtime_flag) r_max *= 2;
+
     } while (!runtime_flag);
 
     /* In order to prevent removal of the prior loop by optimisers,

@@ -91,11 +91,11 @@ double axpy(float a, float b, float * x_in, float * y_in,
             pthread_mutex_lock(&runtime_mutex);
             runtime_flag = 1;
             pthread_mutex_unlock(&runtime_mutex);
-        } else {
-            r_max *= 2;
         }
 
         pthread_barrier_wait(&timer_barrier);
+        if (!runtime_flag) r_max *= 2;
+
     } while (!runtime_flag);
 
     *flops = 2. * n * r_max / runtime;
