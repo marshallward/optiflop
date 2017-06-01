@@ -33,24 +33,24 @@ void (*stopwatch_destroy_funcs[TIMER_MAX])(Stopwatch *t) = {
 
 /* Context definitions */
 
-struct _stopwatch_context_tsc_t {
+struct stopwatch_context_tsc_t {
     double cpufreq;
     uint64_t rax0, rdx0, rax1, rdx1;
 };
 
-struct _stopwatch_context_posix_t {
+struct stopwatch_context_posix_t {
     clockid_t clock;
     struct timespec ts_start, ts_end;
 };
 
 const size_t stopwatch_context_size[TIMER_MAX] = {
-    sizeof(stopwatch_context_posix_t),
-    sizeof(stopwatch_context_tsc_t),
+    sizeof(struct stopwatch_context_posix_t),
+    sizeof(struct stopwatch_context_tsc_t),
 };
 
 /* Generic Stopwatch methods */
 
-Stopwatch * stopwatch_create(TimerType type)
+Stopwatch * stopwatch_create(enum stopwatch_type type)
 {
     Stopwatch *t;
 
@@ -71,7 +71,7 @@ Stopwatch * stopwatch_create(TimerType type)
 
 void stopwatch_init_tsc(Stopwatch *t)
 {
-    t->context.tc_tsc = malloc(sizeof(stopwatch_context_tsc_t));
+    t->context.tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
     t->context.tc_tsc->cpufreq = stopwatch_get_tsc_freq(t);
 }
 
@@ -140,7 +140,7 @@ double stopwatch_get_tsc_freq(Stopwatch *t)
 
 void stopwatch_init_posix(Stopwatch *t)
 {
-    t->context.tc_posix = malloc(sizeof(stopwatch_context_posix_t));
+    t->context.tc_posix = malloc(sizeof(struct stopwatch_context_posix_t));
     t->context.tc_posix->clock = CLOCK_MONOTONIC_RAW;
 }
 

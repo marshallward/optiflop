@@ -7,24 +7,21 @@
 
 /* Timer definition */
 
-typedef enum _stopwatch_t {
+enum stopwatch_type {
     TIMER_UNDEF = -1,
     TIMER_POSIX = 0,
     TIMER_TSC,
     TIMER_MAX,
-} TimerType;
+};
 
-typedef struct _stopwatch_context_posix_t stopwatch_context_posix_t;
-typedef struct _stopwatch_context_tsc_t stopwatch_context_tsc_t;
-
-typedef union _stopwatch_context_t {
+union stopwatch_context_t {
     void *tc_untyped;
-    stopwatch_context_posix_t *tc_posix;
-    stopwatch_context_tsc_t *tc_tsc;
-} stopwatch_context_t;
+    struct stopwatch_context_posix_t *tc_posix;
+    struct stopwatch_context_tsc_t *tc_tsc;
+};
 
-typedef struct _Stopwatch {
-    stopwatch_context_t context;
+typedef struct Stopwatch_struct {
+    union stopwatch_context_t context;
 
     void (*start)();
     void (*stop)();
@@ -34,7 +31,7 @@ typedef struct _Stopwatch {
 
 /* Generic Timer methods */
 
-Stopwatch * stopwatch_create(TimerType);
+Stopwatch * stopwatch_create(enum stopwatch_type);
 
 /* TSC Timer methods */
 
