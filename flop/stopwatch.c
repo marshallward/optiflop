@@ -73,7 +73,7 @@ Stopwatch * stopwatch_create(enum stopwatch_type type)
 void stopwatch_init_tsc(Stopwatch *t)
 {
     t->context.tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
-    t->context.tc_tsc->cpufreq = stopwatch_get_tsc_freq(t);
+    t->context.tc_tsc->cpufreq = stopwatch_get_tsc_freq();
 }
 
 void stopwatch_start_tsc(Stopwatch *t)
@@ -117,32 +117,55 @@ void stopwatch_destroy_tsc(Stopwatch *t)
 
 /* TSC support functions */
 
-double stopwatch_get_tsc_freq(Stopwatch *t)
+uint64_t rdtsc(void)
 {
-    /* This appears to be accurate within a few microseconds, so there is
-     * possibly room for improvement here. */
+    uint64_t rax, rdx;
+    uint32_t aux;
 
-    uint64_t t0, t1;
+    __asm__ __volatile__ ( "rdtscp" : "=a" ( rax ), "=d" ( rdx ), "=c" (aux));
+
+    return (rdx << 32) | rax;
+}
+
+double stopwatch_get_tsc_freq(void)
+{
+    uint64_t cycle_start1, cycle_start2;
+    uint64_t cycle_end1, cycle_end2;
     struct timespec ts_start, ts_end, ts_sleep, ts_remain;
+
+    uint64_t cycles;
     double runtime;
 
+    int rt;
+
+    /* Set the timer */
     ts_sleep.tv_sec = 1;
     ts_sleep.tv_nsec = 0;
 
-    t->start(t);
+    cycle_start1 = rdtsc();
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
-    clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
-    t->stop(t);
+    cycle_start2 = rdtsc();
 
-    t0 = (t->context.tc_tsc->rdx0 << 32) | t->context.tc_tsc->rax0;
-    t1 = (t->context.tc_tsc->rdx1 << 32) | t->context.tc_tsc->rax1;
+    //rt = nanosleep(&ts_sleep, &ts_remain);
+    rt = clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
+    //rt = usleep(1000000);
+
+    cycle_end1 = rdtsc();
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
+    cycle_end2 = rdtsc();
 
     runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
               + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
 
-    //printf("TSC frequency: %.12f GHz\n", (double) (t1 - t0) / runtime / 1e9);
-    return (double) (t1 - t0) / runtime;
+    cycles = ((cycle_end1 + cycle_end2) - (cycle_start1 + cycle_start2)) / 2;
+
+    //printf("Cycles: %llu\n", cycles);
+    //printf("Runtime: %.12f\n", runtime);
+    //printf("dstart: %llu\n", cycle_start2 - cycle_start1);
+    //printf("dend: %llu\n", cycle_end2 - cycle_end1);
+    //printf("TSC frequency: %.12f GHz\n", (double) cycles / runtime / 1e9);
+
+    return (double) cycles / runtime;
 }
 
 /* POSIX Stopwatch methods */

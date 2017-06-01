@@ -12,7 +12,6 @@
 #include "avx.h"
 #include "axpy.h"
 
-
 int main(int argc, char *argv[])
 {
     pthread_t *threads;

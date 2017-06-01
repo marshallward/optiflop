@@ -41,7 +41,7 @@ void stopwatch_stop_tsc(Stopwatch *t);
 double stopwatch_runtime_tsc(Stopwatch *t);
 void stopwatch_destroy_tsc(Stopwatch *t);
 
-double stopwatch_get_tsc_freq(Stopwatch *t);
+double stopwatch_get_tsc_freq();
 
 /* POSIX Timer methods */
 
