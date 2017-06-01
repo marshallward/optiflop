@@ -1,6 +1,7 @@
 #include <stdint.h>     /* uint64_t */
 #include <stdlib.h>     /* malloc, free */
 #include <time.h>       /* clock[id]_* */
+#include <stdio.h>
 
 #include "stopwatch.h"
 
@@ -122,18 +123,26 @@ double stopwatch_get_tsc_freq(Stopwatch *t)
      * possibly room for improvement here. */
 
     uint64_t t0, t1;
-    struct timespec req;
-    req.tv_sec = 1;
-    req.tv_nsec = 0;
+    struct timespec ts_start, ts_end, ts_sleep, ts_remain;
+    double runtime;
+
+    ts_sleep.tv_sec = 1;
+    ts_sleep.tv_nsec = 0;
 
     t->start(t);
-    nanosleep(&req, NULL);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
+    clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
     t->stop(t);
 
     t0 = (t->context.tc_tsc->rdx0 << 32) | t->context.tc_tsc->rax0;
     t1 = (t->context.tc_tsc->rdx1 << 32) | t->context.tc_tsc->rax1;
 
-    return (double) (t1 - t0);
+    runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
+              + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
+
+    //printf("TSC frequency: %.12f GHz\n", (double) (t1 - t0) / runtime / 1e9);
+    return (double) (t1 - t0) / runtime;
 }
 
 /* POSIX Stopwatch methods */
