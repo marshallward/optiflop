@@ -36,7 +36,7 @@ void avx_add(bench_arg_t *args)
     double runtime, flops;
     Stopwatch *t;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(TIMER_TSC);
 
     /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
      * Some compiler optimisers (gcc) will remove the operations.
