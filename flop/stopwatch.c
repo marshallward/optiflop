@@ -78,6 +78,11 @@ void stopwatch_init_tsc(Stopwatch *t)
 
 void stopwatch_start_tsc(Stopwatch *t)
 {
+    /* CPUID is used to serialise the RDTSC call.
+     *
+     * Based on Gabriele Paolini's benchmark document for Intel.
+     */
+
     __asm__ __volatile__ (
         "cpuid\n"
         "rdtsc\n"
@@ -90,6 +95,14 @@ void stopwatch_start_tsc(Stopwatch *t)
 
 void stopwatch_stop_tsc(Stopwatch *t)
 {
+    /* RDTSCP serialises the RDTSC instruction, ensuring that instructions
+     * prior to RDTSCP have completed.
+     * Instructions after RDTSCP could be executed after the final instruction
+     * but prior to RDTSCP.  This is prevented by the final CPUID instruction.
+     *
+     * Based on Gabriele Paolini's benchmark document for Intel.
+     */
+
     __asm__ __volatile__ (
         "rdtscp\n"
         "movq %%rax, %0\n"
@@ -128,7 +141,6 @@ uint64_t rdtsc(void)
     uint32_t aux;
 
     __asm__ __volatile__ ( "rdtscp" : "=a" ( rax ), "=d" ( rdx ), "=c" (aux));
-
     return (rdx << 32) | rax;
 }
 
@@ -210,7 +222,7 @@ double stopwatch_get_tsc_freq(void)
             printf("TSC frequency: %.12f GHz\n",
                    (double) cycles / runtime / 1e9);
         }
-    } while (d_start / d_end > 5 || d_end / d_start > 5);
+    } while (d_start / d_end > 10 || d_end / d_start > 10);
 
     return (double) cycles / runtime;
 }
