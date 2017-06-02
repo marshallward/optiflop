@@ -176,7 +176,7 @@ double stopwatch_get_tsc_freq(void)
     int verbose = 1;    /* Not yet supported */
 
     /* Set the timer */
-    ts_sleep.tv_sec = 10;
+    ts_sleep.tv_sec = 1;
     ts_sleep.tv_nsec = 0;
 
     do {
