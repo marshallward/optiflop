@@ -12,11 +12,6 @@
 #define VADDPS_LATENCY 3
 #define VMULPS_LATENCY 5
 
-const double TEST_ADD_ADD = 1.4142135623730950488;
-const double TEST_ADD_SUB = 1.414213562373095;
-const double TEST_MUL_MUL = 1.4142135623730950488;
-const double TEST_MUL_DIV = 0.70710678118654752440;
-
 /* Headers */
 float reduce_AVX(__m256);
 
@@ -87,12 +82,9 @@ void avx_add(bench_arg_t *args)
 void avx_mac(bench_arg_t *args)
 {
     const int n_avx = VMULPS_LATENCY;
+    const __m256 add0 = _mm256_set1_ps((float) 1e-6);
+    const __m256 mul0 = _mm256_set1_ps((float) (1. + 1e-6));
     __m256 r[2 * n_avx];
-
-    const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
-    const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
-    const __m256 mul0 = _mm256_set1_ps((float)TEST_MUL_MUL);
-    const __m256 mul1 = _mm256_set1_ps((float)TEST_MUL_DIV);
 
     // Declare as volatile to prevent removal during optimisation
     volatile float result;
@@ -106,21 +98,11 @@ void avx_mac(bench_arg_t *args)
 
     /* Scatter values over AVX registers */
 
-    /* Choose non-exact sums (r + a) - b, (r * a) / c */
     /* The vmulps 5-cycle latency requires 5 concurrent operations */
-    /* TODO: length based on n_avx */
-
-    r[0] = _mm256_set1_ps(1.0f);
-    r[1] = _mm256_set1_ps(1.2f);
-    r[2] = _mm256_set1_ps(1.3f);
-    r[3] = _mm256_set1_ps(1.5f);
-    r[4] = _mm256_set1_ps(1.7f);
-
-    r[5] = _mm256_set1_ps(1.0f);
-    r[6] = _mm256_set1_ps(1.3f);
-    r[7] = _mm256_set1_ps(1.5f);
-    r[8] = _mm256_set1_ps(1.8f);
-    r[9] = _mm256_set1_ps(2.0f);
+    for (j = 0; j < n_avx; j++) {
+        r[j] = _mm256_set1_ps((float) j);
+        r[j + n_avx] = _mm256_set1_ps((float) j);
+    }
 
     /* Add over registers r0-r4, multiply over r5-r9, and rely on pipelining,
      * OOO execution, and latency difference (3 vs 5 cycles) for 2x FLOPs
@@ -132,17 +114,13 @@ void avx_mac(bench_arg_t *args)
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < r_max; i++) {
-            for (j = 0; j < n_avx; j++)
+            #pragma unroll
+            for (j = 0; j < n_avx; j++) {
                 r[j] = _mm256_add_ps(r[j], add0);
-
-            for (j = 0; j < n_avx; j++)
                 r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul0);
+            }
 
-            for (j = 0; j < n_avx; j++)
-                r[j] = _mm256_sub_ps(r[j], sub0);
-
-            for (j = 0; j < n_avx; j++)
-                r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul1);
+            //for (j = 0; j < n_avx; j++)
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -166,8 +144,8 @@ void avx_mac(bench_arg_t *args)
         r[0] = _mm256_add_ps(r[0], r[j]);
     result = reduce_AVX(r[0]);
 
-    /* (iterations) * (8 flops / register) * (20 registers / iteration) */
-    flops = r_max * 8 * 20 / runtime;
+    /* (iterations) * (8 flops / register) * (2*n_avx registers / iteration) */
+    flops = r_max * 8 * (2 * n_avx) / runtime;
 
     /* Cleanup */
     args->runtime = runtime;
