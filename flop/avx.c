@@ -9,7 +9,7 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define VADDPS_LATENCY 6
+#define VADDPS_LATENCY 3
 #define VMULPS_LATENCY 5
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
@@ -23,11 +23,8 @@ float reduce_AVX(__m256);
 void avx_add(bench_arg_t *args)
 {
     const int n_avx = VADDPS_LATENCY;
-    __m256 r[n_avx];
-
-    //const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
-    //const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
+    __m256 reg[n_avx];
 
     // Declare as volatile to prevent removal during optimisation
     volatile float result;
@@ -39,16 +36,8 @@ void avx_add(bench_arg_t *args)
 
     t = stopwatch_create(TIMER_POSIX);
 
-    /* Select 4 numbers such that (r + a) - b != r (e.g. not 1.1f or 1.4f).
-     * Some compiler optimisers (gcc) will remove the operations.
-     * The vaddps 3-cycle latency requires 3 concurrent operations
-     */
-    r[0] = _mm256_set1_ps(1.0f);
-    r[1] = _mm256_set1_ps(1.2f);
-    r[2] = _mm256_set1_ps(1.3f);
-    r[3] = _mm256_set1_ps(1.0f);
-    r[4] = _mm256_set1_ps(1.2f);
-    r[5] = _mm256_set1_ps(1.3f);
+    for (j = 0; j < n_avx; j++)
+        reg[j] = _mm256_set1_ps((float) j);
 
     /* Add and subtract two nearly-equal double-precision numbers */
 
@@ -58,14 +47,10 @@ void avx_add(bench_arg_t *args)
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < r_max; i++) {
-            r[0] = _mm256_add_ps(r[0], add0);
-            r[1] = _mm256_add_ps(r[1], add0);
-            r[2] = _mm256_add_ps(r[2], add0);
-            r[3] = _mm256_add_ps(r[3], add0);
-            r[4] = _mm256_add_ps(r[4], add0);
-            r[5] = _mm256_add_ps(r[5], add0);
-            //for (j = 0; j < n_avx; j++)
-            //    r[j] = _mm256_add_ps(r[j], add0);
+            /* Intel icc requires an explicit unroll */
+            #pragma unroll
+            for (j = 0; j < n_avx; j++)
+                reg[j] = _mm256_add_ps(reg[j], add0);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -86,8 +71,8 @@ void avx_add(bench_arg_t *args)
      * sum the register values and save the results as volatile. */
 
     for (j = 0; j < n_avx; j++)
-        r[0] = _mm256_add_ps(r[0], r[j]);
-    result = reduce_AVX(r[0]);
+        reg[0] = _mm256_add_ps(reg[0], reg[j]);
+    result = reduce_AVX(reg[0]);
 
     /* (iterations) * (8 flops / register) * (6 registers / iteration) */
     flops = r_max * 8 * n_avx / runtime;
