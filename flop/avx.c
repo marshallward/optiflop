@@ -25,8 +25,9 @@ void avx_add(bench_arg_t *args)
     const int n_avx = VADDPS_LATENCY;
     __m256 r[n_avx];
 
-    const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
-    const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
+    //const __m256 add0 = _mm256_set1_ps((float)TEST_ADD_ADD);
+    //const __m256 sub0 = _mm256_set1_ps((float)TEST_ADD_SUB);
+    const __m256 add0 = _mm256_set1_ps((float) 1e-6);
 
     // Declare as volatile to prevent removal during optimisation
     volatile float result;
@@ -56,9 +57,6 @@ void avx_add(bench_arg_t *args)
         for (i = 0; i < r_max; i++) {
             for (j = 0; j < n_avx; j++)
                 r[j] = _mm256_add_ps(r[j], add0);
-
-            for (j = 0; j < n_avx; j++)
-                r[j] = _mm256_sub_ps(r[j], sub0);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -83,7 +81,7 @@ void avx_add(bench_arg_t *args)
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (8 flops / register) * (6 registers / iteration) */
-    flops = r_max * 8 * 6 / runtime;
+    flops = r_max * 8 * n_avx / runtime;
 
     /* Cleanup */
     args->runtime = runtime;
