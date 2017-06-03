@@ -17,7 +17,7 @@ gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
 intel: CC=icc
-intel: CFLAGS=-xavx -O2
+intel: CFLAGS=-xMIC-AVX512 -O2
 intel: flop
 
 flop: main.o bench.o stopwatch.o avx.o axpy.o

@@ -9,7 +9,7 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define VADDPS_LATENCY 3
+#define VADDPS_LATENCY 6
 #define VMULPS_LATENCY 5
 
 const double TEST_ADD_ADD = 1.4142135623730950488;
@@ -46,6 +46,9 @@ void avx_add(bench_arg_t *args)
     r[0] = _mm256_set1_ps(1.0f);
     r[1] = _mm256_set1_ps(1.2f);
     r[2] = _mm256_set1_ps(1.3f);
+    r[3] = _mm256_set1_ps(1.0f);
+    r[4] = _mm256_set1_ps(1.2f);
+    r[5] = _mm256_set1_ps(1.3f);
 
     /* Add and subtract two nearly-equal double-precision numbers */
 
@@ -55,8 +58,14 @@ void avx_add(bench_arg_t *args)
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < r_max; i++) {
-            for (j = 0; j < n_avx; j++)
-                r[j] = _mm256_add_ps(r[j], add0);
+            r[0] = _mm256_add_ps(r[0], add0);
+            r[1] = _mm256_add_ps(r[1], add0);
+            r[2] = _mm256_add_ps(r[2], add0);
+            r[3] = _mm256_add_ps(r[3], add0);
+            r[4] = _mm256_add_ps(r[4], add0);
+            r[5] = _mm256_add_ps(r[5], add0);
+            //for (j = 0; j < n_avx; j++)
+            //    r[j] = _mm256_add_ps(r[j], add0);
         }
         t->stop(t);
         runtime = t->runtime(t);
