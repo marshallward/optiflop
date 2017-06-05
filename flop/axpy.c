@@ -10,7 +10,7 @@
 void * axpy_main(void *args_in)
 {
     /* Thread input */
-    thread_arg_t *args;
+    struct thread_args *args;
 
     float *x, *y;
     float a, b;
@@ -21,7 +21,7 @@ void * axpy_main(void *args_in)
     int i;  // Loop counter
 
     /* Read inputs */
-    args = (thread_arg_t *) args_in;
+    args = (struct thread_args *) args_in;
 
     /* TODO: Determine dynamically with L1 size */
     n = 3200;

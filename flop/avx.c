@@ -18,7 +18,7 @@ float reduce_AVX(__m256);
 void * avx_add(void *args_in)
 {
     /* Thread input */
-    thread_arg_t *args;
+    struct thread_args *args;
 
     const int n_avx = VADDPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
@@ -34,7 +34,7 @@ void * avx_add(void *args_in)
     volatile float result;
 
     /* Read inputs */
-    args = (thread_arg_t *) args_in;
+    args = (struct thread_args *) args_in;
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -93,7 +93,7 @@ void * avx_add(void *args_in)
 void * avx_mac(void *args_in)
 {
     /* Thread input */
-    thread_arg_t *args;
+    struct thread_args *args;
 
     const int n_avx = VMULPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
@@ -109,7 +109,7 @@ void * avx_mac(void *args_in)
     Stopwatch *t;
 
     /* Read inputs */
-    args = (thread_arg_t *) args_in;
+    args = (struct thread_args *) args_in;
 
     t = stopwatch_create(TIMER_POSIX);
 

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     cpu_set_t cpus;
     int nthreads, nprocs;
     double min_runtime;
-    thread_arg_t *t_args;
+    struct thread_args *t_args;
     void *status;
 
     int b, t;
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     /* Thread setup */
 
     threads = malloc(nthreads * sizeof(pthread_t));
-    t_args = malloc(nthreads * sizeof(thread_arg_t));
+    t_args = malloc(nthreads * sizeof(struct thread_args));
 
     pthread_mutex_init(&runtime_mutex, NULL);
     pthread_attr_init(&attr);
