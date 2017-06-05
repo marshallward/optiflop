@@ -24,10 +24,9 @@ void * avx_add(void *args_in)
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
     __m256 reg[n_avx];
 
-    long r_max, i;
+    long r, r_max;
     int j;
-    double runtime, flops;
-    double bw_load, bw_store;
+    double runtime;
     Stopwatch *t;
 
     // Declare as volatile to prevent removal during optimisation
@@ -46,7 +45,7 @@ void * avx_add(void *args_in)
     do {
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
-        for (i = 0; i < r_max; i++) {
+        for (r = 0; r < r_max; r++) {
             /* Intel icc requires an explicit unroll */
             #pragma unroll(n_avx)
             for (j = 0; j < n_avx; j++)
@@ -74,17 +73,13 @@ void * avx_add(void *args_in)
         reg[0] = _mm256_add_ps(reg[0], reg[j]);
     result = reduce_AVX(reg[0]);
 
-    /* (iterations) * (8 flops / register) * (n_avx registers / iteration) */
-    flops = r_max * 8 * n_avx / runtime;
+    args->runtime = runtime;
+    args->flops = r_max * 8 * n_avx / runtime;
+    args->bw_load = 0.;
+    args->bw_store = 0.;
 
     /* Cleanup */
     t->destroy(t);
-
-    /* Thread output */
-    args->runtime = runtime;
-    args->flops = flops;
-    args->bw_load = 0.;
-    args->bw_store = 0.;
 
     pthread_exit(NULL);
 }
