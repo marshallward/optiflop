@@ -43,7 +43,7 @@ void avx_add(bench_arg_t *args)
         t->start(t);
         for (i = 0; i < r_max; i++) {
             /* Intel icc requires an explicit unroll */
-            #pragma unroll
+            #pragma unroll(n_avx)
             for (j = 0; j < n_avx; j++)
                 reg[j] = _mm256_add_ps(reg[j], add0);
         }

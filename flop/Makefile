@@ -3,6 +3,8 @@ ifeq ($(ARCH), sandybridge)
 	GCC_ARCH=corei7-avx
 else ifeq ($(ARCH), haswell)
 	GCC_ARCH=core-avx2
+else ifeq ($(ARCH), knl)
+	GCC_ARCH=knl
 else # Roll the dice...
 	GCC_ARCH=native
 endif
@@ -19,6 +21,10 @@ gcc: flop
 intel: CC=icc
 intel: CFLAGS=-xavx -O3
 intel: flop
+
+knl: CC=icc
+knl: CFLAGS=-xMIC-AVX512 -O3
+knl: flop
 
 flop: main.o bench.o stopwatch.o avx.o axpy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
