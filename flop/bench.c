@@ -25,6 +25,8 @@ void * bench_thread(void *arg)
     /* Save output */
     tinfo->runtime = bench_args->runtime;
     tinfo->flops = bench_args->flops;
+    tinfo->bw_load = bench_args->bw_load;
+    tinfo->bw_store = bench_args->bw_store;
 
     free(bench_args);
 

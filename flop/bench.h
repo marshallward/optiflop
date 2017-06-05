@@ -17,6 +17,8 @@ typedef struct _bench_arg_t {
     /* Output */
     double runtime;
     double flops;
+    double bw_load;
+    double bw_store;
 } bench_arg_t;
 
 typedef void (*bench_ptr_t) (bench_arg_t *);
@@ -31,6 +33,8 @@ typedef struct _thread_arg_t {
     /* Output */
     double runtime;
     double flops;
+    double bw_load;
+    double bw_store;
 } thread_arg_t;
 
 /* Declarations */

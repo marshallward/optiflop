@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     int b, t;
     int optflag;
     int verbose = 0;
-    double total_flops;
+    double total_flops, total_bw_load, total_bw_store;
 
     /* Default values */
     nthreads = 1;
@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
                 pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
             }
 
+            /* Thread inputs */
             t_args[t].tid = t;
             t_args[t].min_runtime = min_runtime;
             t_args[t].bench = benchmarks[b];
@@ -121,11 +122,19 @@ int main(int argc, char *argv[])
             pthread_join(threads[t], &status);
 
         total_flops = 0.0;
-        for (t = 0; t < nthreads; t++)
+        total_bw_load = 0.0;
+        total_bw_store = 0.0;
+        for (t = 0; t < nthreads; t++) {
             total_flops += t_args[t].flops;
+            total_bw_load += t_args[t].bw_load;
+            total_bw_store += t_args[t].bw_store;
+        }
 
         printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
                 benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
+        printf("%s MB/s: %.12f (%.12f / thread)\n",
+                benchnames[b], (total_bw_load + total_bw_store) / 1e9,
+                (total_bw_load + total_bw_store) / nthreads / 1e9);
 
         if (verbose) {
             for (t = 0; t < nthreads; t++) {

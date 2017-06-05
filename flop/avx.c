@@ -27,6 +27,7 @@ void avx_add(bench_arg_t *args)
     long r_max, i;
     int j;
     double runtime, flops;
+    double bw_load, bw_store;
     Stopwatch *t;
 
     t = stopwatch_create(TIMER_POSIX);
@@ -69,13 +70,20 @@ void avx_add(bench_arg_t *args)
         reg[0] = _mm256_add_ps(reg[0], reg[j]);
     result = reduce_AVX(reg[0]);
 
-    /* (iterations) * (8 flops / register) * (6 registers / iteration) */
+    /* (iterations) * (8 flops / register) * (n_avx registers / iteration) */
     flops = r_max * 8 * n_avx / runtime;
+
+    /* These bandwidths are nonsense; data never moves on/off the register */
+    bw_load = r_max * 32 * n_avx / runtime;
+    bw_store = r_max * 32 * n_avx / runtime;
 
     /* Cleanup */
     args->runtime = runtime;
     args->flops = flops;
+    args->bw_load = bw_load;
+    args->bw_store = bw_store;
     t->destroy(t);
+
 }
 
 
