@@ -15,14 +15,14 @@
 /* Headers */
 float reduce_AVX(__m256);
 
-void avx_add(bench_arg_t *args)
+void * avx_add(void *args_in)
 {
+    /* Thread input */
+    thread_arg_t *args;
+
     const int n_avx = VADDPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
     __m256 reg[n_avx];
-
-    // Declare as volatile to prevent removal during optimisation
-    volatile float result;
 
     long r_max, i;
     int j;
@@ -30,12 +30,16 @@ void avx_add(bench_arg_t *args)
     double bw_load, bw_store;
     Stopwatch *t;
 
+    // Declare as volatile to prevent removal during optimisation
+    volatile float result;
+
+    /* Read inputs */
+    args = (thread_arg_t *) args_in;
+
     t = stopwatch_create(TIMER_POSIX);
 
     for (j = 0; j < n_avx; j++)
         reg[j] = _mm256_set1_ps((float) j);
-
-    /* Add and subtract two nearly-equal double-precision numbers */
 
     runtime_flag = 0;
     r_max = 1;
@@ -73,22 +77,24 @@ void avx_add(bench_arg_t *args)
     /* (iterations) * (8 flops / register) * (n_avx registers / iteration) */
     flops = r_max * 8 * n_avx / runtime;
 
-    /* These bandwidths are nonsense; data never moves on/off the register */
-    bw_load = r_max * 32 * n_avx / runtime;
-    bw_store = r_max * 32 * n_avx / runtime;
-
     /* Cleanup */
-    args->runtime = runtime;
-    args->flops = flops;
-    args->bw_load = bw_load;
-    args->bw_store = bw_store;
     t->destroy(t);
 
+    /* Thread output */
+    args->runtime = runtime;
+    args->flops = flops;
+    args->bw_load = 0.;
+    args->bw_store = 0.;
+
+    pthread_exit(NULL);
 }
 
 
-void avx_mac(bench_arg_t *args)
+void * avx_mac(void *args_in)
 {
+    /* Thread input */
+    thread_arg_t *args;
+
     const int n_avx = VMULPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
     const __m256 mul0 = _mm256_set1_ps((float) (1. + 1e-6));
@@ -102,11 +108,11 @@ void avx_mac(bench_arg_t *args)
     double runtime, flops;
     Stopwatch *t;
 
+    /* Read inputs */
+    args = (thread_arg_t *) args_in;
+
     t = stopwatch_create(TIMER_POSIX);
 
-    /* Scatter values over AVX registers */
-
-    /* The vmulps 5-cycle latency requires 5 concurrent operations */
     for (j = 0; j < n_avx; j++) {
         r[j] = _mm256_set1_ps((float) j);
         r[j + n_avx] = _mm256_set1_ps((float) j);
@@ -156,9 +162,15 @@ void avx_mac(bench_arg_t *args)
     flops = r_max * 8 * (2 * n_avx) / runtime;
 
     /* Cleanup */
+    t->destroy(t);
+
+    /* Thread output */
     args->runtime = runtime;
     args->flops = flops;
-    t->destroy(t);
+    args->bw_load = 0.;
+    args->bw_store = 0.;
+
+    pthread_exit(NULL);
 }
 
 

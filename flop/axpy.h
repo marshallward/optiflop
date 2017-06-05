@@ -3,7 +3,7 @@
 
 #include "bench.h"
 
-void axpy_main(bench_arg_t *);
+void * axpy_main(void *);
 double roof_copy(float, float, float *, float *, int, double *, double);
 double roof_ax(float, float, float *, float *, int, double *, double);
 double roof_xpy(float, float, float *, float *, int, double *, double);

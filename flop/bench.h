@@ -9,26 +9,11 @@
 typedef double (*roof_ptr_t) (float, float, float *, float *,
                               int, double *, double);
 
-typedef struct _bench_arg_t {
-    /* Input */
-    double min_runtime;
-    roof_ptr_t roof;
-
-    /* Output */
-    double runtime;
-    double flops;
-    double bw_load;
-    double bw_store;
-} bench_arg_t;
-
-typedef void (*bench_ptr_t) (bench_arg_t *);
-
 typedef struct _thread_arg_t {
     /* Input */
     int tid;
     double min_runtime;
     roof_ptr_t roof;
-    bench_ptr_t bench;
 
     /* Output */
     double runtime;
@@ -36,6 +21,8 @@ typedef struct _thread_arg_t {
     double bw_load;
     double bw_store;
 } thread_arg_t;
+
+typedef void * (*bench_ptr_t) (void *);
 
 /* Declarations */
 extern pthread_barrier_t timer_barrier;

@@ -112,10 +112,9 @@ int main(int argc, char *argv[])
             /* Thread inputs */
             t_args[t].tid = t;
             t_args[t].min_runtime = min_runtime;
-            t_args[t].bench = benchmarks[b];
             t_args[t].roof = roof_tests[b];
 
-            pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
+            pthread_create(&threads[t], &attr, benchmarks[b], (void *) &t_args[t]);
         }
 
         for (t = 0; t < nthreads; t++)
@@ -130,11 +129,14 @@ int main(int argc, char *argv[])
             total_bw_store += t_args[t].bw_store;
         }
 
-        printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
-                benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
-        printf("%s MB/s: %.12f (%.12f / thread)\n",
-                benchnames[b], (total_bw_load + total_bw_store) / 1e9,
-                (total_bw_load + total_bw_store) / nthreads / 1e9);
+        if (total_flops > 0.)
+            printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
+                    benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
+
+        if (total_bw_load > 0. && total_bw_store > 0.)
+            printf("%s MB/s: %.12f (%.12f / thread)\n",
+                    benchnames[b], (total_bw_load + total_bw_store) / 1e9,
+                    (total_bw_load + total_bw_store) / nthreads / 1e9);
 
         if (verbose) {
             for (t = 0; t < nthreads; t++) {

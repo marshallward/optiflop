@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h> /* timespec, clock_gettime */
 
@@ -8,8 +7,11 @@
 
 #define BYTEALIGN 32
 
-void axpy_main(bench_arg_t *args)
+void * axpy_main(void *args_in)
 {
+    /* Thread input */
+    thread_arg_t *args;
+
     float *x, *y;
     float a, b;
 
@@ -17,6 +19,9 @@ void axpy_main(bench_arg_t *args)
 
     int n;  // Vector length
     int i;  // Loop counter
+
+    /* Read inputs */
+    args = (thread_arg_t *) args_in;
 
     /* TODO: Determine dynamically with L1 size */
     n = 3200;
@@ -36,6 +41,10 @@ void axpy_main(bench_arg_t *args)
 
     args->runtime = runtime;
     args->flops = flops;
+    args->bw_load = 0.;
+    args->bw_store = 0.;
+
+    pthread_exit(NULL);
 }
 
 

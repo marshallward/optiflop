@@ -3,10 +3,8 @@
 
 #include <pthread.h>    /* pthread_* */
 
-#include "bench.h"   /* bench_arg_t */
-
-void avx_add(bench_arg_t *);
-void avx_mac(bench_arg_t *);
+void * avx_add(void *);
+void * avx_mac(void *);
 
 extern pthread_barrier_t timer_barrier;
 extern pthread_mutex_t runtime_mutex;
