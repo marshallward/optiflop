@@ -24,6 +24,8 @@ int main(int argc, char *argv[])
 
     int b, t;
     int optflag;
+    int verbose = 0;
+    double total_flops;
 
     /* Default values */
     nthreads = 1;
@@ -31,8 +33,11 @@ int main(int argc, char *argv[])
 
     /* Command line parser */
 
-    while ((optflag = getopt(argc, argv, "p:r:")) != -1) {
+    while ((optflag = getopt(argc, argv, "vp:r:")) != -1) {
         switch(optflag) {
+            case 'v':
+                verbose = 1;
+                break;
             case 'p':
                 nthreads = (int) strtol(optarg, (char **) NULL, 10);
                 break;
@@ -112,13 +117,23 @@ int main(int argc, char *argv[])
             pthread_create(&threads[t], &attr, bench_thread, (void *) &t_args[t]);
         }
 
-        for (t = 0; t < nthreads; t++) {
+        for (t = 0; t < nthreads; t++)
             pthread_join(threads[t], &status);
 
-            printf("Thread %i %s runtime: %.12f\n",
-                   t, benchnames[b], t_args[t].runtime);
-            printf("Thread %i %s gflops: %.12f\n",
-                   t, benchnames[b], t_args[t].flops /  1e9);
+        total_flops = 0.0;
+        for (t = 0; t < nthreads; t++)
+            total_flops += t_args[t].flops;
+
+        printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
+                benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
+
+        if (verbose) {
+            for (t = 0; t < nthreads; t++) {
+                printf("    - Thread %i %s runtime: %.12f\n",
+                       t, benchnames[b], t_args[t].runtime);
+                printf("    - Thread %i %s gflops: %.12f\n",
+                       t, benchnames[b], t_args[t].flops /  1e9);
+            }
         }
     }
 
