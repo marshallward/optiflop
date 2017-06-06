@@ -48,7 +48,8 @@ void * axpy_main(void *args_in)
 }
 
 
-double roof_axpy(float a, float b, float * x_in, float * y_in,
+double roof_axpy(float a, float b,
+                 float * restrict x_in, float * restrict y_in,
                  int n, double *flops, double min_runtime)
 {
     float *x, *y;
@@ -105,7 +106,8 @@ double roof_axpy(float a, float b, float * x_in, float * y_in,
 }
 
 
-double roof_copy(float a, float b, float * x_in, float * y_in,
+double roof_copy(float a, float b,
+                 float * restrict x_in, float * restrict y_in,
                  int n, double *flops, double min_runtime)
 {
     float *x, *y;
@@ -160,8 +162,9 @@ double roof_copy(float a, float b, float * x_in, float * y_in,
 }
 
 
-double roof_xpy(float a, float b, float * x_in, float * y_in,
-               int n, double *flops, double min_runtime)
+double roof_xpy(float a, float b,
+                float * restrict x_in, float * restrict y_in,
+                int n, double *flops, double min_runtime)
 {
     float *x, *y;
 
@@ -215,7 +218,8 @@ double roof_xpy(float a, float b, float * x_in, float * y_in,
 }
 
 
-double roof_ax(float a, float b, float * x_in, float * y_in,
+double roof_ax(float a, float b,
+               float * restrict x_in, float * restrict y_in,
                int n, double *flops, double min_runtime)
 {
     float *x, *y;
@@ -270,7 +274,8 @@ double roof_ax(float a, float b, float * x_in, float * y_in,
 }
 
 
-double roof_axpby(float a, float b, float * x_in, float * y_in,
+double roof_axpby(float a, float b,
+                  float * restrict x_in, float * restrict y_in,
                   int n, double *flops, double min_runtime)
 {
     float *x, *y;
