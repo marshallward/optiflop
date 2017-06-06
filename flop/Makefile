@@ -13,7 +13,7 @@ LDFLAGS=-lrt
 
 all: gcc
 
-gcc: CC=gcc
+gcc: CC=gcc -std=gnu99
 gcc: CFLAGS=-march=$(GCC_ARCH) -O3
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
