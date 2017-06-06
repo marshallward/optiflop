@@ -6,7 +6,6 @@
 #include "stopwatch.h"
 
 /* TODO: Make this configurable */
-#define ENABLE_TSC
 
 /* Method lookup tables */
 
