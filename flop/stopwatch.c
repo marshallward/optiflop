@@ -83,7 +83,6 @@ void stopwatch_start_tsc(Stopwatch *t)
      * Based on Gabriele Paolini's benchmark document for Intel.
      */
 
-    #ifdef ENABLE_TSC
     __asm__ __volatile__ (
         "cpuid\n"
         "rdtsc\n"
@@ -92,7 +91,6 @@ void stopwatch_start_tsc(Stopwatch *t)
         : "=r" (t->context.tc_tsc->rax0), "=r" (t->context.tc_tsc->rdx0)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
-    #endif
 }
 
 void stopwatch_stop_tsc(Stopwatch *t)
@@ -105,7 +103,6 @@ void stopwatch_stop_tsc(Stopwatch *t)
      * Based on Gabriele Paolini's benchmark document for Intel.
      */
 
-    #ifdef ENABLE_TSC
     __asm__ __volatile__ (
         "rdtscp\n"
         "movq %%rax, %0\n"
@@ -114,7 +111,6 @@ void stopwatch_stop_tsc(Stopwatch *t)
         : "=r" (t->context.tc_tsc->rax1), "=r" (t->context.tc_tsc->rdx1)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
-    #endif
 }
 
 double stopwatch_runtime_tsc(Stopwatch *t)
@@ -141,15 +137,11 @@ uint64_t rdtsc(void)
      * cycles, but is not my main problem at the moment.
      */
 
-    #ifdef ENABLE_TSC
     uint64_t rax, rdx;
     uint32_t aux;
 
     __asm__ __volatile__ ( "rdtscp" : "=a" ( rax ), "=d" ( rdx ), "=c" (aux));
     return (rdx << 32) | rax;
-    #else
-    return 0;
-    #endif
 }
 
 double stopwatch_get_tsc_freq(void)
