@@ -5,6 +5,9 @@
 
 #include "stopwatch.h"
 
+/* TODO: Make this configurable */
+#define ENABLE_TSC
+
 /* Method lookup tables */
 
 void (*stopwatch_init_funcs[TIMER_MAX])(Stopwatch *t) = {
@@ -78,11 +81,12 @@ void stopwatch_init_tsc(Stopwatch *t)
 
 void stopwatch_start_tsc(Stopwatch *t)
 {
-    /* CPUID is used to serialise the RDTSC call.
+    /* CPUID ensures that instructions prior to RDTSC have been completed.
      *
      * Based on Gabriele Paolini's benchmark document for Intel.
      */
 
+    #ifdef ENABLE_TSC
     __asm__ __volatile__ (
         "cpuid\n"
         "rdtsc\n"
@@ -91,6 +95,7 @@ void stopwatch_start_tsc(Stopwatch *t)
         : "=r" (t->context.tc_tsc->rax0), "=r" (t->context.tc_tsc->rdx0)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
+    #endif
 }
 
 void stopwatch_stop_tsc(Stopwatch *t)
@@ -103,6 +108,7 @@ void stopwatch_stop_tsc(Stopwatch *t)
      * Based on Gabriele Paolini's benchmark document for Intel.
      */
 
+    #ifdef ENABLE_TSC
     __asm__ __volatile__ (
         "rdtscp\n"
         "movq %%rax, %0\n"
@@ -111,6 +117,7 @@ void stopwatch_stop_tsc(Stopwatch *t)
         : "=r" (t->context.tc_tsc->rax1), "=r" (t->context.tc_tsc->rdx1)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
+    #endif
 }
 
 double stopwatch_runtime_tsc(Stopwatch *t)
@@ -140,8 +147,12 @@ uint64_t rdtsc(void)
     uint64_t rax, rdx;
     uint32_t aux;
 
+    #ifdef ENABLE_TSC
     __asm__ __volatile__ ( "rdtscp" : "=a" ( rax ), "=d" ( rdx ), "=c" (aux));
     return (rdx << 32) | rax;
+    #else
+    return -1;
+    #endif
 }
 
 double stopwatch_get_tsc_freq(void)
