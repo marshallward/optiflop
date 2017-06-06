@@ -1,5 +1,3 @@
-/* FLOP test (based heavily on Alex Yee source) */
-
 #include <immintrin.h>  /* __m256, _m256_* */
 #include <pthread.h>    /* pthread_* */
 #include <stdint.h>     /* uint64_t */

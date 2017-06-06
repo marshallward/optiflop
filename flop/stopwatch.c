@@ -5,8 +5,6 @@
 
 #include "stopwatch.h"
 
-/* TODO: Make this configurable */
-
 /* Method lookup tables */
 
 void (*stopwatch_init_funcs[TIMER_MAX])(Stopwatch *t) = {

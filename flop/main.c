@@ -1,4 +1,3 @@
-/* FLOP test (based heavily on Alex Yee source) */
 #define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
 
 #include <omp.h>        /* omp_get_num_procs */
