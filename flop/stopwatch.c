@@ -143,14 +143,14 @@ uint64_t rdtsc(void)
      * cycles, but is not my main problem at the moment.
      */
 
+    #ifdef ENABLE_TSC
     uint64_t rax, rdx;
     uint32_t aux;
 
-    #ifdef ENABLE_TSC
     __asm__ __volatile__ ( "rdtscp" : "=a" ( rax ), "=d" ( rdx ), "=c" (aux));
     return (rdx << 32) | rax;
     #else
-    return -1;
+    return 0;
     #endif
 }
 
@@ -194,7 +194,6 @@ double stopwatch_get_tsc_freq(void)
     uint64_t cycles, d_start, d_end;
     double runtime;
 
-    int rt;
     int verbose = 1;    /* Not yet supported */
 
     /* Set the timer */
@@ -209,7 +208,7 @@ double stopwatch_get_tsc_freq(void)
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
         cycle_start2 = rdtsc();
 
-        rt = clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
+        clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
 
         cycle_end1 = rdtsc();
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
