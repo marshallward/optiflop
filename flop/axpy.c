@@ -24,7 +24,7 @@ void * axpy_main(void *args_in)
     args = (struct thread_args *) args_in;
 
     /* TODO: Determine dynamically with L1 size */
-    n = 3200;
+    n = args->vlen;
 
     posix_memalign((void *) &x, BYTEALIGN, n * sizeof(float));
     posix_memalign((void *) &y, BYTEALIGN, n * sizeof(float));

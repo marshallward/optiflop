@@ -17,25 +17,32 @@ int main(int argc, char *argv[])
     pthread_attr_t attr;
     cpu_set_t cpus;
     int nthreads, nprocs;
-    double min_runtime;
     struct thread_args *t_args;
     void *status;
 
     int b, t;
     int optflag;
-    int verbose = 0;
+    int verbose;
+    int vlen;
+    double min_runtime;
+
     double total_flops, total_bw_load, total_bw_store;
 
     /* Default values */
+    verbose = 0;
+    vlen = 3200;
     nthreads = 1;
     min_runtime = 1e-2;
 
     /* Command line parser */
 
-    while ((optflag = getopt(argc, argv, "vp:r:")) != -1) {
+    while ((optflag = getopt(argc, argv, "vl:p:r:")) != -1) {
         switch(optflag) {
             case 'v':
                 verbose = 1;
+                break;
+            case 'l':
+                vlen = (int) strtol(optarg, (char **) NULL, 10);
                 break;
             case 'p':
                 nthreads = (int) strtol(optarg, (char **) NULL, 10);
@@ -110,6 +117,7 @@ int main(int argc, char *argv[])
 
             /* Thread inputs */
             t_args[t].tid = t;
+            t_args[t].vlen = vlen;
             t_args[t].min_runtime = min_runtime;
             t_args[t].roof = roof_tests[b];
 

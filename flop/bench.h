@@ -15,6 +15,7 @@ struct thread_args {
     /* Input */
     int tid;
     double min_runtime;
+    int vlen;
     roof_ptr_t roof;
 
     /* Output */
