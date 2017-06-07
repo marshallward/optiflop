@@ -62,10 +62,11 @@ int main(int argc, char **argv)
 }
 
 
-double axpy(float a, float b, float *x, float *y, int n, int r_max)
+double axpy(float a, float b, float * x_in, float * y_in, int n, int r_max)
 {
-    __builtin_assume_aligned(x, BYTEALIGN);
-    __builtin_assume_aligned(y, BYTEALIGN);
+    float *x, *y;
+    x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    y = __builtin_assume_aligned(y_in, BYTEALIGN);
 
     int i, r;
     struct timespec ts_start, ts_end;

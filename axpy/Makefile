@@ -1,7 +1,7 @@
-#CC=gcc
-#CFLAGS=-march=corei7-avx -O2 -fargument-noalias
-CC=icc
-CFLAGS=-xavx -O2
+CC=gcc
+CFLAGS=-march=native -O3 -funroll-loops --param max-unroll-times=2
+#CC=icc
+#CFLAGS=-xavx -O3
 
 all: axpy
 
