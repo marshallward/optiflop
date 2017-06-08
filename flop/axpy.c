@@ -47,12 +47,6 @@ void * axpy_main(void *args_in)
 }
 
 
-void axpy(int i, float a, float b, float * x, float * y)
-{
-    y[i] = a * x[i] + y[i];
-}
-
-
 double roof_axpy(float a, float b,
                  float * restrict x_in, float * restrict y_in,
                  int n, double *flops, double min_runtime)
@@ -66,8 +60,6 @@ double roof_axpy(float a, float b,
     int midpt = n / 2;
     float runtime;
 
-    void (*roof_expr)(int, float, float, float *, float *);
-
     // TODO: Create a macro somewhere else
     #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
     x = __builtin_assume_aligned(x_in, BYTEALIGN);
@@ -80,17 +72,12 @@ double roof_axpy(float a, float b,
 
     r_max = 1;
     runtime_flag = 0;
-    roof_expr = &axpy;
     do {
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
             for (i = 0; i < n; i++)
-                //y[i] = y[i] + y[i];
-                //y[i] = a + x[i] + y[i];
-                //y[i] = a * x[i] + y[i];
-                //y[i] = a * x[i] * y[i];
-                (*roof_expr)(i, a, b, x, y);
+                y[i] = a * x[i] + y[i];
             // Create an impossible branch to prevent loop interchange
             if (y[midpt] < 0.) dummy(a, b, x, y);
         }
