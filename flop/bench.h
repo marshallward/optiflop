@@ -8,8 +8,27 @@
 /* TODO: Create a type here, or reduce the number of arguments */
 typedef void * (*bench_ptr_t) (void *);
 
-typedef double (*roof_ptr_t) (float, float, float *, float *,
-                              int, double *, double);
+//typedef double (*roof_ptr_t) (float, float, float *, float *,
+//                              int, double *, double);
+struct roof_args {
+    /* Config */
+    float min_runtime;
+
+    /* Fields */
+    int n;
+    float a;
+    float b;
+    float *x;
+    float *y;
+
+    /* Output */
+    double runtime;
+    double flops;
+    double bw_load;
+    double bw_store;
+};
+
+typedef void (*roof_ptr_t) (struct roof_args *);
 
 struct thread_args {
     /* Input */

@@ -14,13 +14,17 @@ LDFLAGS=-lrt
 all: gcc
 
 gcc: CC=gcc -std=gnu99
-gcc: CFLAGS=-march=$(GCC_ARCH) -O3
+gcc: CFLAGS=-g -march=$(GCC_ARCH) -O3
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
 intel: CC=icc -std=gnu99
-intel: CFLAGS=-xavx -O3
+intel: CFLAGS=-g -xavx -O3
 intel: flop
+
+stream: CC=icc -std=gnu99
+stream: CFLAGS=-xavx -O3 -mcmodel=medium -ffreestanding -qopt-streaming-stores always
+stream: flop
 
 knl: CC=icc
 knl: CFLAGS=-xMIC-AVX512 -O3
