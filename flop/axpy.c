@@ -86,6 +86,10 @@ void roof_copy(int n, float a, float b,
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
+            /* Intel is not unrolling, and suffers a slight penalty here.
+             * We compensate here by explicitly unrolling.
+             */
+            #pragma unroll(2)
             for (i = 0; i < n; i++)
                 y[i] = x[i];
             // Create an impossible branch to prevent loop interchange
