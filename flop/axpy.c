@@ -36,15 +36,9 @@ void * axpy_main(void *args_in)
     }
 
     rargs = malloc(sizeof(struct roof_args));
-    rargs->n = n;
-    rargs->a = a;
-    rargs->b = b;
-    rargs->x = x;
-    rargs->y = y;
     rargs->min_runtime = args->min_runtime;
 
-    //runtime = (*(args->roof))(a, b, x, y, n, &flops, args->min_runtime);
-    (*(args->roof))(rargs);
+    (*(args->roof))(n, a, b, x, y, rargs);
 
     args->runtime = rargs->runtime;
     args->flops = rargs->flops;
@@ -58,27 +52,31 @@ void * axpy_main(void *args_in)
 }
 
 
-void roof_copy(struct roof_args *args)
+/* `restrict` is deliberately not used here.
+ * When used, the compiler will not copy x to y, giving a nonsense result.
+ * Removing `restrict` forces an AVX vmovups copy, giving peak bandwidth
+ *
+ * However, Intel is not fooled, and never uses vmovups.  Need to fix this!
+ */
+void roof_copy(int n, float a, float b,
+               float * x_in, float * y_in,
+               struct roof_args *args)
 {
-    float a, b, *x, *y;
-
+    float *x;
+    float *y;
     Stopwatch *t;
 
     int r, r_max;
-    int i, n;
+    int i;
     int midpt = args->n / 2;
-    float runtime;
-
-    a = args->a;
-    b = args->b;
-    n = args->n;
+    double runtime;
 
     // TODO: Create a macro somewhere else
     #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(args->x, BYTEALIGN);
-    y = __builtin_assume_aligned(args->y, BYTEALIGN);
+    x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    y = __builtin_assume_aligned(y_in, BYTEALIGN);
     #else
-    x = args->x; y = args->y;
+    x = x_in; y = y_in;
     #endif
 
     t = stopwatch_create(TIMER_POSIX);
@@ -109,6 +107,7 @@ void roof_copy(struct roof_args *args)
 
     } while (!runtime_flag);
 
+    args->runtime = runtime;
     args->flops = 0.;
     args->bw_load = n * sizeof(float) * r_max / runtime;
     args->bw_store = n * sizeof(float) * r_max / runtime;
@@ -118,27 +117,25 @@ void roof_copy(struct roof_args *args)
 }
 
 
-void roof_ax(struct roof_args *args)
+void roof_ax(int n, float a, float b,
+             float * restrict x_in, float * restrict y_in,
+             struct roof_args *args)
 {
-    float a, b, *x, *y;
+    float *x, *y;
 
     Stopwatch *t;
 
     int r, r_max;
-    int i, n;
+    int i;
     int midpt = args->n / 2;
-    float runtime;
-
-    a = args->a;
-    b = args->b;
-    n = args->n;
+    double runtime;
 
     // TODO: Create a macro somewhere else
     #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(args->x, BYTEALIGN);
-    y = __builtin_assume_aligned(args->y, BYTEALIGN);
+    x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    y = __builtin_assume_aligned(y_in, BYTEALIGN);
     #else
-    x = args->x; y = args->y;
+    x = x_in; y = y_in;
     #endif
 
     t = stopwatch_create(TIMER_POSIX);
@@ -169,6 +166,7 @@ void roof_ax(struct roof_args *args)
 
     } while (!runtime_flag);
 
+    args->runtime = runtime;
     args->flops = n * r_max / runtime;
     args->bw_load = n * sizeof(float) * r_max / runtime;
     args->bw_store = n * sizeof(float) * r_max / runtime;
@@ -178,27 +176,25 @@ void roof_ax(struct roof_args *args)
 }
 
 
-void roof_xpy(struct roof_args *args)
+void roof_xpy(int n, float a, float b,
+              float * restrict x_in, float * restrict y_in,
+              struct roof_args *args)
 {
-    float a, b, *x, *y;
+    float *x, *y;
 
     Stopwatch *t;
 
     int r, r_max;
-    int i, n;
+    int i;
     int midpt = args->n / 2;
-    float runtime;
-
-    a = args->a;
-    b = args->b;
-    n = args->n;
+    double runtime;
 
     // TODO: Create a macro somewhere else
     #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(args->x, BYTEALIGN);
-    y = __builtin_assume_aligned(args->y, BYTEALIGN);
+    x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    y = __builtin_assume_aligned(y_in, BYTEALIGN);
     #else
-    x = args->x; y = args->y;
+    x = x_in; y = y_in;
     #endif
 
     t = stopwatch_create(TIMER_POSIX);
@@ -229,6 +225,7 @@ void roof_xpy(struct roof_args *args)
 
     } while (!runtime_flag);
 
+    args->runtime = runtime;
     args->flops = n * r_max / runtime;
     args->bw_load = 2. * n * sizeof(float) * r_max / runtime;
     args->bw_store = n * sizeof(float) * r_max / runtime;
@@ -238,27 +235,25 @@ void roof_xpy(struct roof_args *args)
 }
 
 
-void roof_axpy(struct roof_args *args)
+void roof_axpy(int n, float a, float b,
+               float * restrict x_in, float * restrict y_in,
+               struct roof_args *args)
 {
-    float a, b, *x, *y;
+    float *x, *y;
 
     Stopwatch *t;
 
     int r, r_max;
-    int i, n;
+    int i;
     int midpt = args->n / 2;
-    float runtime;
-
-    a = args->a;
-    b = args->b;
-    n = args->n;
+    double runtime;
 
     // TODO: Create a macro somewhere else
     #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(args->x, BYTEALIGN);
-    y = __builtin_assume_aligned(args->y, BYTEALIGN);
+    x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    y = __builtin_assume_aligned(y_in, BYTEALIGN);
     #else
-    x = args->x; y = args->y;
+    x = x_in; y = y_in;
     #endif
 
     t = stopwatch_create(TIMER_POSIX);
@@ -289,6 +284,7 @@ void roof_axpy(struct roof_args *args)
 
     } while (!runtime_flag);
 
+    args->runtime = runtime;
     args->flops = 2. * n * r_max / runtime;
     args->bw_load = 2. * n * sizeof(float) * r_max / runtime;
     args->bw_store = n * sizeof(float) * r_max / runtime;
@@ -298,27 +294,25 @@ void roof_axpy(struct roof_args *args)
 }
 
 
-void roof_axpby(struct roof_args *args)
+void roof_axpby(int n, float a, float b,
+                float * restrict x_in, float * restrict y_in,
+                struct roof_args *args)
 {
-    float a, b, *x, *y;
+    float *x, *y;
 
     Stopwatch *t;
 
     int r, r_max;
-    int i, n;
+    int i;
     int midpt = args->n / 2;
-    float runtime;
-
-    a = args->a;
-    b = args->b;
-    n = args->n;
+    double runtime;
 
     // TODO: Create a macro somewhere else
     #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(args->x, BYTEALIGN);
-    y = __builtin_assume_aligned(args->y, BYTEALIGN);
+    x = __builtin_assume_aligned(x_in, BYTEALIGN);
+    y = __builtin_assume_aligned(y_in, BYTEALIGN);
     #else
-    x = args->x; y = args->y;
+    x = x_in; y = y_in;
     #endif
 
     t = stopwatch_create(TIMER_POSIX);
@@ -349,6 +343,7 @@ void roof_axpby(struct roof_args *args)
 
     } while (!runtime_flag);
 
+    args->runtime = runtime;
     args->flops = 3. * n * r_max / runtime;
     args->bw_load = 2. * n * sizeof(float) * r_max / runtime;
     args->bw_store = n * sizeof(float) * r_max / runtime;

@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
                     benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
 
         if (total_bw_load > 0. && total_bw_store > 0.)
-            printf("%s MB/s: %.12f (%.12f / thread)\n",
+            printf("%s GB/s: %.12f (%.12f / thread)\n",
                     benchnames[b], (total_bw_load + total_bw_store) / 1e9,
                     (total_bw_load + total_bw_store) / nthreads / 1e9);
 
