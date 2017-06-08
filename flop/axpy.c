@@ -52,14 +52,13 @@ void * axpy_main(void *args_in)
 }
 
 
-/* `restrict` is deliberately not used here.
- * When used, the compiler will not copy x to y, giving a nonsense result.
- * Removing `restrict` forces an AVX vmovups copy, giving peak bandwidth
+/* Many compilers (gcc, icc) will ignore this loop and use its builtin memcpy
+ * function, which generally performs worse than AVX.
  *
- * However, Intel is not fooled, and never uses vmovups.  Need to fix this!
+ * To avoid this issue, make sure to disable builtins.
  */
 void roof_copy(int n, float a, float b,
-               float * x_in, float * y_in,
+               float * restrict x_in, float * restrict y_in,
                struct roof_args *args)
 {
     float *x;
