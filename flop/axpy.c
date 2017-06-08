@@ -60,10 +60,11 @@ double roof_axpy(float a, float b,
     float *x, *y;
 
     Stopwatch *t;
-    float runtime;
 
-    int i, r;
-    int r_max;
+    int r, r_max;
+    int i;
+    int midpt = n / 2;
+    float runtime;
 
     void (*roof_expr)(int, float, float, float *, float *);
 
@@ -87,9 +88,11 @@ double roof_axpy(float a, float b,
             for (i = 0; i < n; i++)
                 //y[i] = y[i] + y[i];
                 //y[i] = a + x[i] + y[i];
-                y[i] = a * x[i] + y[i];
+                //y[i] = a * x[i] + y[i];
                 //y[i] = a * x[i] * y[i];
                 (*roof_expr)(i, a, b, x, y);
+            // Create an impossible branch to prevent loop interchange
+            if (y[midpt] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);
