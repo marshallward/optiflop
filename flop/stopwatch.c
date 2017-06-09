@@ -255,4 +255,5 @@ double stopwatch_runtime_posix(Stopwatch *t)
 void stopwatch_destroy_posix(Stopwatch *t)
 {
     free(t->context.tc_posix);
+    free(t);
 }

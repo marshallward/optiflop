@@ -55,7 +55,7 @@ void * axpy_main(void *args_in)
 /* Many compilers (gcc, icc) will ignore this loop and use its builtin memcpy
  * function, which generally performs worse than AVX.
  *
- * To avoid this issue, make sure to disable builtins.
+ * To avoid this issue, make sure to disable builtins (usually `-fno-builtin`).
  */
 void roof_copy(int n, float a, float b,
                float * restrict x_in, float * restrict y_in,

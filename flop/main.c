@@ -157,6 +157,7 @@ int main(int argc, char *argv[])
 
     pthread_attr_destroy(&attr);
     pthread_mutex_destroy(&runtime_mutex);
+    free(t_args);
     free(threads);
 
     pthread_exit(NULL);
