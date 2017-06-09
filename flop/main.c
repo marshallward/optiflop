@@ -151,6 +151,10 @@ int main(int argc, char *argv[])
                        t, benchnames[b], t_args[t].runtime);
                 printf("    - Thread %i %s gflops: %.12f\n",
                        t, benchnames[b], t_args[t].flops /  1e9);
+                printf("    - Thread %i %s load BW: %.12f\n",
+                       t, benchnames[b], t_args[t].bw_load /  1e9);
+                printf("    - Thread %i %s store BW: %.12f\n",
+                       t, benchnames[b], t_args[t].bw_store /  1e9);
             }
         }
     }
