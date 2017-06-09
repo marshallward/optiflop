@@ -56,7 +56,6 @@ Stopwatch * stopwatch_create(enum stopwatch_type type)
     Stopwatch *t;
 
     t = malloc(sizeof(Stopwatch));
-    t->context.tc_untyped = malloc(stopwatch_context_size[type]);
 
     t->start = stopwatch_start_funcs[type];
     t->stop = stopwatch_stop_funcs[type];
