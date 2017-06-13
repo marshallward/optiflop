@@ -19,7 +19,7 @@ gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
 intel: CC=icc -std=gnu99 -g
-intel: CFLAGS=-xavx -O3 -fno-builtin
+intel: CFLAGS=-xavx -O3
 intel: flop
 
 stream: CC=icc -std=gnu99

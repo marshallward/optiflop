@@ -89,7 +89,6 @@ void roof_copy(int n, float a, float b,
             /* Intel is not unrolling, and suffers a slight penalty here.
              * We compensate here by explicitly unrolling.
              */
-            #pragma unroll(2)
             for (i = 0; i < n; i++)
                 y[i] = x[i];
             // Create an impossible branch to prevent loop interchange
