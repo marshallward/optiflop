@@ -14,7 +14,7 @@ LDFLAGS=-lrt
 all: gcc
 
 gcc: CC=gcc -std=gnu99 -g
-gcc: CFLAGS=-march=$(GCC_ARCH) -O3 -fno-builtin
+gcc: CFLAGS=-march=$(GCC_ARCH) -O3 -fno-builtin -mavx512f
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
