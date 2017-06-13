@@ -5,11 +5,6 @@
 #include "bench.h"
 #include "stopwatch.h"
 
-/* If unset, assume AVX alignment */
-#ifndef BYTEALIGN
-#define BYTEALIGN 32
-#endif
-
 void * axpy_main(void *args_in)
 {
     /* Thread input */
@@ -73,8 +68,8 @@ void roof_copy(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
-    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -127,8 +122,8 @@ void roof_ax(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
-    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -181,8 +176,8 @@ void roof_xpy(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
-    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -235,8 +230,8 @@ void roof_axpy(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
-    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -289,8 +284,8 @@ void roof_axpby(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
-    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(TIMER_POSIX);
 

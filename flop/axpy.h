@@ -3,10 +3,15 @@
 
 #include "bench.h"
 
+/* If unset, assume AVX alignment */
+#ifndef BYTEALIGN
+#define BYTEALIGN 32
+#endif
+
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-#define ASSUME_ALIGNED(x, n) __builtin_assume_aligned(x, n)
+#define ASSUME_ALIGNED(x) __builtin_assume_aligned(x, BYTEALIGN)
 #else
-#define ASSUME_ALIGNED(x, n) x
+#define ASSUME_ALIGNED(x) x
 #endif
 
 void * axpy_main(void *);
