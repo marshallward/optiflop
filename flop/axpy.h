@@ -3,6 +3,12 @@
 
 #include "bench.h"
 
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
+#define ASSUME_ALIGNED(x, n) __builtin_assume_aligned(x, n)
+#else
+#define ASSUME_ALIGNED(x, n) x
+#endif
+
 void * axpy_main(void *);
 
 void roof_copy(int, float, float, float *, float *, struct roof_args *);

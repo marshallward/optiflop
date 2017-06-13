@@ -53,7 +53,7 @@ void * axpy_main(void *args_in)
 
 
 /* Many compilers (gcc, icc) will ignore this loop and use its builtin memcpy
- * function, which generally performs worse than AVX.
+ * function, which can perform worse than vectorised loops.
  *
  * To avoid this issue, make sure to disable builtins (usually `-fno-builtin`).
  */
@@ -70,13 +70,8 @@ void roof_copy(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    // TODO: Create a macro somewhere else
-    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(x_in, BYTEALIGN);
-    y = __builtin_assume_aligned(y_in, BYTEALIGN);
-    #else
-    x = x_in; y = y_in;
-    #endif
+    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
+    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -132,13 +127,8 @@ void roof_ax(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    // TODO: Create a macro somewhere else
-    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(x_in, BYTEALIGN);
-    y = __builtin_assume_aligned(y_in, BYTEALIGN);
-    #else
-    x = x_in; y = y_in;
-    #endif
+    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
+    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -191,13 +181,8 @@ void roof_xpy(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    // TODO: Create a macro somewhere else
-    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(x_in, BYTEALIGN);
-    y = __builtin_assume_aligned(y_in, BYTEALIGN);
-    #else
-    x = x_in; y = y_in;
-    #endif
+    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
+    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -250,13 +235,8 @@ void roof_axpy(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    // TODO: Create a macro somewhere else
-    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(x_in, BYTEALIGN);
-    y = __builtin_assume_aligned(y_in, BYTEALIGN);
-    #else
-    x = x_in; y = y_in;
-    #endif
+    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
+    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
 
     t = stopwatch_create(TIMER_POSIX);
 
@@ -309,13 +289,8 @@ void roof_axpby(int n, float a, float b,
     int midpt = args->n / 2;
     double runtime;
 
-    // TODO: Create a macro somewhere else
-    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
-    x = __builtin_assume_aligned(x_in, BYTEALIGN);
-    y = __builtin_assume_aligned(y_in, BYTEALIGN);
-    #else
-    x = x_in; y = y_in;
-    #endif
+    x = ASSUME_ALIGNED(x_in, BYTEALIGN);
+    y = ASSUME_ALIGNED(y_in, BYTEALIGN);
 
     t = stopwatch_create(TIMER_POSIX);
 
