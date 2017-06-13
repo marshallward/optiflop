@@ -27,7 +27,7 @@ stream: CFLAGS=-xavx -O3 -mcmodel=medium -ffreestanding -qopt-streaming-stores a
 stream: flop
 
 knl: CC=icc
-knl: CFLAGS=-xMIC-AVX512 -O3
+knl: CFLAGS=-std=gnu99 -xMIC-AVX512 -O3 -DBYTEALIGN=64
 knl: flop
 
 flop: main.o bench.o stopwatch.o avx.o axpy.o dummy.o

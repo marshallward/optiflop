@@ -5,7 +5,9 @@
 #include "bench.h"
 #include "stopwatch.h"
 
+#ifndef BYTEALIGN
 #define BYTEALIGN 32
+#endif
 
 void * axpy_main(void *args_in)
 {
