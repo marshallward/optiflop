@@ -223,7 +223,7 @@ void * avx_fma(void *args_in)
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < r_max; i++) {
-            #pragma unroll
+            #pragma unroll(n_avx512)
             for (j = 0; j < n_avx512; j++)
                 r[j] = _mm512_fmadd_ps(r[j], mul0, add0);
         }
@@ -249,7 +249,7 @@ void * avx_fma(void *args_in)
         r[0] = _mm512_add_ps(r[0], r[j]);
     result = reduce_AVX512(r[0]);
 
-    /* (iterations) * (16 instruction / register) * (2 flops / instruction) * (n_avx512 registers / iteration)
+    /* (iterations) * (16 instruction / register) * (2 flops / instruction) * (n_avx512 registers / iteration) */
     flops = r_max * 16 * 2 * n_avx512 / runtime;
 
     /* Cleanup */
