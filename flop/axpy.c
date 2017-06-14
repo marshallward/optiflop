@@ -65,7 +65,6 @@ void roof_copy(int n, float a, float b,
 
     int r, r_max;
     int i;
-    int midpt = args->n / 2;
     double runtime;
 
     x = ASSUME_ALIGNED(x_in);
@@ -119,7 +118,6 @@ void roof_ax(int n, float a, float b,
 
     int r, r_max;
     int i;
-    int midpt = args->n / 2;
     double runtime;
 
     x = ASSUME_ALIGNED(x_in);
@@ -173,7 +171,6 @@ void roof_xpy(int n, float a, float b,
 
     int r, r_max;
     int i;
-    int midpt = args->n / 2;
     double runtime;
 
     x = ASSUME_ALIGNED(x_in);
@@ -227,7 +224,6 @@ void roof_axpy(int n, float a, float b,
 
     int r, r_max;
     int i;
-    int midpt = args->n / 2;
     double runtime;
 
     x = ASSUME_ALIGNED(x_in);
@@ -281,7 +277,6 @@ void roof_axpby(int n, float a, float b,
 
     int r, r_max;
     int i;
-    int midpt = args->n / 2;
     double runtime;
 
     x = ASSUME_ALIGNED(x_in);
