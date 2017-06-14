@@ -82,7 +82,7 @@ void roof_copy(int n, float a, float b,
             for (i = 0; i < n; i++)
                 y[i] = x[i];
             // Create an impossible branch to prevent loop interchange
-            if (y[midpt] < 0.) dummy(a, b, x, y);
+            if (y[0] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -136,7 +136,7 @@ void roof_ax(int n, float a, float b,
             for (i = 0; i < n; i++)
                 y[i] = a * x[i];
             // Create an impossible branch to prevent loop interchange
-            if (y[midpt] < 0.) dummy(a, b, x, y);
+            if (y[0] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -190,7 +190,7 @@ void roof_xpy(int n, float a, float b,
             for (i = 0; i < n; i++)
                 y[i] = x[i] + y[i];
             // Create an impossible branch to prevent loop interchange
-            if (y[midpt] < 0.) dummy(a, b, x, y);
+            if (y[0] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -244,7 +244,7 @@ void roof_axpy(int n, float a, float b,
             for (i = 0; i < n; i++)
                 y[i] = a * x[i] + y[i];
             // Create an impossible branch to prevent loop interchange
-            if (y[midpt] < 0.) dummy(a, b, x, y);
+            if (y[0] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -298,7 +298,7 @@ void roof_axpby(int n, float a, float b,
             for (i = 0; i < n; i++)
                 y[i] = a * x[i] + b * y[i];
             // Create an impossible branch to prevent loop interchange
-            if (y[midpt] < 0.) dummy(a, b, x, y);
+            if (y[0] < 0.) dummy(a, b, x, y);
         }
         t->stop(t);
         runtime = t->runtime(t);

@@ -23,26 +23,38 @@ int main(int argc, char *argv[])
     int b, t;
     int optflag;
     int verbose;
-    int vlen;
+    int vlen, vlen_end;
     double min_runtime;
+
+    int save_output;
+    FILE *output;
+    double *results;
 
     double total_flops, total_bw_load, total_bw_store;
 
     /* Default values */
     verbose = 0;
+    save_output = 0;
     vlen = 3200;
+    vlen_end = -1;
     nthreads = 1;
     min_runtime = 1e-2;
 
     /* Command line parser */
 
-    while ((optflag = getopt(argc, argv, "vl:p:r:")) != -1) {
+    while ((optflag = getopt(argc, argv, "vol:e:p:r:")) != -1) {
         switch(optflag) {
             case 'v':
                 verbose = 1;
                 break;
+            case 'o':
+                save_output = 1;
+                break;
             case 'l':
                 vlen = (int) strtol(optarg, (char **) NULL, 10);
+                break;
+            case 'e':
+                vlen_end = (int) strtol(optarg, (char **) NULL, 10);
                 break;
             case 'p':
                 nthreads = (int) strtol(optarg, (char **) NULL, 10);
@@ -54,6 +66,8 @@ int main(int argc, char *argv[])
                 abort();
         }
     }
+
+    if (vlen_end < 0) vlen_end = vlen + 1;
 
     nprocs = omp_get_num_procs();
     if (nthreads > nprocs) {
@@ -109,57 +123,79 @@ int main(int argc, char *argv[])
         &roof_axpby,
     0};
 
-    for (b = 0; benchmarks[b]; b++) {
-        for (t = 0; t < nthreads; t++) {
-            /* TODO: Better way to keep processes off the busy threads */
-            if (nthreads > 1) {
-                CPU_ZERO(&cpus);
-                CPU_SET(t, &cpus);
-                pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
-            }
+    /* IO setup */
+    if (save_output) {
+        results = malloc(8 * sizeof(double));
+        output = fopen("results.txt", "w");
+    }
 
-            /* Thread inputs */
-            t_args[t].tid = t;
-            t_args[t].vlen = vlen;
-            t_args[t].min_runtime = min_runtime;
-            t_args[t].roof = roof_tests[b];
-
-            pthread_create(&threads[t], &attr, benchmarks[b], (void *) &t_args[t]);
-        }
-
-        for (t = 0; t < nthreads; t++)
-            pthread_join(threads[t], &status);
-
-        total_flops = 0.0;
-        total_bw_load = 0.0;
-        total_bw_store = 0.0;
-        for (t = 0; t < nthreads; t++) {
-            total_flops += t_args[t].flops;
-            total_bw_load += t_args[t].bw_load;
-            total_bw_store += t_args[t].bw_store;
-        }
-
-        if (total_flops > 0.)
-            printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
-                    benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
-
-        if (total_bw_load > 0. && total_bw_store > 0.)
-            printf("%s GB/s: %.12f (%.12f / thread)\n",
-                    benchnames[b], (total_bw_load + total_bw_store) / 1e9,
-                    (total_bw_load + total_bw_store) / nthreads / 1e9);
-
-        if (verbose) {
+    /* NOTE: the avx_* tests don't depend on vector length */
+    for (vlen; vlen < vlen_end; vlen++) {
+        for (b = 0; benchmarks[b]; b++) {
             for (t = 0; t < nthreads; t++) {
-                printf("    - Thread %i %s runtime: %.12f\n",
-                       t, benchnames[b], t_args[t].runtime);
-                printf("    - Thread %i %s gflops: %.12f\n",
-                       t, benchnames[b], t_args[t].flops /  1e9);
-                printf("    - Thread %i %s load BW: %.12f\n",
-                       t, benchnames[b], t_args[t].bw_load /  1e9);
-                printf("    - Thread %i %s store BW: %.12f\n",
-                       t, benchnames[b], t_args[t].bw_store /  1e9);
+                /* TODO: Better way to keep processes off the busy threads */
+                if (nthreads > 1) {
+                    CPU_ZERO(&cpus);
+                    CPU_SET(t, &cpus);
+                    pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+                }
+
+                /* Thread inputs */
+                t_args[t].tid = t;
+                t_args[t].vlen = vlen;
+                t_args[t].min_runtime = min_runtime;
+                t_args[t].roof = roof_tests[b];
+
+                pthread_create(&threads[t], &attr, benchmarks[b], (void *) &t_args[t]);
             }
+
+            for (t = 0; t < nthreads; t++)
+                pthread_join(threads[t], &status);
+
+            total_flops = 0.0;
+            total_bw_load = 0.0;
+            total_bw_store = 0.0;
+            for (t = 0; t < nthreads; t++) {
+                total_flops += t_args[t].flops;
+                total_bw_load += t_args[t].bw_load;
+                total_bw_store += t_args[t].bw_store;
+            }
+
+            if (total_flops > 0.)
+                printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
+                        benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
+
+            if (total_bw_load > 0. && total_bw_store > 0.)
+                printf("%s GB/s: %.12f (%.12f / thread)\n",
+                        benchnames[b], (total_bw_load + total_bw_store) / 1e9,
+                        (total_bw_load + total_bw_store) / nthreads / 1e9);
+
+            if (verbose) {
+                for (t = 0; t < nthreads; t++) {
+                    printf("    - Thread %i %s runtime: %.12f\n",
+                           t, benchnames[b], t_args[t].runtime);
+                    printf("    - Thread %i %s gflops: %.12f\n",
+                           t, benchnames[b], t_args[t].flops /  1e9);
+                    printf("    - Thread %i %s load BW: %.12f\n",
+                           t, benchnames[b], t_args[t].bw_load /  1e9);
+                    printf("    - Thread %i %s store BW: %.12f\n",
+                           t, benchnames[b], t_args[t].bw_store /  1e9);
+                }
+            }
+
+            /* Store results for model output */
+            if (save_output)
+                results[b] = total_flops;
         }
+
+        if (save_output)
+            fprintf(output, "%i,%f,%f\n", vlen, results[3], results[4]);
+    }
+
+    /* IO cleanup */
+    if (save_output) {
+        free(results);
+        fclose(output);
     }
 
     pthread_attr_destroy(&attr);
@@ -167,5 +203,5 @@ int main(int argc, char *argv[])
     free(t_args);
     free(threads);
 
-    pthread_exit(NULL);
+    return 0;
 }
