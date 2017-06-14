@@ -14,7 +14,7 @@ LDFLAGS=-lrt
 all: gcc
 
 gcc: CC=gcc -std=gnu99 -g
-gcc: CFLAGS=-march=$(GCC_ARCH) -O3 -fno-builtin -mavx512f
+gcc: CFLAGS=-march=$(GCC_ARCH) -O3 -fno-builtin
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
@@ -33,16 +33,16 @@ knl: flop
 flop: main.o bench.o stopwatch.o avx.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
 
-main.o: main.c bench.h
+main.o: main.c avx.h axpy.h bench.h
 	$(CC) -c -pthread -o $@ $<
 
 bench.o: bench.c bench.h
 	$(CC) -c -pthread -o $@ $<
 
-avx.o: avx.c stopwatch.h
+avx.o: avx.c avx.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-axpy.o: axpy.c stopwatch.h
+axpy.o: axpy.c axpy.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
 dummy.o: dummy.c
