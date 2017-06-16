@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     double vlen_scale;
     double min_runtime;
 
+    int nbench;
     int save_output;
     FILE *output;
     double *results;
@@ -131,7 +132,9 @@ int main(int argc, char *argv[])
 
     /* IO setup */
     if (save_output) {
-        results = malloc(8 * sizeof(double));
+        for (nbench = 0; benchmarks[nbench]; nbench++);
+
+        results = malloc(nbench * sizeof(double));
         output = fopen("results.txt", "w");
     }
 
@@ -195,7 +198,8 @@ int main(int argc, char *argv[])
         }
 
         if (save_output)
-            fprintf(output, "%i,%f,%f\n", vlen, results[3], results[4]);
+            fprintf(output, "%i,%f,%f,%f,%f\n", vlen,
+                    results[3], results[4], results[5], results[6]);
     }
 
     /* IO cleanup */
