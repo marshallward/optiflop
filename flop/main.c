@@ -1,5 +1,6 @@
 #define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
 
+#include <math.h>
 #include <omp.h>        /* omp_get_num_procs */
 #include <pthread.h>    /* pthread_*, CPU_* */
 #include <sched.h>      /* CPU_* */
@@ -23,7 +24,8 @@ int main(int argc, char *argv[])
     int b, t;
     int optflag;
     int verbose;
-    int vlen, vlen_end;
+    int vlen, vlen_start, vlen_end;
+    double vlen_scale;
     double min_runtime;
 
     int save_output;
@@ -35,14 +37,15 @@ int main(int argc, char *argv[])
     /* Default values */
     verbose = 0;
     save_output = 0;
-    vlen = 3200;
+    vlen_start = 3200;
     vlen_end = -1;
+    vlen_scale = 2.;
     nthreads = 1;
     min_runtime = 1e-2;
 
     /* Command line parser */
 
-    while ((optflag = getopt(argc, argv, "vol:e:p:r:")) != -1) {
+    while ((optflag = getopt(argc, argv, "vol:e:s:p:r:")) != -1) {
         switch(optflag) {
             case 'v':
                 verbose = 1;
@@ -51,10 +54,13 @@ int main(int argc, char *argv[])
                 save_output = 1;
                 break;
             case 'l':
-                vlen = (int) strtol(optarg, (char **) NULL, 10);
+                vlen_start = (int) strtol(optarg, (char **) NULL, 10);
                 break;
             case 'e':
                 vlen_end = (int) strtol(optarg, (char **) NULL, 10);
+                break;
+            case 's':
+                vlen_scale = strtod(optarg, NULL);
                 break;
             case 'p':
                 nthreads = (int) strtol(optarg, (char **) NULL, 10);
@@ -67,7 +73,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (vlen_end < 0) vlen_end = vlen + 1;
+    if (vlen_end < 0) vlen_end = vlen_start + 1;
 
     nprocs = omp_get_num_procs();
     if (nthreads > nprocs) {
@@ -130,7 +136,7 @@ int main(int argc, char *argv[])
     }
 
     /* NOTE: the avx_* tests don't depend on vector length */
-    for (vlen; vlen < vlen_end; vlen++) {
+    for (vlen = vlen_start; vlen < vlen_end; vlen = ceil(vlen * vlen_scale)) {
         for (b = 0; benchmarks[b]; b++) {
             for (t = 0; t < nthreads; t++) {
                 /* TODO: Better way to keep processes off the busy threads */

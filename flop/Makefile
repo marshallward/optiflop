@@ -9,7 +9,7 @@ else # Roll the dice...
 	GCC_ARCH=native
 endif
 
-LDFLAGS=-lrt
+LDFLAGS=-lrt -lm
 
 all: gcc
 
