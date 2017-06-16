@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     int nbench;
     int save_output;
     FILE *output;
-    double *results;
+    double **results;
 
     double total_flops, total_bw_load, total_bw_store;
 
@@ -134,7 +134,10 @@ int main(int argc, char *argv[])
     if (save_output) {
         for (nbench = 0; benchmarks[nbench]; nbench++);
 
-        results = malloc(nbench * sizeof(double));
+        results = malloc(2 * sizeof(double *));
+        results[0] = malloc(nbench * sizeof(double));
+        results[1] = malloc(nbench * sizeof(double));
+
         output = fopen("results.txt", "w");
     }
 
@@ -193,13 +196,16 @@ int main(int argc, char *argv[])
             }
 
             /* Store results for model output */
-            if (save_output)
-                results[b] = total_flops;
+            if (save_output) {
+                results[0][b] = total_flops;
+                results[1][b] = total_bw_load + total_bw_store;
+            }
         }
 
         if (save_output)
-            fprintf(output, "%i,%f,%f,%f,%f\n", vlen,
-                    results[3], results[4], results[5], results[6]);
+            fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n", vlen,
+                    results[0][3], results[0][4], results[0][5], results[0][6],
+                    results[1][2], results[1][3], results[1][4], results[1][5], results[1][6]);
     }
 
     /* IO cleanup */
