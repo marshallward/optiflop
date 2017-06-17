@@ -5,27 +5,30 @@ from fractions import Fraction
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Ideal performances
+# Theoretical performance
+# (Sandy Bridge Raijin numbers below)
 
 # TODO: Use avx_add/avx_mac to get these values
+platform = 'Raijin, E5-2670'
+
 n_avx = 8
 f_peak = 3.3e9
 P_peak = n_avx * f_peak
 
-p_min, p_max = -4, 2
+p_min, p_max = -6, 2
 perf_grid = P_peak * 2.**np.arange(p_min, p_max + 1)
 
 # Single-channel DRAM bandwidth
 # (This is not exactly correct, fix it up...)
 f_dram = 800e6      # RAM frequency (800 MHz)
-ddr = 2             # Two sends per cycle (DDR)
+ddr = 2             # Two sends per cycle (DDR) (DDR3 is more like 4 or 8?)
 bus_width = 8       # 64-bit bus width
 n_channels = 4      # Raijin has 4-channel DRAM (but don't use it here)
-bw_dram = f_dram * ddr * bus_width  # Single-channel!
+bw_dram = f_dram * ddr * bus_width  # Single-channel? (No...)
 
 # L1 bandwidth
-bw_l1l = 32 * f_peak
-bw_l1s = 16 * f_peak
+bw_l1l = 32 * f_peak    # 32-byte/cycle loads
+bw_l1s = 16 * f_peak    # 16-byte/cycle stores
 
 ai_l1l = P_peak / bw_l1l
 ai_l1s = P_peak / bw_l1s
@@ -62,7 +65,7 @@ x_ai[3][:] = 0.375 * x_ai[3][:]
 
 fig, ax = plt.subplots()
 
-ax.set_title('Single-core roofline (Raijin, E5-2670, 3.3 GHz)')
+ax.set_title('Single-core roofline ({})'.format(platform))
 ax.set_xlabel('Arithmetic Intensity (FLOPs / byte)')
 ax.set_ylabel('Performance (GFLOPs / sec)')
 
@@ -136,7 +139,10 @@ ax.text(tx, bw_dram * tx * 1.15,
         'DRAM ({:.1f} GB/sec)'.format(bw_dram / 1e9),
         rotation=45., ha='center', va='center')
 
-for (x, y) in zip(x_ai[:4], y_results[:4]):
+for (x, y) in zip(x_ai[1:4], y_results[1:4]):
     ax.scatter(x, y)
+
+# Dumb: redraw (0) to put it in front
+ax.scatter(x_ai[0], y_results[0])
 
 plt.show()
