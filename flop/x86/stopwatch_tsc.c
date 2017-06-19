@@ -4,7 +4,9 @@
 #include <stdio.h>
 
 #include "stopwatch.h"
-#include "stopwatch_tsc.h"
+
+/* Header */
+double stopwatch_get_tsc_freq(void);
 
 void stopwatch_init_tsc(Stopwatch *t)
 {

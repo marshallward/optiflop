@@ -51,7 +51,7 @@ dummy.o: dummy.c
 stopwatch.o: stopwatch.c stopwatch.h
 	$(CC) -O2 -c -o $@ $<
 
-stopwatch_tsc.o: x86/stopwatch_tsc.c x86/stopwatch_tsc.h
+stopwatch_tsc.o: x86/stopwatch_tsc.c
 	$(CC) -O2 -c -o $@ $<
 
 clean:

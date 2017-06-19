@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "stopwatch.h"
-#include "x86/stopwatch_tsc.h"
 
 /* Method lookup tables */
 
@@ -31,13 +30,6 @@ double (*stopwatch_runtime_funcs[TIMER_MAX])(Stopwatch *t) = {
 void (*stopwatch_destroy_funcs[TIMER_MAX])(Stopwatch *t) = {
     stopwatch_destroy_posix,
     stopwatch_destroy_tsc,
-};
-
-/* Context definitions */
-
-struct stopwatch_context_posix_t {
-    clockid_t clock;
-    struct timespec ts_start, ts_end;
 };
 
 const size_t stopwatch_context_size[TIMER_MAX] = {

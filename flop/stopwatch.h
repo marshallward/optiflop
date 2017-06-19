@@ -1,7 +1,6 @@
-#ifndef TIMER_H_
-#define TIMER_H_
+#ifndef STOPWATCH_H_
+#define STOPWATCH_H_
 
-#include <pthread.h> /* pthread_* */
 #include <stdint.h> /* uint64_t */
 #include <time.h> 	/* clockid_t, timespec */
 
@@ -35,9 +34,30 @@ typedef struct Stopwatch_struct {
     void (*destroy)();
 } Stopwatch;
 
+/* Context definitions */
+/* TODO: Can I move these out of the header? */
+
+struct stopwatch_context_tsc_t {
+    double cpufreq;
+    uint64_t rax0, rdx0, rax1, rdx1;
+};
+
+struct stopwatch_context_posix_t {
+    clockid_t clock;
+    struct timespec ts_start, ts_end;
+};
+
 /* Generic Timer methods */
 
 Stopwatch * stopwatch_create(enum stopwatch_type);
+
+/* TSC Timer methods */
+
+void stopwatch_init_tsc(Stopwatch *t);
+void stopwatch_start_tsc(Stopwatch *t);
+void stopwatch_stop_tsc(Stopwatch *t);
+double stopwatch_runtime_tsc(Stopwatch *t);
+void stopwatch_destroy_tsc(Stopwatch *t);
 
 /* POSIX Timer methods */
 
@@ -47,4 +67,4 @@ void stopwatch_stop_posix(Stopwatch *t);
 double stopwatch_runtime_posix(Stopwatch *t);
 void stopwatch_destroy_posix(Stopwatch *t);
 
-#endif /* timer.h */
+#endif /* stopwatch.h */
