@@ -39,7 +39,7 @@ main.o: main.c avx.h axpy.h bench.h
 bench.o: bench.c bench.h
 	$(CC) -c -pthread -o $@ $<
 
-avx.o: avx.c avx.h bench.h stopwatch.h
+avx.o: x86/avx.c avx.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 axpy.o: axpy.c axpy.h bench.h stopwatch.h
