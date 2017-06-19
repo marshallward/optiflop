@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "stopwatch.h"
-#include "stopwatch_tsc.h"
 
 void stopwatch_init_tsc(Stopwatch *t) 
 {
