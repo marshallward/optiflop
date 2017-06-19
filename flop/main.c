@@ -12,6 +12,8 @@
 #include "axpy.h"
 #include "bench.h"
 
+#define ENSEMBLE_COUNT 1
+
 int main(int argc, char *argv[])
 {
     pthread_t *threads;
@@ -34,6 +36,10 @@ int main(int argc, char *argv[])
     double **results;
 
     double total_flops, total_bw_load, total_bw_store;
+
+    /* Ensemble handler */
+    int ens;
+    double max_total_flops, max_total_bw_load, max_total_bw_store;
 
     /* Default values */
     verbose = 0;
@@ -144,34 +150,55 @@ int main(int argc, char *argv[])
     /* NOTE: the avx_* tests don't depend on vector length */
     for (vlen = vlen_start; vlen < vlen_end; vlen = ceil(vlen * vlen_scale)) {
         for (b = 0; benchmarks[b]; b++) {
-            for (t = 0; t < nthreads; t++) {
-                /* TODO: Better way to keep processes off the busy threads */
-                if (nthreads > 1) {
-                    CPU_ZERO(&cpus);
-                    CPU_SET(t, &cpus);
-                    pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+            max_total_flops = 0.;
+            max_total_bw_load = 0.;
+            max_total_bw_store = 0.;
+
+            for (ens = 0; ens < ENSEMBLE_COUNT; ens++) {
+                for (t = 0; t < nthreads; t++) {
+                    /* TODO: Better way to keep processes off the busy threads */
+                    if (nthreads > 1) {
+                        CPU_ZERO(&cpus);
+                        CPU_SET(t, &cpus);
+                        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+                    }
+
+                    /* Thread inputs */
+                    t_args[t].tid = t;
+                    t_args[t].vlen = vlen;
+                    t_args[t].min_runtime = min_runtime;
+                    t_args[t].roof = roof_tests[b];
+
+                    pthread_create(&threads[t], &attr, benchmarks[b], (void *) &t_args[t]);
                 }
 
-                /* Thread inputs */
-                t_args[t].tid = t;
-                t_args[t].vlen = vlen;
-                t_args[t].min_runtime = min_runtime;
-                t_args[t].roof = roof_tests[b];
+                for (t = 0; t < nthreads; t++)
+                    pthread_join(threads[t], &status);
 
-                pthread_create(&threads[t], &attr, benchmarks[b], (void *) &t_args[t]);
+                total_flops = 0.0;
+                total_bw_load = 0.0;
+                total_bw_store = 0.0;
+
+                for (t = 0; t < nthreads; t++) {
+                    total_flops += t_args[t].flops;
+                    total_bw_load += t_args[t].bw_load;
+                    total_bw_store += t_args[t].bw_store;
+                }
+
+                /* Ensemble maximum */
+                if (total_flops > max_total_flops)
+                    max_total_flops = total_flops;
+
+                if (total_bw_load > max_total_bw_load)
+                    max_total_bw_load = total_bw_load;
+
+                if (total_bw_store > max_total_bw_store)
+                    max_total_bw_store = total_bw_store;
             }
 
-            for (t = 0; t < nthreads; t++)
-                pthread_join(threads[t], &status);
-
-            total_flops = 0.0;
-            total_bw_load = 0.0;
-            total_bw_store = 0.0;
-            for (t = 0; t < nthreads; t++) {
-                total_flops += t_args[t].flops;
-                total_bw_load += t_args[t].bw_load;
-                total_bw_store += t_args[t].bw_store;
-            }
+            total_flops = max_total_flops;
+            total_bw_load = max_total_bw_load;
+            total_bw_store = max_total_bw_store;
 
             if (total_flops > 0.)
                 printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
