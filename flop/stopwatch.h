@@ -5,6 +5,12 @@
 #include <stdint.h> /* uint64_t */
 #include <time.h> 	/* clockid_t, timespec */
 
+/* If RAW clock is not present, replace with NTP-adjusted clock */
+/* TODO: Replace with some sort of kernel version check */
+#ifndef CLOCK_MONOTONIC_RAW
+#define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
+#endif
+
 /* Timer definition */
 
 enum stopwatch_type {
