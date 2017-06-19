@@ -1,4 +1,5 @@
 #define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
+#include <features.h>   /* Manually set __USE_GNU (some platforms need this) */
 
 #include <math.h>
 #include <omp.h>        /* omp_get_num_procs */
