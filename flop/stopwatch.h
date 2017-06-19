@@ -39,16 +39,6 @@ typedef struct Stopwatch_struct {
 
 Stopwatch * stopwatch_create(enum stopwatch_type);
 
-/* TSC Timer methods */
-
-void stopwatch_init_tsc(Stopwatch *t);
-void stopwatch_start_tsc(Stopwatch *t);
-void stopwatch_stop_tsc(Stopwatch *t);
-double stopwatch_runtime_tsc(Stopwatch *t);
-void stopwatch_destroy_tsc(Stopwatch *t);
-
-double stopwatch_get_tsc_freq();
-
 /* POSIX Timer methods */
 
 void stopwatch_init_posix(Stopwatch *t);

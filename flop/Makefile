@@ -13,24 +13,24 @@ LDFLAGS=-lrt -lm
 
 all: gcc
 
-gcc: CC=gcc -std=gnu99 -g
+gcc: CC=gcc -std=gnu99 -g -I.
 gcc: CFLAGS=-march=$(GCC_ARCH) -O3 -fno-builtin
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
-intel: CC=icc -std=gnu99 -g
+intel: CC=icc -std=gnu99 -g -I.
 intel: CFLAGS=-xavx -O3
 intel: flop
 
-stream: CC=icc -std=gnu99
+stream: CC=icc -std=gnu99 -I.
 stream: CFLAGS=-xavx -O3 -mcmodel=medium -ffreestanding -qopt-streaming-stores always
 stream: flop
 
-knl: CC=icc
+knl: CC=icc -I.
 knl: CFLAGS=-std=gnu99 -xMIC-AVX512 -O3 -DBYTEALIGN=64
 knl: flop
 
-flop: main.o bench.o stopwatch.o avx.o axpy.o dummy.o
+flop: main.o bench.o stopwatch.o stopwatch_tsc.o avx.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
 
 main.o: main.c avx.h axpy.h bench.h
@@ -49,6 +49,9 @@ dummy.o: dummy.c
 	$(CC) -c -o $@ $<
 
 stopwatch.o: stopwatch.c stopwatch.h
+	$(CC) -O2 -c -o $@ $<
+
+stopwatch_tsc.o: x86/stopwatch_tsc.c x86/stopwatch_tsc.h
 	$(CC) -O2 -c -o $@ $<
 
 clean:
