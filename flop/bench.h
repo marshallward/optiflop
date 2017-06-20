@@ -1,5 +1,5 @@
-#ifndef FLOP_H_
-#define FLOP_H_
+#ifndef FLOP_BENCH_H_
+#define FLOP_BENCH_H_
 
 #include <pthread.h>
 
@@ -47,4 +47,4 @@ struct thread_args {
 extern pthread_barrier_t timer_barrier;
 extern pthread_mutex_t runtime_mutex;
 extern volatile int runtime_flag;
-#endif
+#endif  // FLOP_BENCH_H_

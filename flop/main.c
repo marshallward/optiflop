@@ -157,11 +157,12 @@ int main(int argc, char *argv[])
 
             for (ens = 0; ens < ENSEMBLE_COUNT; ens++) {
                 for (t = 0; t < nthreads; t++) {
-                    /* TODO: Better way to keep processes off the busy threads */
+                    /* TODO: Better way to keep processes off busy threads */
                     if (nthreads > 1) {
                         CPU_ZERO(&cpus);
                         CPU_SET(t, &cpus);
-                        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpus);
+                        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t),
+                                                    &cpus);
                     }
 
                     /* Thread inputs */
@@ -170,7 +171,8 @@ int main(int argc, char *argv[])
                     t_args[t].min_runtime = min_runtime;
                     t_args[t].roof = roof_tests[b];
 
-                    pthread_create(&threads[t], &attr, benchmarks[b], (void *) &t_args[t]);
+                    pthread_create(&threads[t], &attr, benchmarks[b],
+                                   (void *) &t_args[t]);
                 }
 
                 for (t = 0; t < nthreads; t++)
@@ -203,7 +205,8 @@ int main(int argc, char *argv[])
 
             if (total_flops > 0.)
                 printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
-                        benchnames[b], total_flops / 1e9, total_flops / nthreads / 1e9);
+                        benchnames[b], total_flops / 1e9,
+                        total_flops / nthreads / 1e9);
 
             if (total_bw_load > 0. && total_bw_store > 0.)
                 printf("%s GB/s: %.12f (%.12f / thread)\n",

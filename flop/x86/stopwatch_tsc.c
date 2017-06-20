@@ -145,7 +145,8 @@ double stopwatch_get_tsc_freq(void)
         runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
                   + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
 
-        cycles = ((cycle_end1 + cycle_end2) - (cycle_start1 + cycle_start2)) / 2;
+        cycles = ((cycle_end1 + cycle_end2)
+                    - (cycle_start1 + cycle_start2)) / 2;
 
         d_start = cycle_start2 - cycle_start1;
         d_end = cycle_end2 - cycle_end1;

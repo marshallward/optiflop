@@ -76,7 +76,7 @@ void * avx_fma(void *args_in)
         r[0] = _mm512_add_ps(r[0], r[j]);
     result = reduce_AVX512(r[0]);
 
-    /* (iterations) * (16 instruction / register) * (2 flops / instruction) * (n_avx512 registers / iteration) */
+    /* (iter) * (16 instr / reg) * (2 flops / instr) * (n_avx512 reg / iter) */
     flops = r_max * 16 * 2 * n_avx512 / runtime;
 
     /* Cleanup */
