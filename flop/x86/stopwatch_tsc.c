@@ -78,7 +78,7 @@ uint64_t rdtsc(void)
     uint64_t rax, rdx;
     uint32_t aux;
 
-    __asm__ __volatile__ ( "rdtscp" : "=a" ( rax ), "=d" ( rdx ), "=c" (aux));
+    __asm__ __volatile__ ("rdtscp" : "=a" (rax), "=d" (rdx), "=c" (aux));
     return (rdx << 32) | rax;
 }
 
@@ -152,10 +152,10 @@ double stopwatch_get_tsc_freq(void)
 
         /* Diagnostic testing */
         if (verbose) {
-            printf("Cycles: %llu\n", cycles);
+            printf("Cycles: %lu\n", cycles);
             printf("Runtime: %.12f\n", runtime);
-            printf("dstart: %llu\n", d_start);
-            printf("dend: %llu\n", d_end);
+            printf("dstart: %lu\n", d_start);
+            printf("dend: %lu\n", d_end);
             printf("TSC frequency: %.12f GHz\n",
                    (double) cycles / runtime / 1e9);
         }

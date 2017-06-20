@@ -127,8 +127,6 @@ void * avx_mac(void *args_in)
                 r[j] = _mm256_add_ps(r[j], add0);
                 r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul0);
             }
-
-            //for (j = 0; j < n_avx; j++)
         }
         t->stop(t);
         runtime = t->runtime(t);
