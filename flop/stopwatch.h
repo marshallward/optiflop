@@ -1,8 +1,8 @@
-#ifndef STOPWATCH_H_
-#define STOPWATCH_H_
+#ifndef FLOP_STOPWATCH_H_
+#define FLOP_STOPWATCH_H_
 
 #include <stdint.h> /* uint64_t */
-#include <time.h> 	/* clockid_t, timespec */
+#include <time.h>   /* clockid_t, timespec */
 
 /* If RAW clock is not present, replace with NTP-adjusted clock */
 /* TODO: Replace with some sort of kernel version check */
@@ -67,4 +67,4 @@ void stopwatch_stop_posix(Stopwatch *t);
 double stopwatch_runtime_posix(Stopwatch *t);
 void stopwatch_destroy_posix(Stopwatch *t);
 
-#endif /* stopwatch.h */
+#endif  // FLOP_STOPWATCH_H_

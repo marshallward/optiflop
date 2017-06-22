@@ -1,5 +1,5 @@
-#ifndef AXPY_H_
-#define AXPY_H_
+#ifndef FLOP_AXPY_H_
+#define FLOP_AXPY_H_
 
 #include "bench.h"
 
@@ -24,4 +24,4 @@ void roof_axpby(int, float, float, float *, float *, struct roof_args *);
 
 void dummy(float, float, float *, float *);
 
-#endif
+#endif  // FLOP_AXPY_H_

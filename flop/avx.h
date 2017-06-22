@@ -1,5 +1,5 @@
-#ifndef AVX_H_
-#define AVX_H_
+#ifndef FLOP_AVX_H_
+#define FLOP_AVX_H_
 
 #include <pthread.h>    /* pthread_* */
 
@@ -8,4 +8,4 @@ void * avx_mac(void *);
 
 extern pthread_barrier_t timer_barrier;
 extern pthread_mutex_t runtime_mutex;
-#endif
+#endif  // FLOP_AVX_H_
