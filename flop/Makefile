@@ -10,7 +10,7 @@ else # Roll the dice...
 endif
 
 LDFLAGS=-lrt -lm
-ARCH=generic
+ARCH=x86
 
 all: gcc
 
@@ -32,6 +32,10 @@ stream: flop
 knl: CC=icc -I.
 knl: CFLAGS=-std=gnu99 -xMIC-AVX512 -O3 -DBYTEALIGN=64
 knl: flop
+
+fcc: CC=fccpx -Xg -I.
+fcc: CFLAGS=-std=gnu99 -Kfast
+fcc: flop
 
 power: CC=gcc -std=gnu99 -g -I.
 power: CFLAGS=-mpowerpc -O3 -fno-builtin
