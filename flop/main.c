@@ -13,7 +13,7 @@
 #include "axpy.h"
 #include "bench.h"
 
-#define ENSEMBLE_COUNT 1
+#define ENSEMBLE_COUNT 10
 
 int main(int argc, char *argv[])
 {
