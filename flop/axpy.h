@@ -24,4 +24,10 @@ void roof_axpby(int, float, float, float *, float *, struct roof_args *);
 
 void dummy(float, float, float *, float *);
 
+void roof_wrap(int, float, float, float *, float *, struct roof_args *,
+               roof_kernel_t);
+
+void axpy_wrap(int, float, float, float *, float *, struct roof_args *);
+void axpy_kernel(int, float, float, float *, float *) __attribute__ ((always_inline));;
+
 #endif  // FLOP_AXPY_H_

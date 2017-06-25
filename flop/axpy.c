@@ -50,6 +50,72 @@ void * axpy_main(void *args_in)
 }
 
 
+void axpy_kernel(int i, float a, float b, float *x, float *y)
+{
+    y[i] = a * x[i] + y[i];
+}
+
+
+void axpy_wrap(int n, float a, float b, float *x, float *y,
+               struct roof_args *args)
+{
+    roof_wrap(n, a, b, x, y, args, axpy_kernel);
+}
+
+
+void roof_wrap(int n, float a, float b,
+               float * restrict x_in, float * restrict y_in,
+               struct roof_args *args, roof_kernel_t kernel)
+{
+    float *x;
+    float *y;
+    Stopwatch *t;
+
+    int r, r_max;
+    int i;
+    double runtime;
+
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
+
+    t = stopwatch_create(TIMER_POSIX);
+
+    r_max = 1;
+    runtime_flag = 0;
+    do {
+        pthread_barrier_wait(&timer_barrier);
+        t->start(t);
+        for (r = 0; r < r_max; r++) {
+            for (i = 0; i < n; i++)
+                (*kernel)(i, a, b, x, y);
+            // Create an impossible branch to prevent loop interchange
+            if (y[0] < 0.) dummy(a, b, x, y);
+        }
+        t->stop(t);
+        runtime = t->runtime(t);
+
+        /* Set runtime flag if any thread exceeds runtime limit */
+        if (runtime > (args->min_runtime)) {
+            pthread_mutex_lock(&runtime_mutex);
+            runtime_flag = 1;
+            pthread_mutex_unlock(&runtime_mutex);
+        }
+
+        pthread_barrier_wait(&timer_barrier);
+        if (!runtime_flag) r_max *= 2;
+
+    } while (!runtime_flag);
+
+    args->runtime = runtime;
+    args->flops = 2. * n * r_max / runtime;
+    args->bw_load = 2. * n * sizeof(float) * r_max / runtime;
+    args->bw_store = n * sizeof(float) * r_max / runtime;
+
+    /* Cleanup */
+    t->destroy(t);
+}
+
+
 /* Many compilers (gcc, icc) will ignore this loop and use its builtin memcpy
  * function, which can perform worse than vectorised loops.
  *

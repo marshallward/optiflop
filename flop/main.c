@@ -169,7 +169,9 @@ int main(int argc, char *argv[])
                     t_args[t].tid = t;
                     t_args[t].vlen = vlen;
                     t_args[t].min_runtime = min_runtime;
-                    t_args[t].roof = roof_tests[b];
+                    //t_args[t].roof = roof_tests[b];
+                    t_args[t].roof = &axpy_wrap;
+                    //t_args[t].roof = &roof_axpy;
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
                                    (void *) &t_args[t]);
