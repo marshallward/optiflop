@@ -56,7 +56,7 @@ bench.o: bench.c bench.h
 avx.o: $(ARCH)/avx.c avx.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-axpy.o: axpy.c axpy.h bench.h stopwatch.h
+axpy.o: axpy.c roof.inc axpy.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
 dummy.o: dummy.c
