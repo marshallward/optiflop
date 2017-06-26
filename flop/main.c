@@ -9,6 +9,7 @@
 #include <stdlib.h>     /* strtol, malloc */
 
 #include "avx.h"
+#include "avx512.h"
 #include "axpy.h"
 #include "bench.h"
 #include "input.h"
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
     const bench_ptr_t benchmarks[] = {
         &avx_add,
         &avx_mac,
-        //&avx_fma,
+        &avx_fma,
         &axpy_main,
         &axpy_main,
         &axpy_main,
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
     const char * benchnames[] = {
         "avx_add",
         "avx_mac",
-        //"avx_fma",
+        "avx_fma",
         "y[:] = x[:]",
         "y[:] = a x[:]",
         "y[:] = x[:] + y[:]",
@@ -104,7 +105,7 @@ int main(int argc, char *argv[])
     const roof_ptr_t roof_tests[] = {
         NULL,
         NULL,
-        //NULL,
+        NULL,
         &roof_copy,
         &roof_ax,
         &roof_xpy,

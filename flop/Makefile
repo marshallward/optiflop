@@ -10,7 +10,11 @@ else # Roll the dice...
 endif
 
 LDFLAGS=-lrt -lm
+
+# Wonky method to control architecture-specific code
+# TODO: Auto set this stuff somehow (probably with makefile targets)
 ARCH=x86
+AVX512=generic/avx512
 
 all: gcc
 
@@ -44,7 +48,8 @@ power: flop
 
 # Build rules
 
-flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o avx.o axpy.o dummy.o
+flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
+	avx.o avx512.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
 
 main.o: main.c avx.h axpy.h bench.h
@@ -57,6 +62,9 @@ bench.o: bench.c bench.h
 	$(CC) -c -pthread -o $@ $<
 
 avx.o: $(ARCH)/avx.c avx.h bench.h stopwatch.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+avx512.o: $(AVX512)/avx512.c avx512.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 axpy.o: axpy.c roof.inc axpy.h bench.h stopwatch.h
