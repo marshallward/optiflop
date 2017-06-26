@@ -1,13 +1,13 @@
 #define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
 #include <features.h>   /* Manually set __USE_GNU (some platforms need this) */
 
+#include <getopt.h>     /* getopt */
 #include <math.h>
 #include <omp.h>        /* omp_get_num_procs */
 #include <pthread.h>    /* pthread_*, CPU_* */
 #include <sched.h>      /* CPU_* */
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* strtol, malloc */
-#include <unistd.h>     /* getopt */
 
 #include "avx.h"
 #include "axpy.h"
@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 
     int b, t;
     int optflag;
+    int print_help;
     int verbose;
     int vlen, vlen_start, vlen_end;
     double vlen_scale;
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     double max_total_flops, max_total_bw_load, max_total_bw_store;
 
     /* Default values */
+    print_help = 0;
     verbose = 0;
     save_output = 0;
     vlen_start = 3200;
@@ -51,12 +53,29 @@ int main(int argc, char *argv[])
     nthreads = 1;
     min_runtime = 1e-2;
 
-    /* Command line parser */
+    int option_index = 0;
+    struct option long_options[] =
+    {
+        {"help", no_argument, &print_help, 1},
+        {"verbose", no_argument, &verbose, 1},
+        {"output", no_argument, 0, 'o'},
+        {0, 0, 0, 0}
+    };
 
-    while ((optflag = getopt(argc, argv, "vol:e:s:p:r:")) != -1) {
+    /* Command line parser */
+    while (1) {
+        optflag = getopt_long(argc, argv, "hol:e:s:p:r:",
+                              long_options, &option_index);
+
+        if (optflag == -1)
+            break;
+
         switch (optflag) {
-            case 'v':
-                verbose = 1;
+            case 0:
+                /* TODO */
+                break;
+            case 'h':
+                print_help = 1;
                 break;
             case 'o':
                 save_output = 1;
@@ -79,6 +98,12 @@ int main(int argc, char *argv[])
             default:
                 abort();
         }
+    }
+
+    /* Display help if requested */
+    if (print_help) {
+        printf("Help info here.\n");
+        return 0;
     }
 
     if (vlen_end < 0) vlen_end = vlen_start + 1;
