@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
 
     cfg = malloc(sizeof(struct input_config));
     parse_input(argc, argv, cfg);
-    printf("test: %i\n", cfg->print_help);
 
     print_help = cfg->print_help;
     verbose = cfg->verbose;
@@ -56,7 +55,7 @@ int main(int argc, char *argv[])
     vlen_scale = cfg->vlen_scale;
     nthreads = cfg->nthreads;
     min_runtime = cfg->min_runtime;
-    
+
     /* Display help if requested */
     if (print_help) {
         printf("Help info here.\n");
