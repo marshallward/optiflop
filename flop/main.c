@@ -28,11 +28,8 @@ int main(int argc, char *argv[])
 
     int b, t;
     int optflag;
-    int print_help;
-    int verbose;
     int vlen, vlen_start, vlen_end;
     double vlen_scale;
-    double min_runtime;
 
     int nbench;
     int save_output;
@@ -48,16 +45,13 @@ int main(int argc, char *argv[])
     cfg = malloc(sizeof(struct input_config));
     parse_input(argc, argv, cfg);
 
-    print_help = cfg->print_help;
-    verbose = cfg->verbose;
     vlen_start = cfg->vlen_start;
     vlen_end = cfg->vlen_end;
     vlen_scale = cfg->vlen_scale;
     nthreads = cfg->nthreads;
-    min_runtime = cfg->min_runtime;
 
     /* Display help if requested */
-    if (print_help) {
+    if (cfg->print_help) {
         printf("Help info here.\n");
         return 0;
     }
@@ -149,7 +143,7 @@ int main(int argc, char *argv[])
                     /* Thread inputs */
                     t_args[t].tid = t;
                     t_args[t].vlen = vlen;
-                    t_args[t].min_runtime = min_runtime;
+                    t_args[t].min_runtime = cfg->min_runtime;
                     t_args[t].roof = roof_tests[b];
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
@@ -194,7 +188,7 @@ int main(int argc, char *argv[])
                         benchnames[b], (total_bw_load + total_bw_store) / 1e9,
                         (total_bw_load + total_bw_store) / nthreads / 1e9);
 
-            if (verbose) {
+            if (cfg->verbose) {
                 for (t = 0; t < nthreads; t++) {
                     printf("    - Thread %i %s runtime: %.12f\n",
                            t, benchnames[b], t_args[t].runtime);
