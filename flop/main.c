@@ -1,7 +1,6 @@
 #define _GNU_SOURCE     /* CPU_*, pthread_attr_setaffinity_np declaration */
 #include <features.h>   /* Manually set __USE_GNU (some platforms need this) */
 
-#include <getopt.h>     /* getopt */
 #include <math.h>
 #include <omp.h>        /* omp_get_num_procs */
 #include <pthread.h>    /* pthread_*, CPU_* */
@@ -12,6 +11,7 @@
 #include "avx.h"
 #include "axpy.h"
 #include "bench.h"
+#include "input.h"
 
 #define ENSEMBLE_COUNT 10
 
@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
     int nthreads, nprocs;
     struct thread_args *t_args;
     void *status;
+
+    struct input_config *cfg;
 
     int b, t;
     int optflag;
@@ -43,63 +45,18 @@ int main(int argc, char *argv[])
     int ens;
     double max_total_flops, max_total_bw_load, max_total_bw_store;
 
-    /* Default values */
-    print_help = 0;
-    verbose = 0;
-    save_output = 0;
-    vlen_start = 3200;
-    vlen_end = -1;
-    vlen_scale = 2.;
-    nthreads = 1;
-    min_runtime = 1e-2;
+    cfg = malloc(sizeof(struct input_config));
+    parse_input(argc, argv, cfg);
+    printf("test: %i\n", cfg->print_help);
 
-    int option_index = 0;
-    struct option long_options[] =
-    {
-        {"help", no_argument, &print_help, 1},
-        {"verbose", no_argument, &verbose, 1},
-        {"output", no_argument, 0, 'o'},
-        {0, 0, 0, 0}
-    };
-
-    /* Command line parser */
-    while (1) {
-        optflag = getopt_long(argc, argv, "hol:e:s:p:r:",
-                              long_options, &option_index);
-
-        if (optflag == -1)
-            break;
-
-        switch (optflag) {
-            case 0:
-                /* TODO */
-                break;
-            case 'h':
-                print_help = 1;
-                break;
-            case 'o':
-                save_output = 1;
-                break;
-            case 'l':
-                vlen_start = (int) strtol(optarg, (char **) NULL, 10);
-                break;
-            case 'e':
-                vlen_end = (int) strtol(optarg, (char **) NULL, 10);
-                break;
-            case 's':
-                vlen_scale = strtod(optarg, NULL);
-                break;
-            case 'p':
-                nthreads = (int) strtol(optarg, (char **) NULL, 10);
-                break;
-            case 'r':
-                min_runtime = strtod(optarg, NULL);
-                break;
-            default:
-                abort();
-        }
-    }
-
+    print_help = cfg->print_help;
+    verbose = cfg->verbose;
+    vlen_start = cfg->vlen_start;
+    vlen_end = cfg->vlen_end;
+    vlen_scale = cfg->vlen_scale;
+    nthreads = cfg->nthreads;
+    min_runtime = cfg->min_runtime;
+    
     /* Display help if requested */
     if (print_help) {
         printf("Help info here.\n");
@@ -276,6 +233,7 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&runtime_mutex);
     free(t_args);
     free(threads);
+    free(cfg);
 
     return 0;
 }

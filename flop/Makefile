@@ -44,10 +44,13 @@ power: flop
 
 # Build rules
 
-flop: main.o bench.o stopwatch.o stopwatch_tsc.o avx.o axpy.o dummy.o
+flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o avx.o axpy.o dummy.o
 	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
 
 main.o: main.c avx.h axpy.h bench.h
+	$(CC) -c -pthread -o $@ $<
+
+input.o: input.c input.h
 	$(CC) -c -pthread -o $@ $<
 
 bench.o: bench.c bench.h
