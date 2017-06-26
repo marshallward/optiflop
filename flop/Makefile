@@ -1,20 +1,10 @@
-# TODO: Clean this up (maybe templates?)
-ifeq ($(ARCH), sandybridge)
-	GCC_ARCH=corei7-avx
-else ifeq ($(ARCH), haswell)
-	GCC_ARCH=core-avx2
-else ifeq ($(ARCH), knl)
-	GCC_ARCH=knl
-else # Roll the dice...
-	GCC_ARCH=native
-endif
-
 LDFLAGS=-lrt -lm
 
 # Wonky method to control architecture-specific code
 # TODO: Auto set this stuff somehow (probably with makefile targets)
+GCC_ARCH=native
 ARCH=x86
-AVX512=generic/avx512
+AVX512=x86/avx512
 
 all: gcc
 

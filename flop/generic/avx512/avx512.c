@@ -2,7 +2,7 @@
 
 #include "bench.h"
 
-void * avx_fma(void *args_in)
+void * avx512_fma(void *args_in)
 {
     struct thread_args *args;
 

@@ -83,7 +83,8 @@ int main(int argc, char *argv[])
     const bench_ptr_t benchmarks[] = {
         &avx_add,
         &avx_mac,
-        &avx_fma,
+        &avx512_add,
+        &avx512_fma,
         &axpy_main,
         &axpy_main,
         &axpy_main,
@@ -94,7 +95,8 @@ int main(int argc, char *argv[])
     const char * benchnames[] = {
         "avx_add",
         "avx_mac",
-        "avx_fma",
+        "avx512_add",
+        "avx512_fma",
         "y[:] = x[:]",
         "y[:] = a x[:]",
         "y[:] = x[:] + y[:]",
@@ -103,6 +105,7 @@ int main(int argc, char *argv[])
     0};
 
     const roof_ptr_t roof_tests[] = {
+        NULL,
         NULL,
         NULL,
         NULL,

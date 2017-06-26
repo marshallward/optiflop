@@ -3,7 +3,8 @@
 
 #include <pthread.h>    /* pthread_* */
 
-void * avx_fma(void *);
+void * avx512_add(void *);
+void * avx512_fma(void *);
 
 extern pthread_barrier_t timer_barrier;
 extern pthread_mutex_t runtime_mutex;
