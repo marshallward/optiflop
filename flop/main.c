@@ -2,7 +2,6 @@
 #include <features.h>   /* Manually set __USE_GNU (some platforms need this) */
 
 #include <math.h>
-#include <omp.h>        /* omp_get_num_procs */
 #include <pthread.h>    /* pthread_*, CPU_* */
 #include <sched.h>      /* CPU_* */
 #include <stdio.h>      /* printf */
@@ -21,7 +20,7 @@ int main(int argc, char *argv[])
     pthread_t *threads;
     pthread_attr_t attr;
     cpu_set_t cpus;
-    int nthreads, nprocs;
+    int nthreads;
     struct thread_args *t_args;
     void *status;
 
@@ -50,21 +49,6 @@ int main(int argc, char *argv[])
     vlen_end = cfg->vlen_end;
     vlen_scale = cfg->vlen_scale;
     nthreads = cfg->nthreads;
-
-    /* Display help if requested */
-    if (cfg->print_help) {
-        printf("Help info here.\n");
-        return 0;
-    }
-
-    if (vlen_end < 0) vlen_end = vlen_start + 1;
-
-    nprocs = omp_get_num_procs();
-    if (nthreads > nprocs) {
-        printf("flop: Number of threads (%i) exceeds maximum "
-               "core count (%i).\n", nthreads, nprocs);
-        return -1;
-    }
 
     /* Thread setup */
 

@@ -1,4 +1,6 @@
 #include <getopt.h>     /* getopt_long, option */
+#include <omp.h>        /* opt_get_num_procs */
+#include <stdio.h>      /* printf */
 #include <stdlib.h>     /* abort */
 
 #include "input.h"
@@ -7,6 +9,8 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 {
     int optflag;
     int option_index;
+
+    int nprocs;
 
     /* Default values */
     cfg->print_help = 0;
@@ -62,5 +66,20 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
             default:
                 abort();
         }
+    }
+
+    if (cfg->print_help) {
+        printf("Help info here.\n");
+        abort();    /* TODO: Don't abort here */
+    }
+
+    if (cfg->vlen_end < 0) cfg->vlen_end = cfg->vlen_start + 1;
+
+    /* TODO: Get nproces without OpenMP (i.e. using affinity functions) */
+    nprocs = omp_get_num_procs();
+    if (cfg->nthreads > nprocs) {
+        printf("flop: Number of threads (%i) exceeds maximum "
+               "core count (%i).\n", cfg->nthreads, nprocs);
+        abort();
     }
 }
