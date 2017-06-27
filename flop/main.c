@@ -17,22 +17,29 @@
 
 int main(int argc, char *argv[])
 {
-    pthread_t *threads;
-    pthread_attr_t attr;
-    cpu_set_t cpus;
-    int nthreads;
-    struct thread_args *t_args;
-    void *status;
+    /* CPU set variables */
+    cpu_set_t cpuset;
+    int ncpus;
+    int *cpus;
+    int id, c;
 
+    /* Input variables */
     struct input_config *cfg;
 
     int b, t;
     int optflag;
     int vlen, vlen_start, vlen_end;
     double vlen_scale;
+    int nthreads;
 
+    /* Thread control variables */
+    pthread_t *threads;
+    pthread_attr_t attr;
+    struct thread_args *t_args;
+    void *status;
+
+    /* Output variables */
     int nbench;
-    int save_output;
     FILE *output;
     double **results;
 
@@ -60,6 +67,19 @@ int main(int argc, char *argv[])
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     pthread_barrier_init(&timer_barrier, NULL, nthreads);
+
+    /* Generate the CPU set */
+    sched_getaffinity(0, sizeof(cpuset), &cpuset);
+    ncpus = CPU_COUNT(&cpuset);
+    cpus = malloc(ncpus * sizeof(int));
+
+    c = 0;
+    for (id = 0; c < ncpus; id++) {
+        if (CPU_ISSET(id, &cpuset)) {
+            cpus[c] = id;
+            c++;
+        }
+    }
 
     /* General benchmark loop */
     /* TODO: Combine name and bench into a struct, or add to t_args? */
@@ -101,7 +121,7 @@ int main(int argc, char *argv[])
     0};
 
     /* IO setup */
-    if (save_output) {
+    if (cfg->save_output) {
         for (nbench = 0; benchmarks[nbench]; nbench++) {}
 
         results = malloc(2 * sizeof(double *));
@@ -122,10 +142,10 @@ int main(int argc, char *argv[])
                 for (t = 0; t < nthreads; t++) {
                     /* TODO: Better way to keep processes off busy threads */
                     if (nthreads > 1) {
-                        CPU_ZERO(&cpus);
-                        CPU_SET(t, &cpus);
+                        CPU_ZERO(&cpuset);
+                        CPU_SET(cpus[t], &cpuset);
                         pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t),
-                                                    &cpus);
+                                                    &cpuset);
                     }
 
                     /* Thread inputs */
@@ -190,13 +210,13 @@ int main(int argc, char *argv[])
             }
 
             /* Store results for model output */
-            if (save_output) {
+            if (cfg->save_output) {
                 results[0][b] = total_flops;
                 results[1][b] = total_bw_load + total_bw_store;
             }
         }
 
-        if (save_output)
+        if (cfg->save_output)
             fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
                     vlen,
                     results[0][3], results[0][4], results[0][5], results[0][6],
@@ -205,7 +225,7 @@ int main(int argc, char *argv[])
     }
 
     /* IO cleanup */
-    if (save_output) {
+    if (cfg->save_output) {
         free(results);
         fclose(output);
     }
