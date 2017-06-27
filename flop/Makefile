@@ -4,7 +4,7 @@ LDFLAGS=-lrt -lm
 # TODO: Auto set this stuff somehow (probably with makefile targets)
 GCC_ARCH=native
 ARCH=x86
-AVX512=x86/avx512
+AVX512=generic/avx512
 
 all: gcc
 
