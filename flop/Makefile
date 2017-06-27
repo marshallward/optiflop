@@ -40,7 +40,7 @@ power: flop
 
 flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	avx.o avx512.o axpy.o dummy.o
-	$(CC) $(LDFLAGS) -fopenmp -pthread -o $@ $^
+	$(CC) $(LDFLAGS) -pthread -o $@ $^
 
 main.o: main.c avx.h axpy.h bench.h
 	$(CC) -c -pthread -o $@ $<

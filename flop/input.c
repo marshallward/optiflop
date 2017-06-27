@@ -1,7 +1,10 @@
+#define _GNU_SOURCE     /* CPU_COUNT */
+
 #include <getopt.h>     /* getopt_long, option */
-#include <omp.h>        /* opt_get_num_procs */
+#include <sched.h>      /* sched_getaffinity, cpu_set_t */
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* abort */
+#include <string.h>     /* strtok */
 
 #include "input.h"
 
@@ -9,7 +12,9 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 {
     int optflag;
     int option_index;
+    char *token;
 
+    cpu_set_t cpuset;
     int nprocs;
 
     /* Default values */
@@ -32,7 +37,7 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     option_index = 0;
     while (1) {
-        optflag = getopt_long(argc, argv, "ol:e:s:p:r:",
+        optflag = getopt_long(argc, argv, "ol:s:p:r:",
                               long_options, &option_index);
 
         if (optflag == -1)
@@ -42,17 +47,15 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
             case 0:
                 /* TODO */
                 break;
-            //case 'h':
-            //    cfg->print_help = 1;
-            //    break;
             case 'o':
                 cfg->save_output = 1;
                 break;
             case 'l':
-                cfg->vlen_start = (int) strtol(optarg, (char **) NULL, 10);
-                break;
-            case 'e':
-                cfg->vlen_end = (int) strtol(optarg, (char **) NULL, 10);
+                token = strtok(optarg, ",");
+                cfg->vlen_start = (int) strtol(token, (char **) NULL, 10);
+                token = strtok(NULL, ",");
+                if (token != NULL)
+                    cfg->vlen_end = (int) strtol(token, (char **) NULL, 10);
                 break;
             case 's':
                 cfg->vlen_scale = strtod(optarg, NULL);
@@ -70,16 +73,17 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     if (cfg->print_help) {
         printf("Help info here.\n");
-        abort();    /* TODO: Don't abort here */
+        exit(EXIT_SUCCESS);
     }
 
     if (cfg->vlen_end < 0) cfg->vlen_end = cfg->vlen_start + 1;
 
-    /* TODO: Get nproces without OpenMP (i.e. using affinity functions) */
-    nprocs = omp_get_num_procs();
+    sched_getaffinity(0, sizeof(cpuset), &cpuset);
+    nprocs = CPU_COUNT(&cpuset);
+
     if (cfg->nthreads > nprocs) {
         printf("flop: Number of threads (%i) exceeds maximum "
                "core count (%i).\n", cfg->nthreads, nprocs);
-        abort();
+        exit(EXIT_FAILURE);
     }
 }
