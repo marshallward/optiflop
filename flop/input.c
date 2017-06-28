@@ -72,7 +72,14 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
     }
 
     if (cfg->print_help) {
-        printf("Help info here.\n");
+        printf("The FLOPS benchmark\n");
+        printf("\n");
+        printf("Flags:\n");
+        printf("    -l start, stop  Test vectors lengths from `start` to `stop`\n");
+        printf("    -s scale        Scale step ratio during vector sweep\n");
+        printf("    -p N            Benchmark N processors\n");
+        printf("    -o              Output results to `results.txt`\n");
+        printf("    --verbose       Display per-thread performance\n");
         exit(EXIT_SUCCESS);
     }
 
