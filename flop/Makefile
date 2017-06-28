@@ -10,6 +10,13 @@ all: gcc
 
 # Platforms
 
+# NOTE: Using -mavx in place of -march=corei7-avx (or native) shows some minor
+# changes in performance, on the order of 10 to 100 MFLOP/s.  In general, -mavx
+# is slightly faster across the tests, although y[:] = x[:] + y[:] is slighly
+# faster when -mavx is removed.
+#
+# The reason for this is still not clear.  Please experiment on your platform.
+
 gcc: CC=gcc -std=gnu99 -g -I.
 gcc: CFLAGS=-mavx -O3 -fno-builtin
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
