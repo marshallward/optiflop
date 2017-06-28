@@ -11,7 +11,7 @@ all: gcc
 # Platforms
 
 gcc: CC=gcc -std=gnu99 -g -I.
-gcc: CFLAGS=-march=$(GCC_ARCH) -O3 -fno-builtin
+gcc: CFLAGS=-mavx -O3 -fno-builtin
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
