@@ -9,7 +9,7 @@
 
 #include "avx.h"
 #include "avx512.h"
-#include "axpy.h"
+#include "roof.h"
 #include "bench.h"
 #include "input.h"
 
@@ -89,11 +89,11 @@ int main(int argc, char *argv[])
         &avx_mac,
         &avx512_add,
         &avx512_fma,
-        &axpy_main,
-        &axpy_main,
-        &axpy_main,
-        &axpy_main,
-        &axpy_main,
+        &roof_thread,
+        &roof_thread,
+        &roof_thread,
+        &roof_thread,
+        &roof_thread,
     0};
 
     const char * benchnames[] = {

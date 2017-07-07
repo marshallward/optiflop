@@ -14,7 +14,7 @@
 #define ASSUME_ALIGNED(x) x
 #endif
 
-void * axpy_main(void *);
+void * roof_thread(void *);
 
 void roof_copy(int, float, float, float *, float *, struct roof_args *);
 void roof_ax(int, float, float, float *, float *, struct roof_args *);

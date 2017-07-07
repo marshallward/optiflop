@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <time.h> /* timespec, clock_gettime */
 
-#include "axpy.h"
+#include "roof.h"
 #include "bench.h"
 #include "stopwatch.h"
 
-void * axpy_main(void *args_in)
+void * roof_thread(void *args_in)
 {
     /* Thread input */
     struct thread_args *args;

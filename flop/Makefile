@@ -46,10 +46,10 @@ power: flop
 # Build rules
 
 flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
-	avx.o avx512.o axpy.o dummy.o
+	avx.o avx512.o roof.o dummy.o
 	$(CC) $(LDFLAGS) -pthread -o $@ $^
 
-main.o: main.c avx.h axpy.h bench.h
+main.o: main.c avx.h roof.h bench.h
 	$(CC) -c -pthread -o $@ $<
 
 input.o: input.c input.h
@@ -64,7 +64,7 @@ avx.o: $(ARCH)/avx.c avx.h bench.h stopwatch.h
 avx512.o: $(AVX512)/avx512.c avx512.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-axpy.o: axpy.c roof.inc axpy.h bench.h stopwatch.h
+roof.o: roof.c roof.inc roof.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
 dummy.o: dummy.c
