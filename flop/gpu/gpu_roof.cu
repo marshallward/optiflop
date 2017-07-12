@@ -8,34 +8,26 @@ __global__ void saxpy(int n, float a, float *x, float *y)
 }
 
 extern "C"
-void ROOF_TEST(int n, float a, float b,
-               float * restrict x_in, float * restrict y_in,
-               struct roof_args *args)
+void gpu_axpy(int n, float a, float b, float * x_in, float * y_in,
+              struct roof_args *args)
 {
     float *x, *y;
+    dim3 threadBlockRows(256, 1);
 
-    Stopwatch *t;
+    size_t nbytes;
 
-    int r, r_max;
-    int i;
-    double runtime;
+    nbytes = n * sizeof(float);
 
-    cudaMalloc(&x, n);
-    cudaMalloc(&y, n);
+    cudaMalloc(&x, nbytes);
+    cudaMalloc(&y, nbytes);
 
-    cudaMemcpy(x, x_in, n, cudaMemcpyHostToDevice);
-    cudaMemcpy(y, y_in, n, cudaMemcpyHostToDevice);
+    cudaMemcpy(x, x_in, nbytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(y, y_in, nbytes, cudaMemcpyHostToDevice);
 
-    saxpy<<(n + 255)/256, 256>>(n, a, x, y);
+    saxpy<<<(n + 255)/256, 256>>>(n, a, x, y);
 
-    cudaMemcpy(y, y_in, n, cudaMemcpyDeviceToHost);
+    cudaMemcpy(y_in, y, nbytes, cudaMemcpyDeviceToHost);
 
     cudaFree(x);
     cudaFree(y);
 }
-
-#undef ROOF_TEST
-#undef ROOF_KERNEL
-#undef ROOF_FLOPS
-#undef ROOF_BW_LOAD
-#undef ROOF_BW_STORE

@@ -43,7 +43,17 @@ power: CFLAGS=-mpowerpc -O3 -fno-builtin
 power: LOOP=-funroll-loops --param max-unroll-times=2
 power: flop
 
+gpu: CC=gcc -std=gnu99 -g -I.
+gpu: CFLAGS=-mavx -O3 -fno-builtin
+gpu: LOOP=-funroll-loops --param max-unroll-times=2
+gpu: CXX=g++
+gpu: gpuflop
+
 # Build rules
+
+gpuflop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
+	avx.o avx512.o roof.o dummy.o gpu_roof.o
+	$(CXX) $(LDFLAGS) -lcudart -pthread -o $@ $^
 
 flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	avx.o avx512.o roof.o dummy.o
@@ -75,6 +85,9 @@ stopwatch.o: stopwatch.c stopwatch.h
 
 stopwatch_tsc.o: $(ARCH)/stopwatch_tsc.c
 	$(CC) -O2 -c -o $@ $<
+
+gpu_roof.o: gpu/gpu_roof.cu
+	nvcc -I. -c -o $@ $<
 
 clean:
 	$(RM) flop *.o *.h.gch
