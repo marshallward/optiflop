@@ -5,6 +5,7 @@ LDFLAGS=-lrt -lm
 GCC_ARCH=native
 ARCH=x86
 AVX512=generic/avx512
+GPU=generic
 
 all: gcc
 
@@ -56,7 +57,7 @@ gpuflop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	$(CXX) $(LDFLAGS) -lcudart -pthread -o $@ $^
 
 flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
-	avx.o avx512.o roof.o dummy.o
+	avx.o avx512.o roof.o dummy.o gpu_roof_null.o
 	$(CC) $(LDFLAGS) -pthread -o $@ $^
 
 main.o: main.c avx.h roof.h bench.h
@@ -86,8 +87,11 @@ stopwatch.o: stopwatch.c stopwatch.h
 stopwatch_tsc.o: $(ARCH)/stopwatch_tsc.c
 	$(CC) -O2 -c -o $@ $<
 
+gpu_roof_null.o: generic/gpu_roof.c
+	$(CC) -O2 -c -o $@ $<
+
 gpu_roof.o: gpu/gpu_roof.cu
 	nvcc -I. -c -o $@ $<
 
 clean:
-	$(RM) flop *.o *.h.gch
+	$(RM) flop gpuflop *.o *.h.gch

@@ -13,6 +13,8 @@
 #include "bench.h"
 #include "input.h"
 
+#include "gpu_roof.h"
+
 #define ENSEMBLE_COUNT 10
 
 int main(int argc, char *argv[])
@@ -94,6 +96,7 @@ int main(int argc, char *argv[])
         &roof_thread,
         &roof_thread,
         &roof_thread,
+        &roof_thread,
     0};
 
     const char * benchnames[] = {
@@ -106,6 +109,7 @@ int main(int argc, char *argv[])
         "y[:] = x[:] + y[:]",
         "y[:] = a x[:] + y[:]",
         "y[:] = a x[:] + b y[:]",
+        "GPU: y[:] = x[:] + y[:]",
     0};
 
     const roof_ptr_t roof_tests[] = {
@@ -118,6 +122,7 @@ int main(int argc, char *argv[])
         &roof_xpy,
         &roof_axpy,
         &roof_axpby,
+        &gpu_axpy,
     0};
 
     /* IO setup */
