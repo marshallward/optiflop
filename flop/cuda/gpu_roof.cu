@@ -1,12 +1,12 @@
 #include "roof.h"
-#include "gpu_roof.h"
 
+#define BLOCKSIZE 1024
 
 __global__ void saxpy(int n, float a, float *x, float *y)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
-
-    if (i < n) y[i] = a * x[i] + y[i];
+    if (i < n)
+        y[i] = a * x[i] + y[i];
 }
 
 
@@ -36,7 +36,7 @@ void gpu_axpy(int n, float a, float b, float * x_in, float * y_in,
     r_max = 1000;
     cudaEventRecord(start);
     for (r = 0; r < r_max; r++) {
-        saxpy<<<1, 1024>>>(n, a, x, y);
+        saxpy<<<1 + n / BLOCKSIZE, BLOCKSIZE>>>(n, a, x, y);
     }
     cudaEventRecord(stop);
 
@@ -49,7 +49,7 @@ void gpu_axpy(int n, float a, float b, float * x_in, float * y_in,
     sec = msec / 1000.f;
 
     args->runtime = sec;
-    args->flops = 2 * r_max * n / sec;
-    args->bw_load = 2 * r_max * nbytes / sec;
-    args->bw_store = nbytes / sec;
+    args->flops = 2. * r_max * n / sec;
+    args->bw_load = 2. * r_max * nbytes / sec;
+    args->bw_store = 1. * r_max * nbytes / sec;
 }

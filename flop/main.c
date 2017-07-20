@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
         "y[:] = x[:] + y[:]",
         "y[:] = a x[:] + y[:]",
         "y[:] = a x[:] + b y[:]",
-        "GPU: y[:] = x[:] + y[:]",
+        "GPU: y[:] = a * x[:] + y[:]",
     0};
 
     const roof_ptr_t roof_tests[] = {

@@ -5,7 +5,6 @@ LDFLAGS=-lrt -lm
 GCC_ARCH=native
 ARCH=x86
 AVX512=generic/avx512
-GPU=generic
 
 all: gcc
 
@@ -90,7 +89,7 @@ stopwatch_tsc.o: $(ARCH)/stopwatch_tsc.c
 gpu_roof_null.o: generic/gpu_roof.c
 	$(CC) -O2 -c -o $@ $<
 
-gpu_roof.o: gpu/gpu_roof.cu
+gpu_roof.o: cuda/gpu_roof.cu
 	nvcc -I. -c -o $@ $<
 
 clean:
