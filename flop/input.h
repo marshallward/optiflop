@@ -10,6 +10,7 @@ struct input_config {
     double vlen_scale;
     int nthreads;
     double min_runtime;
+    int ensembles;
 };
 
 void parse_input(int, char **, struct input_config *);

@@ -26,6 +26,7 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
     cfg->vlen_scale = 2.;
     cfg->nthreads = 1;
     cfg->min_runtime = 1e-2;
+    cfg->ensembles = 1;
 
     struct option long_options[] =
     {
@@ -37,7 +38,7 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     option_index = 0;
     while (1) {
-        optflag = getopt_long(argc, argv, "ol:s:p:r:",
+        optflag = getopt_long(argc, argv, "ol:s:p:r:e:",
                               long_options, &option_index);
 
         if (optflag == -1)
@@ -47,6 +48,8 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
             case 0:
                 /* TODO */
                 break;
+            case 'e':
+                cfg->ensembles = (int) strtol(optarg, (char **) NULL, 10);
             case 'o':
                 cfg->save_output = 1;
                 break;
@@ -75,10 +78,11 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
         printf("The FLOPS benchmark\n");
         printf("\n");
         printf("Flags:\n");
-        printf("    -l start, stop  Test vectors lengths from `start` to `stop`\n");
+        printf("    -l start[,stop] Test vectors lengths from `start` to `stop`\n");
         printf("    -s scale        Scale step ratio during vector sweep\n");
         printf("    -p N            Benchmark N processors\n");
         printf("    -o              Output results to `results.txt`\n");
+        printf("    -e N            Number of ensembles\n");
         printf("    --verbose       Display per-thread performance\n");
         exit(EXIT_SUCCESS);
     }
