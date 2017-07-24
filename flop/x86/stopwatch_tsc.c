@@ -153,10 +153,10 @@ double stopwatch_get_tsc_freq(void)
 
         /* Diagnostic testing */
         if (verbose) {
-            printf("Cycles: %lu\n", cycles);
+            printf("Cycles: %llu\n", cycles);
             printf("Runtime: %.12f\n", runtime);
-            printf("dstart: %lu\n", d_start);
-            printf("dend: %lu\n", d_end);
+            printf("dstart: %llu\n", d_start);
+            printf("dend: %llu\n", d_end);
             printf("TSC frequency: %.12f GHz\n",
                    (double) cycles / runtime / 1e9);
         }
