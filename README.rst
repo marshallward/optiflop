@@ -1,22 +1,68 @@
+==========
+microbench
+==========
+
+A tool for peak performance and roofline analysis.
+
+
+About microbench
+================
+
+``microbench`` is a program for measuring the peak computational performance
+(in FLOPs per second) and memory bandwidth on a compute node.  Tests are
+written in C with a goal of portability.
+
+
+Quick usage guide
 =================
-Raijin Benchmarks
-=================
 
-My collection of Raijin benchmarking programs.  Nearly everything here is based
-on something that I've seen elsewhere.
+To build the application::
 
-FLOP/s counter
-==============
+   cd flop
+   make
 
-These are based on Alexander Yee's Flops_ program.
+To run for a default vector size (3200)::
 
-avx_add
-   Single-precision AVX addition FLOP test.  We add and subtract two
-   nearly-equal numbers to the entries of a ``__m256`` vector (hopefully)
-   stored in an AVX register.
+   ./flop
 
-avx_mac
-   Single-precision synchronous add-and-multiply AVX FLOP test.  
+For further options, ``flop --help``.
 
 
-.. _Flops: https://github.com/Mysticial/Flops
+Test overview
+=============
+
+All tests consist of repeated loops over operations in C.  Scalar tests use
+vector intrinsic calls.  Vector tests are written in standard C.  Compiler
+intrinsics are used to ensure alignment.
+
+The following tests are included:
+
+``avx_add``
+   Evaluation of 256-bit AVX ``vadd`` instructions over a set of registers,
+   specified by the ``VADD_LATENCY`` macro.  This was meant to be a single-port
+   performance test on Sandy Bridge architectures, but newer CPUs may have
+   multiple ALU ports.
+
+``avx_mac``
+   Evaluation of concurrent 256-bit AVX ``vadd`` and ``vmul`` instructions over
+   separate registers, set by ``VADD_LATENCY`` and ``VMUL_LATENCY``.  This is
+   intended to be a dual-port performance test on Sandy Bridge architectures.
+
+``avx512_add``
+``avx512_mac``
+  AVX512 implementations of ``avx_add`` and ``avx_mac``.  Must be enabled in
+  the Makefile.
+
+
+Roofline tests
+--------------
+
+``roof_copy``
+
+``roof_ax``
+
+``roof_xpy``
+
+``roof_axpy``
+
+``roof_axpby``
