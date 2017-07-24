@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
     struct input_config *cfg;
 
     int b, t;
-    int optflag;
     int vlen, vlen_start, vlen_end;
     double vlen_scale;
     int nthreads;
@@ -41,7 +40,6 @@ int main(int argc, char *argv[])
     void *status;
 
     /* Output variables */
-    int nbench;
     FILE *output;
     double **results;
 
@@ -127,7 +125,7 @@ int main(int argc, char *argv[])
 
     /* IO setup */
     if (cfg->save_output) {
-        for (nbench = 0; benchmarks[nbench]; nbench++) {}
+        for (int nbench = 0; benchmarks[nbench]; nbench++) {}
 
         results = malloc(2 * sizeof(double *));
         results[0] = malloc(nbench * sizeof(double));
@@ -237,6 +235,7 @@ int main(int argc, char *argv[])
 
     pthread_attr_destroy(&attr);
     pthread_mutex_destroy(&runtime_mutex);
+    free(cpus);
     free(t_args);
     free(threads);
     free(cfg);
