@@ -29,15 +29,15 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     struct option long_options[] =
     {
-        {"help", no_argument, &(cfg->print_help), 1},
+        {"help", no_argument, NULL, 'h'},
+        {"output", no_argument, NULL, 'o'},
         {"verbose", no_argument, &(cfg->verbose), 1},
-        {"output", no_argument, 0, 'o'},
         {0, 0, 0, 0}
     };
 
     option_index = 0;
     while (1) {
-        optflag = getopt_long(argc, argv, "ol:s:p:r:",
+        optflag = getopt_long(argc, argv, "hl:op:r:s:",
                               long_options, &option_index);
 
         if (optflag == -1)
@@ -46,6 +46,9 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
         switch (optflag) {
             case 0:
                 /* TODO */
+                break;
+            case 'h':
+                cfg->print_help = 1;
                 break;
             case 'o':
                 cfg->save_output = 1;
@@ -72,14 +75,15 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
     }
 
     if (cfg->print_help) {
-        printf("The FLOPS benchmark\n");
+        printf("microbench\n");
         printf("\n");
         printf("Flags:\n");
-        printf("    -l start, stop  Test vectors lengths from `start` to `stop`\n");
+        printf("    -l start[,stop]  Test vectors lengths from `start` to `stop`\n");
         printf("    -s scale        Scale step ratio during vector sweep\n");
         printf("    -p N            Benchmark N processors\n");
         printf("    -o              Output results to `results.txt`\n");
         printf("    --verbose       Display per-thread performance\n");
+        printf("    -h, --help      Display this help information\n");
         exit(EXIT_SUCCESS);
     }
 
