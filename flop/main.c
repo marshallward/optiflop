@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
             max_total_bw_load = 0.;
             max_total_bw_store = 0.;
 
-            for (ens = 0; ens < ENSEMBLE_COUNT; ens++) {
+            for (ens = 0; ens < cfg->ensembles; ens++) {
                 for (t = 0; t < nthreads; t++) {
                     /* TODO: Better way to keep processes off busy threads */
                     if (nthreads > 1) {
