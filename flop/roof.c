@@ -97,7 +97,7 @@ void * roof_thread(void *args_in)
 #include "roof.inc"
 
 #define ROOF_TEST roof_diff
-#define ROOF_KERNEL y[i] = x[i] + x[i-1]
+#define ROOF_KERNEL y[i] = x[i] - x[i-1]
 #define ROOF_FLOPS 1
 #define ROOF_BW_LOAD 2
 #define ROOF_BW_STORE 1
