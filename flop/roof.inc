@@ -6,7 +6,7 @@ void ROOF_TEST(int n, float a, float b,
 
     Stopwatch *t;
 
-    int r, r_max;
+    long r, r_max;
     int i;
     double runtime;
 
