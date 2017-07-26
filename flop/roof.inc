@@ -7,8 +7,10 @@ void ROOF_TEST(int n, float a, float b,
     Stopwatch *t;
 
     long r, r_max;
-    int i;
+    int i, offset;
     double runtime;
+
+    offset = OFFSET_INDEX;
 
     x = ASSUME_ALIGNED(x_in);
     y = ASSUME_ALIGNED(y_in);
@@ -21,7 +23,7 @@ void ROOF_TEST(int n, float a, float b,
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
-            for (i = 0; i < n; i++)
+            for (i = offset; i < n; i++)
                 ROOF_KERNEL;
             // Create an impossible branch to prevent loop interchange
             if (y[0] < 0.) dummy(a, b, x, y);
@@ -42,9 +44,11 @@ void ROOF_TEST(int n, float a, float b,
     } while (!runtime_flag);
 
     args->runtime = runtime;
-    args->flops = ROOF_FLOPS * n * r_max / runtime;
-    args->bw_load = ROOF_BW_LOAD * n * sizeof(float) * r_max / runtime;
-    args->bw_store = ROOF_BW_STORE * n * sizeof(float) * r_max / runtime;
+    args->flops = ROOF_FLOPS * (n - offset) * r_max / runtime;
+    args->bw_load = ROOF_BW_LOAD * (n - offset) * sizeof(float) * r_max
+                        / runtime;
+    args->bw_store = ROOF_BW_STORE * (n - offset) * sizeof(float) * r_max
+                        / runtime;
 
     /* Cleanup */
     t->destroy(t);
@@ -55,3 +59,6 @@ void ROOF_TEST(int n, float a, float b,
 #undef ROOF_FLOPS
 #undef ROOF_BW_LOAD
 #undef ROOF_BW_STORE
+#ifdef ROOF_OFFSET
+    #undef ROOF_OFFSET
+#endif

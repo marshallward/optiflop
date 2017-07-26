@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
         &roof_thread,
         &roof_thread,
         &roof_thread,
+        &roof_thread,
     0};
 
     const char * benchnames[] = {
@@ -108,6 +109,7 @@ int main(int argc, char *argv[])
         "y[:] = x[:] + y[:]",
         "y[:] = a x[:] + y[:]",
         "y[:] = a x[:] + b y[:]",
+        "y[1:] = x[1:] + x[:-1]",
         "GPU: y[:] = a * x[:] + y[:]",
     0};
 
@@ -121,6 +123,7 @@ int main(int argc, char *argv[])
         &roof_xpy,
         &roof_axpy,
         &roof_axpby,
+        &roof_diff,
         &gpu_axpy,
     0};
 
