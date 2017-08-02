@@ -57,7 +57,7 @@ gpuflop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 
 flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	avx.o avx512.o roof.o dummy.o gpu_roof_null.o
-	$(CC) $(LDFLAGS) -pthread -o $@ $^
+	$(CC) -pthread -o $@ $^ $(LDFLAGS)
 
 main.o: main.c avx.h roof.h bench.h
 	$(CC) -c -pthread -o $@ $<
