@@ -29,6 +29,8 @@ struct roof_args {
 typedef void (*roof_ptr_t) (int, float, float, float *, float *,
                             struct roof_args *);
 
+typedef void (*kernel_ptr_t) (int, float, float, float *, float *);
+
 struct thread_args {
     /* Input */
     int tid;

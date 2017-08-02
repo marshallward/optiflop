@@ -74,7 +74,7 @@ avx.o: $(ARCH)/avx.c avx.h bench.h stopwatch.h
 avx512.o: $(AVX512)/avx512.c avx512.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-roof.o: roof.c roof.inc roof.h bench.h stopwatch.h
+roof.o: roof.c roof.h bench.h stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
 dummy.o: dummy.c
