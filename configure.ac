@@ -15,8 +15,16 @@ AC_DEFUN([AX_CHECK_ASM],
     )
 ])
 
+# Probably need to check more here, like clock_* functions
 AX_CHECK_ASM("rdtsc", has_rdtsc)
 AX_CHECK_ASM("rdtscp", has_rdtscp)
 AX_CHECK_ASM("cpuid", has_cpuid)
+if test $has_rdtsc -a $has_rdtscp -a $has_cpuid; then
+    use_tsc=1
+else
+    use_tsc=0
+fi
+
+AC_MSG_NOTICE([TSC? $use_tsc])
 
 AC_OUTPUT(Makefile)
