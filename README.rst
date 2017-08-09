@@ -16,10 +16,14 @@ written in C with a goal of portability.
 Quick usage guide
 =================
 
-To build the application::
+This is still a development branch, so the build process requires an extra step
+or two.
 
-   cd flop
-   make
+1. Generate the ``configure`` script and ``Makefile``, then ``make``.::
+
+      $ autoconf
+      $ ./configure
+      $ make
 
 To run for a default vector size (3200)::
 
