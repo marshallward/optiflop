@@ -87,7 +87,7 @@ void roof_kernel(int n, float a, float b,
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
-            for (i = offset; i < n; i++)
+            for (i = 0; i < (n - offset); i++)
                 kernel(i, a, b, x, y);
             // Create an impossible branch to prevent loop interchange
             if (y[0] < 0.) dummy(a, b, x, y);
@@ -203,7 +203,7 @@ void roof_axpby(int n, float a, float b,
 
 void diff_kernel(int i, float a, float b, float *x, float *y)
 {
-    y[i] = x[i] - x[i - 1];
+    y[i] = x[i + 1] - x[i];
 }
 
 
