@@ -4,10 +4,13 @@ CFLAGS=@CFLAGS@
 LD=@CC@
 LDFLAGS=-lm -lrt	# TODO: Integrate with autoconf
 
+SRC=src
+INC=inc
+
 # Paths to platform-specific source
-TSC_PATH=@tsc_path@
-ARCH=x86
-AVX512=generic/avx512
+TSC_PATH=$(SRC)/@tsc_path@
+AVX_PATH=$(SRC)/@avx_path@
+AVX512_PATH=$(SRC)/@avx512_path@
 
 all: gcc
 
@@ -20,33 +23,33 @@ all: gcc
 #
 # The reason for this is still not clear.  Please experiment on your platform.
 
-gcc: CC=gcc -std=gnu99 -g -I.
+gcc: CC=gcc -std=gnu99 -g -I$(INC)
 gcc: CFLAGS=-mavx -O3 -fno-builtin
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
 gcc: flop
 
-intel: CC=icc -std=gnu99 -g -I.
+intel: CC=icc -std=gnu99 -g -I$(INC)
 intel: CFLAGS=-xavx -O3 -fno-builtin
 intel: flop
 
-stream: CC=icc -std=gnu99 -I.
+stream: CC=icc -std=gnu99 -I$(INC)
 stream: CFLAGS=-xavx -O3 -mcmodel=medium -ffreestanding -qopt-streaming-stores always
 stream: flop
 
-knl: CC=icc -I.
+knl: CC=icc -I$(INC)
 knl: CFLAGS=-std=gnu99 -xMIC-AVX512 -O3 -DBYTEALIGN=64
 knl: flop
 
-fcc: CC=fccpx -Xg -I.
+fcc: CC=fccpx -Xg -I$(INC)
 fcc: CFLAGS=-std=gnu99 -Kfast
 fcc: flop
 
-power: CC=gcc -std=gnu99 -g -I.
+power: CC=gcc -std=gnu99 -g -I$(INC)
 power: CFLAGS=-mpowerpc -O3 -fno-builtin
 power: LOOP=-funroll-loops --param max-unroll-times=2
 power: flop
 
-gpu: CC=gcc -std=gnu99 -g -I.
+gpu: CC=gcc -std=gnu99 -g -I$(INC)
 gpu: CFLAGS=-mavx -O3 -fno-builtin
 gpu: LOOP=-funroll-loops --param max-unroll-times=2
 gpu: CXX=g++
@@ -62,37 +65,37 @@ flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	avx.o avx512.o roof.o dummy.o gpu_roof_null.o
 	$(CC) -pthread -o $@ $^ $(LDFLAGS)
 
-main.o: main.c avx.h roof.h bench.h
+main.o: $(SRC)/main.c $(INC)/avx.h $(INC)/roof.h $(INC)/bench.h
 	$(CC) -c -pthread -o $@ $<
 
-input.o: input.c input.h
+input.o: $(SRC)/input.c $(INC)/input.h
 	$(CC) -c -pthread -o $@ $<
 
-bench.o: bench.c bench.h
+bench.o: $(SRC)/bench.c $(INC)/bench.h
 	$(CC) -c -pthread -o $@ $<
 
-avx.o: $(ARCH)/avx.c avx.h bench.h stopwatch.h
+avx.o: $(AVX_PATH)/avx.c $(INC)/avx.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-avx512.o: $(AVX512)/avx512.c avx512.h bench.h stopwatch.h
+avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-roof.o: roof.c roof.h bench.h stopwatch.h
+roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
-dummy.o: dummy.c
+dummy.o: $(SRC)/dummy.c
 	$(CC) -c -o $@ $<
 
-stopwatch.o: stopwatch.c stopwatch.h
+stopwatch.o: $(SRC)/stopwatch.c $(INC)/stopwatch.h
 	$(CC) -O2 -c -o $@ $<
 
 stopwatch_tsc.o: $(TSC_PATH)/stopwatch_tsc.c
 	$(CC) -O2 -c -o $@ $<
 
-gpu_roof_null.o: generic/gpu_roof.c
+gpu_roof_null.o: $(SRC)/generic/gpu_roof.c
 	$(CC) -O2 -c -o $@ $<
 
-gpu_roof.o: cuda/gpu_roof.cu
+gpu_roof.o: $(SRC)/cuda/gpu_roof.cu
 	nvcc -I. -c -o $@ $<
 
 clean:
