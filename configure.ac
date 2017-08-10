@@ -1,10 +1,9 @@
 AC_INIT([microbench], [0.1],
-        [marshall.ward@gmail.com],
+        [https://github.com/marshallward/microbench/issues],
         [],
         [https://github.com/marshallward/microbench.git])
 
 AC_LANG(C)
-AC_PROG_CC
 AC_PROG_CC_STDC
 
 # Vectorisation flag check
@@ -12,7 +11,7 @@ AC_DEFUN([AX_CHECK_FLAG],
 [
     AC_MSG_CHECKING([if $CC supports $1])
     ac_saved_cflags="$CFLAGS"
-    CFLAGS=$1
+    CFLAGS=-m$1
     AC_RUN_IFELSE(
         [AC_LANG_PROGRAM([#include <immintrin.h>],
                          [[const __m$3 r = _mm$3_set1_ps(1.f);]]
@@ -25,14 +24,14 @@ AC_DEFUN([AX_CHECK_FLAG],
     CFLAGS="$ac_saved_cflags"
 ])
 
-AX_CHECK_FLAG([-mavx], cc_has_avx, 256)
+AX_CHECK_FLAG([avx], cc_has_avx, 256)
 if test $cc_has_avx -eq 1; then
     avx_path=x86
 else
     avx_path=generic
 fi
 
-AX_CHECK_FLAG([-mavx512f], cc_has_avx512, 512)
+AX_CHECK_FLAG([avx512f], cc_has_avx512, 512)
 if test $cc_has_avx512 -eq 1; then
     avx512_path=x86/avx512
 else
