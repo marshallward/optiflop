@@ -6,6 +6,10 @@ AC_INIT([microbench], [0.1],
 AC_LANG(C)
 AC_PROG_CC_STDC
 
+# Libraries
+AC_SEARCH_LIBS(clock_gettime, rt)
+AC_SEARCH_LIBS(ceil, m)
+
 # Vectorisation flag check
 AC_DEFUN([AX_CHECK_FLAG],
 [
@@ -55,7 +59,7 @@ AC_DEFUN([AX_CHECK_ASM],
 AX_CHECK_ASM(rdtsc, has_rdtsc)
 AX_CHECK_ASM(rdtscp, has_rdtscp)
 AX_CHECK_ASM(cpuid, has_cpuid)
-if test $has_rdtsc -a $has_rdtscp -a $has_cpuid; then
+if test $has_rdtsc -eq 1 -a $has_rdtscp -eq 1 -a $has_cpuid -eq 1; then
     tsc_path=x86
 else
     tsc_path=generic
