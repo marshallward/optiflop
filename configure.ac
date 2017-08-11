@@ -10,24 +10,33 @@ AC_LANG(C)
 AC_PROG_CC_STDC
 
 # Enable built-in subroutine substitution, e.g. memcpy()
+AC_MSG_CHECKING([whether built-in functions are to be used])
 AC_ARG_ENABLE(builtin,
     AC_HELP_STRING(--enable-builtin, [enable built-in functions]))
 if test "$enable_builtin" = "no"; then
     CFLAGS="$CFLAGS -fno-builtin"
+else
+    enable_builtin=yes
 fi
+AC_MSG_RESULT($enable_builtin)
 
 # Enable direct streaming from RAM to cache via movnt
+AC_MSG_CHECKING([whether streaming stores are to be used])
 AC_ARG_ENABLE(stream,
-    AC_HELP_STRING(--enable-stream, [enable STREAM-like behaviour]))
-if test CC = "icc" -a "$enable_stream" = "yes"; then
+    AC_HELP_STRING(--enable-stream, [enable streaming stores (e.g. STREAM)]))
+if test "$CC" = "icc" -a "$enable_stream" = "yes"; then
     CFLAGS="$CFLAGS -mcmodel=medium -ffreestanding -qopt-streaming-stores always"
+else
+    enable_stream=no
 fi
+AC_MSG_RESULT($enable_stream)
 
 # Libraries
 AC_SEARCH_LIBS(ceil, m)
 AC_SEARCH_LIBS(clock_gettime, rt)
 
 # Vectorisation flag check
+# NOTE: Use the `volatile` keyword to prevent optimisation removal
 AC_DEFUN([AX_CHECK_FLAG],
 [
     AC_MSG_CHECKING([if $CC supports $1])
@@ -35,7 +44,7 @@ AC_DEFUN([AX_CHECK_FLAG],
     CFLAGS=-m$1
     AC_RUN_IFELSE(
         [AC_LANG_PROGRAM([#include <immintrin.h>],
-                         [[const __m$3 r = _mm$3_set1_ps(1.f);]]
+                         [[volatile const __m$3 r = _mm$3_set1_ps(1.f);]]
         )],
         [$2=1]
         [ac_saved_cflags="$ac_saved_cflags $CFLAGS"]

@@ -1,4 +1,4 @@
-SRC=src
+SRC=src		# TODO: Set with standard autoconf variables?
 INC=inc
 
 CC=@CC@
@@ -15,7 +15,8 @@ TSC_PATH=$(SRC)/@tsc_path@
 AVX_PATH=$(SRC)/@avx_path@
 AVX512_PATH=$(SRC)/@avx512_path@
 
-all: gcc
+all: LOOP=-funroll-loops --param max-unroll-times=2
+all: flop
 
 # Platforms
 
@@ -26,6 +27,8 @@ all: gcc
 #
 # The reason for this is still not clear.  Please experiment on your platform.
 
+# Below are the old platform-specific rules.
+# I am working on getting autoconf to sort out these details
 gcc: CC=gcc -std=gnu99 -g -I$(INC)
 gcc: CFLAGS=-mavx -O3 -fno-builtin
 gcc: LOOP=-funroll-loops --param max-unroll-times=2
@@ -69,13 +72,13 @@ flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	$(CC) -pthread -o $@ $^ $(LDFLAGS)
 
 main.o: $(SRC)/main.c $(INC)/avx.h $(INC)/roof.h $(INC)/bench.h
-	$(CC) -c -pthread -o $@ $<
+	$(CC) $(CFLAGS) -c -pthread -o $@ $<
 
 input.o: $(SRC)/input.c $(INC)/input.h
-	$(CC) -c -pthread -o $@ $<
+	$(CC) $(CFLAGS) -c -pthread -o $@ $<
 
 bench.o: $(SRC)/bench.c $(INC)/bench.h
-	$(CC) -c -pthread -o $@ $<
+	$(CC) $(CFLAGS) -c -pthread -o $@ $<
 
 avx.o: $(AVX_PATH)/avx.c $(INC)/avx.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -87,19 +90,19 @@ roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
 
 dummy.o: $(SRC)/dummy.c
-	$(CC) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 stopwatch.o: $(SRC)/stopwatch.c $(INC)/stopwatch.h
-	$(CC) -O2 -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 stopwatch_tsc.o: $(TSC_PATH)/stopwatch_tsc.c
-	$(CC) -O2 -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 gpu_roof_null.o: $(SRC)/generic/gpu_roof.c
-	$(CC) -O2 -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 gpu_roof.o: $(SRC)/cuda/gpu_roof.cu
-	nvcc -I. -c -o $@ $<
+	nvcc -I$(INC) -c -o $@ $<
 
 clean:
 	$(RM) flop gpuflop *.o *.h.gch
