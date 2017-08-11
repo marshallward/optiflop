@@ -1,11 +1,14 @@
+SRC=src
+INC=inc
+
 CC=@CC@
-CFLAGS=@CFLAGS@
+CFLAGS=@CFLAGS@ -I$(INC)
+
+# Optional flags
+LOOP_CFLAGS=@LOOP_CFLAGS@
 
 LD=@CC@
 LDFLAGS=@LIBS@
-
-SRC=src
-INC=inc
 
 # Paths to platform-specific source
 TSC_PATH=$(SRC)/@tsc_path@

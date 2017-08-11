@@ -3,19 +3,24 @@ AC_INIT([microbench], [0.1],
         [],
         [https://github.com/marshallward/microbench.git])
 
-# Set CFLAGS to an empty default value to prevent AC_PROG_CC default (-g -O2)
+# Set CFLAGS to a default value to replace the AC_PROG_CC default (-g -O2)
 : ${CFLAGS="-g -O3"}
 
 AC_LANG(C)
 AC_PROG_CC_STDC
 
-# Control flags
+# Enable built-in subroutine substitution, e.g. memcpy()
 AC_ARG_ENABLE(builtin,
-    AC_HELP_STRING(--enable-builtin, [enable built-in functions])
-])
-
+    AC_HELP_STRING(--enable-builtin, [enable built-in functions]))
 if test "$enable_builtin" = "no"; then
     CFLAGS="$CFLAGS -fno-builtin"
+fi
+
+# Enable direct streaming from RAM to cache via movnt
+AC_ARG_ENABLE(stream,
+    AC_HELP_STRING(--enable-stream, [enable STREAM-like behaviour]))
+if test CC = "icc" -a "$enable_stream" = "yes"; then
+    CFLAGS="$CFLAGS -mcmodel=medium -ffreestanding -qopt-streaming-stores always"
 fi
 
 # Libraries
