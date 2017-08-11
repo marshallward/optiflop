@@ -3,12 +3,24 @@ AC_INIT([microbench], [0.1],
         [],
         [https://github.com/marshallward/microbench.git])
 
+# Set CFLAGS to an empty default value to prevent AC_PROG_CC default (-g -O2)
+: ${CFLAGS="-g -O3"}
+
 AC_LANG(C)
 AC_PROG_CC_STDC
 
+# Control flags
+AC_ARG_ENABLE(builtin,
+    AC_HELP_STRING(--enable-builtin, [enable built-in functions])
+])
+
+if test "$enable_builtin" = "no"; then
+    CFLAGS="$CFLAGS -fno-builtin"
+fi
+
 # Libraries
-AC_SEARCH_LIBS(clock_gettime, rt)
 AC_SEARCH_LIBS(ceil, m)
+AC_SEARCH_LIBS(clock_gettime, rt)
 
 # Vectorisation flag check
 AC_DEFUN([AX_CHECK_FLAG],
@@ -21,6 +33,7 @@ AC_DEFUN([AX_CHECK_FLAG],
                          [[const __m$3 r = _mm$3_set1_ps(1.f);]]
         )],
         [$2=1]
+        [ac_saved_cflags="$ac_saved_cflags $CFLAGS"]
         [AC_MSG_RESULT([yes])],
         [$2=0]
         [AC_MSG_RESULT([no])],
