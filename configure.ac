@@ -41,10 +41,10 @@ AC_DEFUN([AX_CHECK_FLAG],
 [
     AC_MSG_CHECKING([if $CC supports $1])
     ac_saved_cflags="$CFLAGS"
-    CFLAGS=-m$1
+    CFLAGS="-O0 -m$1"
     AC_RUN_IFELSE(
         [AC_LANG_PROGRAM([#include <immintrin.h>],
-                         [[volatile const __m$3 r = _mm$3_set1_ps(1.f);]]
+                         [[const __m$3 r = _mm$3_set1_ps(1.f);]]
         )],
         [$2=1]
         [ac_saved_cflags="$ac_saved_cflags $CFLAGS"]
