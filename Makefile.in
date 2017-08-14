@@ -1,4 +1,4 @@
-SRC=src		# TODO: Set with standard autoconf variables?
+SRC=src
 INC=inc
 
 CC=@CC@
