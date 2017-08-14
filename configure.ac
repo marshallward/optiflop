@@ -47,7 +47,7 @@ AC_DEFUN([AX_CHECK_FLAG],
                          [[const __m$3 r = _mm$3_set1_ps(1.f);]]
         )],
         [$2=1]
-        [ac_saved_cflags="$ac_saved_cflags $CFLAGS"]
+        [ac_saved_cflags="$ac_saved_cflags -m$1"]
         [AC_MSG_RESULT([yes])],
         [$2=0]
         [AC_MSG_RESULT([no])],
