@@ -211,5 +211,5 @@ void roof_diff(int n, float a, float b,
                float * restrict x_in, float * restrict y_in,
                struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, diff_kernel, 1, 2, 1, 1);
+    roof_kernel(n, a, b, x_in, y_in, args, diff_kernel, 1, 1, 1, 1);
 }

@@ -13,7 +13,7 @@ AC_PROG_CC_STDC
 AC_MSG_CHECKING([whether built-in functions are to be used])
 AC_ARG_ENABLE(builtin,
     AC_HELP_STRING(--enable-builtin, [enable built-in functions]))
-if test "$enable_builtin" = "no"; then
+if test "$enable_builtin" = no; then
     CFLAGS="$CFLAGS -fno-builtin"
 else
     enable_builtin=yes
@@ -21,10 +21,12 @@ fi
 AC_MSG_RESULT($enable_builtin)
 
 # Enable direct streaming from RAM to cache via movnt
+# ACC_PROG_CC_STDC modifies $CC, so we need to add the -std flag.
+# TODO: Need to clean this test up
 AC_MSG_CHECKING([whether streaming stores are to be used])
 AC_ARG_ENABLE(stream,
     AC_HELP_STRING(--enable-stream, [enable streaming stores (e.g. STREAM)]))
-if test "$CC" = "icc" -a "$enable_stream" = "yes"; then
+if test "$CC" = "icc -std=gnu99" -a "$enable_stream" = yes; then
     CFLAGS="$CFLAGS -mcmodel=medium -ffreestanding -qopt-streaming-stores always"
 else
     enable_stream=no
