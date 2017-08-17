@@ -5,7 +5,7 @@ CC=@CC@
 CFLAGS=@CFLAGS@ -I$(INC)
 
 # Optional flags
-LOOP_CFLAGS=@LOOP_CFLAGS@
+LOOP_CFLAGS=@loop_cflags@
 
 LD=@CC@
 LDFLAGS=@LIBS@
