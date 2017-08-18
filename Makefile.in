@@ -29,31 +29,9 @@ all: flop
 
 # Below are the old platform-specific rules.
 # I am working on getting autoconf to sort out these details
-gcc: CC=gcc -std=gnu99 -g -I$(INC)
-gcc: CFLAGS=-mavx -O3 -fno-builtin
-gcc: LOOP=-funroll-loops --param max-unroll-times=2
-gcc: flop
-
-intel: CC=icc -std=gnu99 -g -I$(INC)
-intel: CFLAGS=-xavx -O3 -fno-builtin
-intel: flop
-
-stream: CC=icc -std=gnu99 -I$(INC)
-stream: CFLAGS=-xavx -O3 -mcmodel=medium -ffreestanding -qopt-streaming-stores always
-stream: flop
-
-knl: CC=icc -I$(INC)
-knl: CFLAGS=-std=gnu99 -xMIC-AVX512 -O3 -DBYTEALIGN=64
-knl: flop
-
 fcc: CC=fccpx -Xg -I$(INC)
 fcc: CFLAGS=-std=gnu99 -Kfast
 fcc: flop
-
-power: CC=gcc -std=gnu99 -g -I$(INC)
-power: CFLAGS=-mpowerpc -O3 -fno-builtin
-power: LOOP=-funroll-loops --param max-unroll-times=2
-power: flop
 
 gpu: CC=gcc -std=gnu99 -g -I$(INC)
 gpu: CFLAGS=-mavx -O3 -fno-builtin
@@ -87,7 +65,7 @@ avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC)/stopwatc
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) $(LOOP) -c -o $@ $<
+	$(CC) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
 
 dummy.o: $(SRC)/dummy.c
 	$(CC) $(CFLAGS) -c -o $@ $<
