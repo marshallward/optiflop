@@ -6,10 +6,15 @@ AC_INIT([microbench], [0.1],
 # Set CFLAGS to a default value to replace the AC_PROG_CC default (-g -O2)
 : ${CFLAGS="-g -O3"}
 
-
-# NOTE: The STDC check appends -std=gnu99 to $CC
 AC_LANG(C)
 AC_PROG_CC_STDC
+
+# NOTE: The STDC check appends -std=gnu99 to $CC
+# Split compiler name and flags
+ac_ifs=$IFS
+IFS=" "
+read ac_cc ac_cc_flags <<< $CC
+IFS=$ac_ifs
 
 
 # Enable built-in subroutine substitution, e.g. memcpy()
@@ -29,7 +34,7 @@ AC_MSG_RESULT($enable_builtin)
 AC_MSG_CHECKING([whether streaming stores are to be used])
 AC_ARG_ENABLE(stream,
     AC_HELP_STRING(--enable-stream, [enable streaming stores (e.g. STREAM)]))
-if test "$CC" = "icc -std=gnu99" -a "$enable_stream" = yes; then
+if test "$ac_cc" = "icc" -a "$enable_stream" = yes; then
     CFLAGS="$CFLAGS -mcmodel=medium -ffreestanding -qopt-streaming-stores always"
 else
     enable_stream=no
@@ -105,11 +110,11 @@ else
 fi
 
 # x86 Vectorisation flags (need to redo this)
-if test $cc_has_avx512 -eq 1 -a "$CC" = "gcc -std=gnu99"; then
+if test $cc_has_avx512 -eq 1 -a "$ac_cc" = "gcc"; then
     CFLAGS="$CFLAGS -mavx512f"
 fi
 
-if test $cc_has_avx512 -eq 1 -a "$CC" = "icc -std=gnu99"; then
+if test $cc_has_avx512 -eq 1 -a "$ac_cc" = "icc"; then
     CFLAGS="$CFLAGS -mCORE-AVX512 -DBYTEALIGN=64"
 fi
 
