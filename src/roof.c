@@ -5,17 +5,17 @@
 #include "bench.h"
 #include "stopwatch.h"
 
-inline void copy_kernel(int i, float a, float b, float *x, float *y)
+static inline void copy_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
-inline void ax_kernel(int i, float a, float b, float *x, float *y)
+static inline void ax_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
-inline void xpy_kernel(int i, float a, float b, float *x, float *y)
+static inline void xpy_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
-inline void axpy_kernel(int i, float a, float b, float *x, float *y)
+static inline void axpy_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
-inline void axpby_kernel(int i, float a, float b, float *x, float *y)
+static inline void axpby_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
-inline void diff_kernel(int i, float a, float b, float *x, float *y)
+static inline void diff_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 
 void * roof_thread(void *args_in)
