@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
     int vlen, vlen_start, vlen_end;
     double vlen_scale;
     int nthreads;
-    int nbench;
 
     /* Thread control variables */
     pthread_t *threads;
@@ -129,6 +128,7 @@ int main(int argc, char *argv[])
 
     /* IO setup */
     if (cfg->save_output) {
+        int nbench;
         for (nbench = 0; benchmarks[nbench]; nbench++) {}
 
         results = malloc(2 * sizeof(double *));

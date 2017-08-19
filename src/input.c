@@ -10,7 +10,6 @@
 
 void parse_input(int argc, char *argv[], struct input_config *cfg)
 {
-    int optflag;
     int option_index;
     char *token;
 
@@ -38,8 +37,8 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     option_index = 0;
     while (1) {
-        optflag = getopt_long(argc, argv, "he:l:op:r:s:",
-                              long_options, &option_index);
+        int optflag = getopt_long(argc, argv, "he:l:op:r:s:",
+                                  long_options, &option_index);
 
         if (optflag == -1)
             break;
