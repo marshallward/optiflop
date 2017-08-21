@@ -91,6 +91,9 @@ double stopwatch_get_tsc_freq(void)
      * Score-P method) will (usually) estimate the TSC frequency within 1 part
      * in 1e6 when using a nanosleep of 1 second.
      *
+     * (Comments below are out of date; update soon!)
+     * ----
+     *
      * Current observations on Raijin (Sandy Bridge):
      *
      * rdtsc() appears to cost about 30 TSC cycles with some discretisation
@@ -129,15 +132,24 @@ double stopwatch_get_tsc_freq(void)
     ts_sleep.tv_nsec = 0;
 
     do {
-        /* Prep the clock_gettime() call (see comment above) */
-        clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
+        /* "Warm the cache" with multiple clock_gettime calls.
+         * About 100k iterations seems to be required on my laptop. */
+        for (long i = 0; i < 1000000; i++)
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
 
+        /* Match the first timestamp to TSC counters */
         cycle_start1 = rdtsc();
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
         cycle_start2 = rdtsc();
 
-        clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
+        /* Perform a O(1 sec) calculation.
+         * Using clock_gettime keeps the final TSC-metered call in cache. */
 
+        /* TODO: Dynamic method to determine the number of iterations */
+        for (long i = 0; i < 10000000; i++)
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
+
+        /* Match the final timestamp to the TSC counter */
         cycle_end1 = rdtsc();
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
         cycle_end2 = rdtsc();
@@ -145,9 +157,11 @@ double stopwatch_get_tsc_freq(void)
         runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
                   + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
 
-        cycles = ((cycle_end1 + cycle_end2)
-                    - (cycle_start1 + cycle_start2)) / 2;
+        //cycles = ((cycle_end1 + cycle_end2)
+        //            - (cycle_start1 + cycle_start2)) / 2;
+        cycles = cycle_end2 - cycle_start2;
 
+        /* Estimate the clock_gettime call time (assuming TSC is faster) */
         d_start = cycle_start2 - cycle_start1;
         d_end = cycle_end2 - cycle_end1;
 
@@ -159,8 +173,10 @@ double stopwatch_get_tsc_freq(void)
             printf("dend: %llu\n", d_end);
             printf("TSC frequency: %.12f GHz\n",
                    (double) cycles / runtime / 1e9);
+            printf("TSC residual: %.12f GHz\n",
+                   1e6 * ((double) cycles / runtime / 1e9 - 2.4));
         }
-    } while (d_start / d_end > 10 || d_end / d_start > 10);
+    } while (d_start / d_end > 2 || d_end / d_start > 2);
 
     return (double) cycles / runtime;
 }
