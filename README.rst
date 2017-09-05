@@ -1,14 +1,14 @@
-==========
-microbench
-==========
+========
+Optiflop
+========
 
 A tool for peak performance and roofline analysis.
 
 
-About microbench
-================
+About Optiflop
+==============
 
-``microbench`` is a program for measuring the peak computational performance
+Optiflop is a program for measuring the peak computational performance
 (in FLOPs per second) and memory bandwidth on a compute node.  Tests are
 written in C with a goal of portability.
 
@@ -27,9 +27,9 @@ or two.
 
 To run for a default vector size (3200)::
 
-   ./flop
+   ./optiflop
 
-For further options, ``flop --help``.
+For further options, ``optiflop --help``.
 
 
 Test overview
@@ -58,8 +58,8 @@ The following tests are included:
   the Makefile.
 
 
-Roofline tests
---------------
+Roofline tests (*TODO*)
+-----------------------
 
 ``roof_copy``
 

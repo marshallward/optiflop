@@ -1,7 +1,7 @@
-AC_INIT([microbench], [0.1],
-        [https://github.com/marshallward/microbench/issues],
+AC_INIT([optiflop], [0.1],
+        [https://github.com/marshallward/optiflop/issues],
         [],
-        [https://github.com/marshallward/microbench.git])
+        [https://github.com/marshallward/optiflop.git])
 
 # Set CFLAGS to a default value to replace the AC_PROG_CC default (-g -O2)
 : ${CFLAGS="-g -O3"}

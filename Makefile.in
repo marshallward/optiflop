@@ -16,7 +16,7 @@ AVX_PATH=$(SRC)/@avx_path@
 AVX512_PATH=$(SRC)/@avx512_path@
 
 all: LOOP=-funroll-loops --param max-unroll-times=2
-all: flop
+all: optiflop
 
 # Platforms
 
@@ -31,8 +31,9 @@ all: flop
 # I am working on getting autoconf to sort out these details
 fcc: CC=fccpx -Xg -I$(INC)
 fcc: CFLAGS=-std=gnu99 -Kfast
-fcc: flop
+fcc: optiflop
 
+# TODO: Integrate this with autoconf
 gpu: CC=gcc -std=gnu99 -g -I$(INC)
 gpu: CFLAGS=-mavx -O3 -fno-builtin
 gpu: LOOP=-funroll-loops --param max-unroll-times=2
@@ -45,7 +46,7 @@ gpuflop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	avx.o avx512.o roof.o dummy.o gpu_roof.o
 	$(CXX) $(LDFLAGS) -lcudart -pthread -o $@ $^
 
-flop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
+optiflop: main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
 	avx.o avx512.o roof.o dummy.o gpu_roof_null.o
 	$(CC) -pthread -o $@ $^ $(LDFLAGS)
 
@@ -83,4 +84,4 @@ gpu_roof.o: $(SRC)/cuda/gpu_roof.cu
 	nvcc -I$(INC) -c -o $@ $<
 
 clean:
-	$(RM) flop gpuflop *.o *.h.gch
+	$(RM) optiflop gpuflop *.o *.h.gch
