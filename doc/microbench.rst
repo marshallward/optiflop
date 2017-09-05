@@ -14,6 +14,10 @@ Roofline benchmarks
 Roofline profiling
 ==================
 
+*Note: This documentation was part of an internal study at NCI, and refers to
+an earlier version of Optiflop.*
+
+
 Introduction
 ------------
 
