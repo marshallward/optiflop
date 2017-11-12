@@ -226,9 +226,10 @@ int main(int argc, char *argv[])
         if (cfg->save_output)
             fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
                     vlen,
-                    results[0][3], results[0][4], results[0][5], results[0][6],
-                    results[1][2], results[1][3], results[1][4], results[1][5],
-                    results[1][6]);
+                    results[0][5], results[0][6], results[0][7], results[0][8],
+                    results[0][9],
+                    results[0][6], results[0][7], results[0][8], results[0][9]
+            );
     }
 
     /* IO cleanup */
