@@ -6,7 +6,7 @@
 #include "stopwatch.h"
 
 /* Header */
-double stopwatch_get_tsc_freq(void);
+static double stopwatch_get_tsc_freq(void);
 
 void stopwatch_init_tsc(Stopwatch *t)
 {
@@ -87,57 +87,84 @@ double stopwatch_get_tsc_freq(void)
     /* This program attempts to determine the TSC frequency by using POSIX
      * timers and TSC counter readings.
      *
-     * This is a volatile task, but the current implementation (based on the
-     * Score-P method) will (usually) estimate the TSC frequency within 1 part
-     * in 1e6 when using a nanosleep of 1 second.
+     * This is a volatile task, and seems to be generally discouraged by kernel
+     * developers, but I am a daredevil.  The current implementation seems to produce
+     * consistent results within about 0.1 kHz.
      *
-     * Current observations on Raijin (Sandy Bridge):
+     * The general method is to measure the time and the TSC counter before and
+     * after a sufficiently "long" operation.  Longer operations will yield
+     * higher precisions.
      *
-     * rdtsc() appears to cost about 30 TSC cycles with some discretisation
-     * (27, 36, 40, ...).  Based on two subsequent rdtsc() calls.
+     * This "long" operation is a loop of clock_gettime calls whose results are
+     * ignored.  We use clock_gettime to ensure that the function and its call
+     * stack remain in cache for the final time measurement.
      *
-     * clock_gettime() appears to cost at least 1000 TSC cycles.  Before using
-     * the "pre-call", this was as high as 10k cycles.
+     * In order to determine the number of clock_gettime iterations in the
+     * "long" step, we do a pre-calculation where the number of iterations is
+     * doubled until the runtime exceeds some threshold.  Currently, this is
+     * set to 0.1 seconds.
      *
-     * clock_nanosleep() appears to take approximately one millisecond longer
-     * (around 1.0015 seconds), so we cannot assume a well-defined interval.
+     * The clock_gettime call is regarded as "slow" while rdtsc is "fast".  In
+     * practice, the ratio of clock_gettime to rdtsc runtime can be anywhere
+     * from 2 to 20 when in cache.  (Note: clock_gettime calls that are not in
+     * cache can be nearly a thousand times slower than rdtsc calls;
+     * eliminating this overhead is the motivation for using TSC counters.)
      *
-     * clock_gettime() is a vDSO memory read, which is updated at some
-     * (unknowable?) time by the kernel.  So maybe a mean between pre- and
-     * post- gettime call is the most likely estimate.  But the cycle overhead
-     * is significant in the microsec range, and may bias one or the other.
+     * Since rdtsc is "fast", we call this before and after the clock_gettime
+     * measurements, and use the mean value to determine the effective TSC
+     * counter during the clock_gettime call.  (Note: It does not seem
+     * necessary to take the mean, either TSC measurement would be sufficient.
+     * Need to look into this more.)
      *
-     * Occasionally, the second clock_gettime() calls takes a very long time,
-     * say around 30k cycles.  We address this by forcing the cycle count of
-     * the clock_gettime() calls to be comparable (i.e. within a factor of 5)
-     * but there may be a more robust way to handle this.
-     *
-     * Anyway, more info is needed here.
+     * This is all new to me, and as mentioned it's a volatile task, so there
+     * is surely more to learn here.
      */
 
     uint64_t cycle_start1, cycle_start2;
     uint64_t cycle_end1, cycle_end2;
-    struct timespec ts_start, ts_end, ts_sleep, ts_remain;
+    struct timespec ts_start, ts_end;
 
     uint64_t cycles, d_start, d_end;
     double runtime;
 
+    unsigned long ncalls;   /* 32 or 64 byte? */
+
     int verbose = 1;    /* Not yet supported */
 
-    /* Set the timer */
-    ts_sleep.tv_sec = 1;
-    ts_sleep.tv_nsec = 0;
-
+    /* Determine the number of iterations to get ns precision */
+    ncalls = 1;
     do {
-        /* Prep the clock_gettime() call (see comment above) */
+        ncalls *= 2;
+
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
 
+        for (long i = 0; i < ncalls; i++)
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
+
+        clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
+
+        runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
+                  + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
+
+    } while (runtime < 0.1);
+
+    /* Use ncalls to estimate the TSC frequency */
+    do {
+        /* "Warm the cache" with multiple clock_gettime calls. */
+        for (long i = 0; i < ncalls; i++)
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
+
+        /* Match the first timestamp to TSC counters */
         cycle_start1 = rdtsc();
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
         cycle_start2 = rdtsc();
 
-        clock_nanosleep(CLOCK_MONOTONIC, 0, &ts_sleep, &ts_remain);
+        /* Perform a "long" (~1 sec) calculation.
+         * Use clock_gettime to keep the final TSC-metered call in cache. */
+        for (long i = 0; i < ncalls; i++)
+            clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
 
+        /* Match the final timestamp to the TSC counter */
         cycle_end1 = rdtsc();
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
         cycle_end2 = rdtsc();
@@ -145,9 +172,11 @@ double stopwatch_get_tsc_freq(void)
         runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
                   + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
 
+        /* Use the mean rdtsc value before and after clock_gettime calls */
         cycles = ((cycle_end1 + cycle_end2)
                     - (cycle_start1 + cycle_start2)) / 2;
 
+        /* Estimate the clock_gettime call time (assuming TSC is faster) */
         d_start = cycle_start2 - cycle_start1;
         d_end = cycle_end2 - cycle_end1;
 
@@ -159,8 +188,11 @@ double stopwatch_get_tsc_freq(void)
             printf("dend: %lu\n", d_end);
             printf("TSC frequency: %.12f GHz\n",
                    (double) cycles / runtime / 1e9);
+            printf("TSC residual: %.12f kHz\n",
+                   1e6 * ((double) cycles / runtime / 1e9 - 1.79592));
         }
-    } while (d_start / d_end > 10 || d_end / d_start > 10);
+
+    } while (d_start / d_end > 2 || d_end / d_start > 2);
 
     return (double) cycles / runtime;
 }
