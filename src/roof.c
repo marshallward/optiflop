@@ -18,6 +18,7 @@ static inline void axpby_kernel(int i, float a, float b, float *x, float *y)
 static inline void diff_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 
+
 void * roof_thread(void *args_in)
 {
     /* Thread input */
@@ -48,6 +49,7 @@ void * roof_thread(void *args_in)
 
     rargs = malloc(sizeof(struct roof_args));
     rargs->min_runtime = args->min_runtime;
+    rargs->timer_type = args->timer_type;
 
     (*(args->roof))(n, a, b, x, y, rargs);
 
@@ -79,7 +81,7 @@ void roof_kernel(int n, float a, float b,
     x = ASSUME_ALIGNED(x_in);
     y = ASSUME_ALIGNED(y_in);
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(args->timer_type);
 
     r_max = 1;
     runtime_flag = 0;

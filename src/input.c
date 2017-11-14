@@ -7,6 +7,7 @@
 #include <string.h>     /* strtok */
 
 #include "input.h"
+#include "stopwatch.h"
 
 void parse_input(int argc, char *argv[], struct input_config *cfg)
 {
@@ -15,6 +16,7 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     cpu_set_t cpuset;
     int nprocs;
+    int use_tsc;
 
     /* Default values */
     cfg->print_help = 0;
@@ -26,15 +28,18 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
     cfg->nthreads = 1;
     cfg->min_runtime = 1e-2;
     cfg->ensembles = 1;
+    cfg->timer_type = TIMER_POSIX;
 
     struct option long_options[] =
     {
         {"help", no_argument, NULL, 'h'},
         {"output", no_argument, NULL, 'o'},
         {"verbose", no_argument, &(cfg->verbose), 1},
+        {"tsc", no_argument, &use_tsc, 1},
         {0, 0, 0, 0}
     };
 
+    use_tsc = 0;
     option_index = 0;
     while (1) {
         int optflag = getopt_long(argc, argv, "he:l:op:r:s:",
@@ -94,6 +99,8 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
 
     sched_getaffinity(0, sizeof(cpuset), &cpuset);
     nprocs = CPU_COUNT(&cpuset);
+
+    if (use_tsc) cfg->timer_type = TIMER_TSC;
 
     if (cfg->nthreads > nprocs) {
         printf("flop: Number of threads (%i) exceeds maximum "

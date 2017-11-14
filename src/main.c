@@ -15,8 +15,6 @@
 
 #include "gpu_roof.h"
 
-#define ENSEMBLE_COUNT 10
-
 int main(int argc, char *argv[])
 {
     /* CPU set variables */
@@ -83,7 +81,6 @@ int main(int argc, char *argv[])
 
     /* General benchmark loop */
     /* TODO: Combine name and bench into a struct, or add to t_args? */
-
     const bench_ptr_t benchmarks[] = {
         &avx_add,
         &avx_mac,
@@ -160,6 +157,7 @@ int main(int argc, char *argv[])
                     t_args[t].vlen = vlen;
                     t_args[t].min_runtime = cfg->min_runtime;
                     t_args[t].roof = roof_tests[b];
+                    t_args[t].timer_type = cfg->timer_type;
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
                                    (void *) &t_args[t]);
@@ -227,8 +225,8 @@ int main(int argc, char *argv[])
             fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
                     vlen,
                     results[0][5], results[0][6], results[0][7], results[0][8],
-                    results[0][9],
-                    results[0][6], results[0][7], results[0][8], results[0][9]
+                    results[1][4], results[1][5], results[1][6], results[1][7],
+                    results[1][8]
             );
     }
 

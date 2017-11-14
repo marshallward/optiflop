@@ -13,7 +13,8 @@ platform = 'Raijin, E5-2670'
 platform = 'Intel i7-7560U'
 
 n_avx = 8
-f_peak = 3.3e9
+#f_peak = 3.3e9
+f_peak = 3.8e9
 P_peak = n_avx * f_peak
 
 p_min_exp, p_max_exp = -6, 2
@@ -29,8 +30,10 @@ n_channels = 4      # Raijin has 4-channel DRAM (but don't use it here)
 bw_dram = f_dram * ddr * bus_width  # Single-channel? (No...)
 
 # L1 bandwidth
-bw_l1l = 32 * f_peak    # 32-byte/cycle loads
-bw_l1s = 16 * f_peak    # 16-byte/cycle stores
+#bw_l1l = 32 * f_peak    # 32-byte/cycle loads
+#bw_l1s = 16 * f_peak    # 16-byte/cycle stores
+bw_l1l = 64 * f_peak    # 32-byte/cycle loads
+bw_l1s = 32 * f_peak    # 16-byte/cycle stores
 
 ai_l1l = P_peak / bw_l1l
 ai_l1s = P_peak / bw_l1s

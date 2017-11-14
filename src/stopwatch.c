@@ -39,7 +39,7 @@ const size_t stopwatch_context_size[TIMER_MAX] = {
 
 /* Generic Stopwatch methods */
 
-Stopwatch * stopwatch_create(enum stopwatch_type type)
+Stopwatch * stopwatch_create(enum stopwatch_backend type)
 {
     Stopwatch *t;
 

@@ -12,7 +12,7 @@
 
 /* Timer definition */
 
-enum stopwatch_type {
+enum stopwatch_backend {
     TIMER_UNDEF = -1,
     TIMER_POSIX = 0,
     TIMER_TSC,
@@ -49,7 +49,7 @@ struct stopwatch_context_posix_t {
 
 /* Generic Timer methods */
 
-Stopwatch * stopwatch_create(enum stopwatch_type);
+Stopwatch * stopwatch_create(enum stopwatch_backend);
 
 /* TSC Timer methods */
 

@@ -34,7 +34,7 @@ void * avx512_add(void *args_in)
     /* Read inputs */
     args = (struct thread_args *) args_in;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(args->timer_type);
 
     for (j = 0; j < n_avx512; j++) {
         r[j] = _mm512_set1_ps((float) j);
@@ -109,7 +109,7 @@ void * avx512_fma(void *args_in)
     /* Read inputs */
     args = (struct thread_args *) args_in;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(args->timer_type);
 
     for (j = 0; j < n_avx512; j++) {
         r[j] = _mm512_set1_ps((float) j);

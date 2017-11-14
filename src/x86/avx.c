@@ -34,7 +34,7 @@ void * avx_add(void *args_in)
     /* Read inputs */
     args = (struct thread_args *) args_in;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(args->timer_type);
 
     for (j = 0; j < n_avx; j++)
         reg[j] = _mm256_set1_ps((float) j);
@@ -105,7 +105,7 @@ void * avx_mac(void *args_in)
     /* Read inputs */
     args = (struct thread_args *) args_in;
 
-    t = stopwatch_create(TIMER_POSIX);
+    t = stopwatch_create(args->timer_type);
 
     for (j = 0; j < n_avx; j++) {
         r[j] = _mm256_set1_ps((float) j);

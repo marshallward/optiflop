@@ -2,6 +2,7 @@
 #define FLOP_BENCH_H_
 
 #include <pthread.h>
+#include "stopwatch.h"
 
 /* Types */
 
@@ -11,6 +12,7 @@ typedef void * (*bench_ptr_t) (void *);
 struct roof_args {
     /* Config */
     float min_runtime;
+    enum stopwatch_backend timer_type;
 
     /* Fields */
     int n;
@@ -35,6 +37,7 @@ struct thread_args {
     /* Input */
     int tid;
     double min_runtime;
+    enum stopwatch_backend timer_type;
     int vlen;
     roof_ptr_t roof;
 
