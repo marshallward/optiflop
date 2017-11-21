@@ -13,6 +13,7 @@
 #include "bench.h"
 #include "input.h"
 
+#include "stopwatch.h"
 #include "gpu_roof.h"
 
 int main(int argc, char *argv[])
@@ -36,6 +37,9 @@ int main(int argc, char *argv[])
     pthread_attr_t attr;
     struct thread_args *t_args;
     void *status;
+
+    /* Platform-specific input variables */
+    double tsc_freq;
 
     /* Output variables */
     FILE *output;
@@ -135,6 +139,14 @@ int main(int argc, char *argv[])
         output = fopen("results.txt", "w");
     }
 
+    /* Timer setup */
+    /* TODO: Evaluate in separate file so function can be declared as static */
+    if (cfg->timer_type == TIMER_TSC) {
+        tsc_freq = stopwatch_get_tsc_freq();
+    } else {
+        tsc_freq = -1;
+    }
+
     /* NOTE: the avx_* tests don't depend on vector length */
     for (vlen = vlen_start; vlen < vlen_end; vlen = ceil(vlen * vlen_scale)) {
         for (b = 0; benchmarks[b]; b++) {
@@ -158,6 +170,9 @@ int main(int argc, char *argv[])
                     t_args[t].min_runtime = cfg->min_runtime;
                     t_args[t].roof = roof_tests[b];
                     t_args[t].timer_type = cfg->timer_type;
+
+                    /* x86-specific inputs */
+                    t_args[t].tsc_freq = tsc_freq;
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
                                    (void *) &t_args[t]);

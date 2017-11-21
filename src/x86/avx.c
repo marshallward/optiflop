@@ -35,6 +35,8 @@ void * avx_add(void *args_in)
     args = (struct thread_args *) args_in;
 
     t = stopwatch_create(args->timer_type);
+    if (args->timer_type == TIMER_TSC)
+        t->context.tc_tsc->cpufreq = args->tsc_freq;
 
     for (j = 0; j < n_avx; j++)
         reg[j] = _mm256_set1_ps((float) j);
@@ -106,6 +108,8 @@ void * avx_mac(void *args_in)
     args = (struct thread_args *) args_in;
 
     t = stopwatch_create(args->timer_type);
+    if (args->timer_type == TIMER_TSC)
+        t->context.tc_tsc->cpufreq = args->tsc_freq;
 
     for (j = 0; j < n_avx; j++) {
         r[j] = _mm256_set1_ps((float) j);

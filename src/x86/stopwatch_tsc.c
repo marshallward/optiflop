@@ -6,12 +6,11 @@
 #include "stopwatch.h"
 
 /* Header */
-static double stopwatch_get_tsc_freq(void);
+double stopwatch_get_tsc_freq(void);
 
 void stopwatch_init_tsc(Stopwatch *t)
 {
     t->context.tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
-    t->context.tc_tsc->cpufreq = stopwatch_get_tsc_freq();
 }
 
 void stopwatch_start_tsc(Stopwatch *t)
@@ -129,7 +128,7 @@ double stopwatch_get_tsc_freq(void)
 
     unsigned long ncalls;   /* 32 or 64 byte? */
 
-    int verbose = 1;    /* Not yet supported */
+    int verbose = 0;    /* Not yet supported */
 
     /* Determine the number of iterations to get ns precision */
     ncalls = 1;
