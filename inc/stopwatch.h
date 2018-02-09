@@ -34,9 +34,6 @@ union stopwatch_context_t {
     struct stopwatch_context_tsc_t *tc_tsc;
 };
 
-/* TSC frequency (if available) */
-extern double tsc_freq;
-
 /* Generic Timer methods */
 Stopwatch * stopwatch_create(enum stopwatch_backend);
 
