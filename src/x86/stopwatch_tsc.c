@@ -10,7 +10,7 @@ double stopwatch_get_tsc_freq(void);
 
 void stopwatch_init_tsc(Stopwatch *t)
 {
-    t->context.tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
+    t->context->tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
 }
 
 void stopwatch_start_tsc(Stopwatch *t)
@@ -25,7 +25,7 @@ void stopwatch_start_tsc(Stopwatch *t)
         "rdtsc\n"
         "movq %%rax, %0\n"
         "movq %%rdx, %1\n"
-        : "=r" (t->context.tc_tsc->rax0), "=r" (t->context.tc_tsc->rdx0)
+        : "=r" (t->context->tc_tsc->rax0), "=r" (t->context->tc_tsc->rdx0)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
 }
@@ -45,7 +45,7 @@ void stopwatch_stop_tsc(Stopwatch *t)
         "movq %%rax, %0\n"
         "movq %%rdx, %1\n"
         "cpuid\n"
-        : "=r" (t->context.tc_tsc->rax1), "=r" (t->context.tc_tsc->rdx1)
+        : "=r" (t->context->tc_tsc->rax1), "=r" (t->context->tc_tsc->rdx1)
         :: "%rax", "%rbx", "%rcx", "%rdx"
     );
 }
@@ -54,15 +54,17 @@ double stopwatch_runtime_tsc(Stopwatch *t)
 {
     uint64_t t0, t1;
 
-    t0 = (t->context.tc_tsc->rdx0 << 32) | t->context.tc_tsc->rax0;
-    t1 = (t->context.tc_tsc->rdx1 << 32) | t->context.tc_tsc->rax1;
+    t0 = (t->context->tc_tsc->rdx0 << 32) | t->context->tc_tsc->rax0;
+    t1 = (t->context->tc_tsc->rdx1 << 32) | t->context->tc_tsc->rax1;
 
-    return (t1 - t0) / t->context.tc_tsc->cpufreq;
+    return (t1 - t0) / t->context->tc_tsc->cpufreq;
 }
 
 void stopwatch_destroy_tsc(Stopwatch *t)
 {
-    free(t->context.tc_tsc);
+    free(t->context->tc_tsc);
+    free(t->context);
+    free(t);
 }
 
 /* TSC support functions */

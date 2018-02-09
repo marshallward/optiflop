@@ -26,7 +26,7 @@ union stopwatch_context_t {
 };
 
 typedef struct Stopwatch_struct {
-    union stopwatch_context_t context;
+    union stopwatch_context_t *context;
 
     void (*start)();
     void (*stop)();

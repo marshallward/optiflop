@@ -85,7 +85,7 @@ void roof_kernel(int n, float a, float b,
 
     t = stopwatch_create(args->timer_type);
     if (args->timer_type == TIMER_TSC)
-        t->context.tc_tsc->cpufreq = args->tsc_freq;
+        t->context->tc_tsc->cpufreq = args->tsc_freq;
 
     r_max = 1;
     runtime_flag = 0;
