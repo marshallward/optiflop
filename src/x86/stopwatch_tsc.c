@@ -91,12 +91,12 @@ uint64_t rdtsc(void)
     return (rdx << 32) | rax;
 }
 
-void stopwatch_set_tsc_freq(void)
+double stopwatch_get_tsc_freq(void)
 {
-    tsc_freq = stopwatch_get_tsc_freq();
+    return tsc_freq;
 }
 
-double stopwatch_get_tsc_freq(void)
+void stopwatch_set_tsc_freq(void)
 {
     /* This program attempts to determine the TSC frequency by using POSIX
      * timers and TSC counter readings.
@@ -208,5 +208,5 @@ double stopwatch_get_tsc_freq(void)
 
     } while (d_start / d_end > 2 || d_end / d_start > 2);
 
-    return (double) cycles / runtime;
+    tsc_freq = (double) cycles / runtime;
 }
