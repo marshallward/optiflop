@@ -14,9 +14,6 @@ struct roof_args {
     float min_runtime;
     enum stopwatch_backend timer_type;
 
-    /* Optional */
-    double tsc_freq;
-
     /* Fields */
     int n;
     float a;
@@ -43,9 +40,6 @@ struct thread_args {
     enum stopwatch_backend timer_type;
     int vlen;
     roof_ptr_t roof;
-
-    /* Optional */
-    double tsc_freq;
 
     /* Output */
     double runtime;

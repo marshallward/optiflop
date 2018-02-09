@@ -35,8 +35,6 @@ void * avx512_add(void *args_in)
     args = (struct thread_args *) args_in;
 
     t = stopwatch_create(args->timer_type);
-    if (args->timer_type == TIMER_TSC)
-        t->context.tc_tsc->cpufreq = args->tsc_freq;
 
     for (j = 0; j < n_avx512; j++) {
         r[j] = _mm512_set1_ps((float) j);
@@ -112,8 +110,6 @@ void * avx512_fma(void *args_in)
     args = (struct thread_args *) args_in;
 
     t = stopwatch_create(args->timer_type);
-    if (args->timer_type == TIMER_TSC)
-        t->context.tc_tsc->cpufreq = args->tsc_freq;
 
     for (j = 0; j < n_avx512; j++) {
         r[j] = _mm512_set1_ps((float) j);

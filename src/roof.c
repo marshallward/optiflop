@@ -50,7 +50,6 @@ void * roof_thread(void *args_in)
     rargs = malloc(sizeof(struct roof_args));
     rargs->min_runtime = args->min_runtime;
     rargs->timer_type = args->timer_type;
-    rargs->tsc_freq = args->tsc_freq;
 
     (*(args->roof))(n, a, b, x, y, rargs);
 
@@ -84,8 +83,6 @@ void roof_kernel(int n, float a, float b,
     y = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(args->timer_type);
-    if (args->timer_type == TIMER_TSC)
-        t->context->tc_tsc->cpufreq = args->tsc_freq;
 
     r_max = 1;
     runtime_flag = 0;

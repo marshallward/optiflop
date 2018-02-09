@@ -5,13 +5,19 @@
 
 #include "stopwatch.h"
 
-/* Header */
-double stopwatch_get_tsc_freq(void);
+/* NOTE: Assumes all cores (sockets) have same TSC frequency */
+double tsc_freq;
+
+/* Context */
+struct stopwatch_context_tsc_t {
+    uint64_t rax0, rdx0, rax1, rdx1;
+};
 
 /* Methods */
 
 void stopwatch_init_tsc(Stopwatch *t)
 {
+    t->context = malloc(sizeof(union stopwatch_context_t));
     t->context->tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
 }
 
@@ -59,7 +65,7 @@ double stopwatch_runtime_tsc(Stopwatch *t)
     t0 = (t->context->tc_tsc->rdx0 << 32) | t->context->tc_tsc->rax0;
     t1 = (t->context->tc_tsc->rdx1 << 32) | t->context->tc_tsc->rax1;
 
-    return (t1 - t0) / t->context->tc_tsc->cpufreq;
+    return (t1 - t0) / tsc_freq;
 }
 
 void stopwatch_destroy_tsc(Stopwatch *t)
@@ -83,6 +89,11 @@ uint64_t rdtsc(void)
 
     __asm__ __volatile__ ("rdtscp" : "=a" (rax), "=d" (rdx), "=c" (aux));
     return (rdx << 32) | rax;
+}
+
+void stopwatch_set_tsc_freq(void)
+{
+    tsc_freq = stopwatch_get_tsc_freq();
 }
 
 double stopwatch_get_tsc_freq(void)

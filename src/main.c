@@ -38,9 +38,6 @@ int main(int argc, char *argv[])
     struct thread_args *t_args;
     void *status;
 
-    /* Platform-specific input variables */
-    double tsc_freq;
-
     /* Output variables */
     FILE *output;
     double **results;
@@ -141,11 +138,9 @@ int main(int argc, char *argv[])
 
     /* Timer setup */
     /* TODO: Evaluate in separate file so function can be declared as static */
-    if (cfg->timer_type == TIMER_TSC) {
-        tsc_freq = stopwatch_get_tsc_freq();
-    } else {
-        tsc_freq = -1;
-    }
+    /* TODO: Don't do this, Make a "calibrate" func for each Stopwatch type */
+    if (cfg->timer_type == TIMER_TSC)
+        stopwatch_set_tsc_freq();
 
     /* NOTE: the avx_* tests don't depend on vector length */
     for (vlen = vlen_start; vlen < vlen_end; vlen = ceil(vlen * vlen_scale)) {
@@ -170,9 +165,6 @@ int main(int argc, char *argv[])
                     t_args[t].min_runtime = cfg->min_runtime;
                     t_args[t].roof = roof_tests[b];
                     t_args[t].timer_type = cfg->timer_type;
-
-                    /* x86-specific inputs */
-                    t_args[t].tsc_freq = tsc_freq;
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
                                    (void *) &t_args[t]);

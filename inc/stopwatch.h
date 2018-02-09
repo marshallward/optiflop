@@ -1,5 +1,5 @@
-#ifndef FLOP_STOPWATCH_H_
-#define FLOP_STOPWATCH_H_
+#ifndef STOPWATCH_H_
+#define STOPWATCH_H_
 
 #include <stdint.h> /* uint64_t */
 #include <time.h>   /* clockid_t, timespec */
@@ -10,8 +10,7 @@
 #define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 #endif
 
-/* Timer definition */
-
+/* Stopwatch type */
 enum stopwatch_backend {
     TIMER_UNDEF = -1,
     TIMER_POSIX = 0,
@@ -19,6 +18,7 @@ enum stopwatch_backend {
     TIMER_MAX,
 };
 
+/* Stopwatch class */
 typedef struct Stopwatch_struct {
     union stopwatch_context_t *context;
 
@@ -34,31 +34,26 @@ union stopwatch_context_t {
     struct stopwatch_context_tsc_t *tc_tsc;
 };
 
-/* TODO: A few functions explicitly read cpufreq, need to remove these */
-struct stopwatch_context_tsc_t {
-    double cpufreq;
-    uint64_t rax0, rdx0, rax1, rdx1;
-};
+/* TSC frequency (if available) */
+extern double tsc_freq;
 
 /* Generic Timer methods */
-
 Stopwatch * stopwatch_create(enum stopwatch_backend);
 
-/* TSC Timer methods */
-
-void stopwatch_init_tsc(Stopwatch *t);
-void stopwatch_start_tsc(Stopwatch *t);
-void stopwatch_stop_tsc(Stopwatch *t);
-double stopwatch_runtime_tsc(Stopwatch *t);
-void stopwatch_destroy_tsc(Stopwatch *t);
-double stopwatch_get_tsc_freq();
-
 /* POSIX Timer methods */
-
 void stopwatch_init_posix(Stopwatch *t);
 void stopwatch_start_posix(Stopwatch *t);
 void stopwatch_stop_posix(Stopwatch *t);
 double stopwatch_runtime_posix(Stopwatch *t);
 void stopwatch_destroy_posix(Stopwatch *t);
 
-#endif  // FLOP_STOPWATCH_H_
+/* TSC Timer methods */
+void stopwatch_init_tsc(Stopwatch *t);
+void stopwatch_start_tsc(Stopwatch *t);
+void stopwatch_stop_tsc(Stopwatch *t);
+double stopwatch_runtime_tsc(Stopwatch *t);
+void stopwatch_destroy_tsc(Stopwatch *t);
+double stopwatch_get_tsc_freq();
+void stopwatch_set_tsc_freq();
+
+#endif  // STOPWATCH_H_
