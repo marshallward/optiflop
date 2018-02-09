@@ -5,8 +5,6 @@
 
 #include "stopwatch.h"
 
-double tsc_freq; /* Unused */
-
 void stopwatch_init_tsc(Stopwatch *t)
 {
     printf("ERROR: TSC timer not supported.\n");
