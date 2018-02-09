@@ -8,6 +8,8 @@
 /* Header */
 double stopwatch_get_tsc_freq(void);
 
+/* Methods */
+
 void stopwatch_init_tsc(Stopwatch *t)
 {
     t->context->tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));

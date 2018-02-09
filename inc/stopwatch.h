@@ -19,12 +19,6 @@ enum stopwatch_backend {
     TIMER_MAX,
 };
 
-union stopwatch_context_t {
-    void *tc_untyped;
-    struct stopwatch_context_posix_t *tc_posix;
-    struct stopwatch_context_tsc_t *tc_tsc;
-};
-
 typedef struct Stopwatch_struct {
     union stopwatch_context_t *context;
 
@@ -34,17 +28,16 @@ typedef struct Stopwatch_struct {
     void (*destroy)();
 } Stopwatch;
 
-/* Context definitions */
-/* TODO: Can I move these out of the header? */
+/* Context */
+union stopwatch_context_t {
+    struct stopwatch_context_posix_t *tc_posix;
+    struct stopwatch_context_tsc_t *tc_tsc;
+};
 
+/* TODO: A few functions explicitly read cpufreq, need to remove these */
 struct stopwatch_context_tsc_t {
     double cpufreq;
     uint64_t rax0, rdx0, rax1, rdx1;
-};
-
-struct stopwatch_context_posix_t {
-    clockid_t clock;
-    struct timespec ts_start, ts_end;
 };
 
 /* Generic Timer methods */

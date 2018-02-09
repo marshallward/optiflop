@@ -35,6 +35,7 @@ void * avx_add(void *args_in)
     args = (struct thread_args *) args_in;
 
     t = stopwatch_create(args->timer_type);
+    /* TODO: Make this accessible (maybe a global) */
     if (args->timer_type == TIMER_TSC)
         t->context->tc_tsc->cpufreq = args->tsc_freq;
 

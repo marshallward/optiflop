@@ -32,11 +32,6 @@ void (*stopwatch_destroy_funcs[TIMER_MAX])(Stopwatch *t) = {
     stopwatch_destroy_tsc,
 };
 
-const size_t stopwatch_context_size[TIMER_MAX] = {
-    sizeof(struct stopwatch_context_posix_t),
-    sizeof(struct stopwatch_context_tsc_t),
-};
-
 /* Generic Stopwatch methods */
 
 Stopwatch * stopwatch_create(enum stopwatch_backend type)
@@ -56,6 +51,11 @@ Stopwatch * stopwatch_create(enum stopwatch_backend type)
 }
 
 /* POSIX Stopwatch methods */
+
+struct stopwatch_context_posix_t {
+    clockid_t clock;
+    struct timespec ts_start, ts_end;
+};
 
 void stopwatch_init_posix(Stopwatch *t)
 {
