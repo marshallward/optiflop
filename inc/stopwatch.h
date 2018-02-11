@@ -37,19 +37,7 @@ union stopwatch_context_t {
 /* Generic Timer methods */
 Stopwatch * stopwatch_create(enum stopwatch_backend);
 
-/* POSIX Timer methods */
-void stopwatch_init_posix(Stopwatch *t);
-void stopwatch_start_posix(Stopwatch *t);
-void stopwatch_stop_posix(Stopwatch *t);
-double stopwatch_runtime_posix(Stopwatch *t);
-void stopwatch_destroy_posix(Stopwatch *t);
-
-/* TSC Timer methods */
-void stopwatch_init_tsc(Stopwatch *t);
-void stopwatch_start_tsc(Stopwatch *t);
-void stopwatch_stop_tsc(Stopwatch *t);
-double stopwatch_runtime_tsc(Stopwatch *t);
-void stopwatch_destroy_tsc(Stopwatch *t);
+/* Public TSC Timer methods */
 double stopwatch_get_tsc_freq();
 void stopwatch_set_tsc_freq();
 

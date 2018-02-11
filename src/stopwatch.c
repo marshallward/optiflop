@@ -4,6 +4,8 @@
 #include <stdio.h>
 
 #include "stopwatch.h"
+#include "stopwatch_posix.h"
+#include "stopwatch_tsc.h"
 
 /* Method lookup tables */
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "stopwatch.h"
+#include "stopwatch_tsc.h"
 
 /* NOTE: Assumes all cores (sockets) have same TSC frequency */
 double tsc_freq;
