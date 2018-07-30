@@ -29,7 +29,7 @@ void * avx_add(void *args_in)
     Stopwatch *t;
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result;
+    volatile float result __attribute__((unused));
 
     /* Read inputs */
     args = (struct thread_args *) args_in;
@@ -95,7 +95,7 @@ void * avx_mac(void *args_in)
     __m256 r[2 * n_avx];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result;
+    volatile float result __attribute__((unused));
 
     long r_max, i;
     int j;

@@ -103,8 +103,8 @@ void stopwatch_set_tsc_freq(void)
      * timers and TSC counter readings.
      *
      * This is a volatile task, and seems to be generally discouraged by kernel
-     * developers, but I am a daredevil.  The current implementation seems to produce
-     * consistent results within about 0.1 kHz.
+     * developers, but I am a daredevil.  The current implementation seems to
+     * produce consistent results within about 0.1 kHz.
      *
      * The general method is to measure the time and the TSC counter before and
      * after a sufficiently "long" operation.  Longer operations will yield
@@ -145,6 +145,8 @@ void stopwatch_set_tsc_freq(void)
     unsigned long ncalls;   /* 32 or 64 byte? */
 
     int verbose = 0;    /* Not yet supported */
+    const double tsc_ref = 2.4e9;   /* Manufacturer TSC frequency */
+                                    /* TODO: Need to get this number somehow */
 
     /* Determine the number of iterations to get ns precision */
     ncalls = 1;
@@ -187,13 +189,22 @@ void stopwatch_set_tsc_freq(void)
         runtime = (double) (ts_end.tv_sec - ts_start.tv_sec)
                   + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
 
-        /* Use the mean rdtsc value before and after clock_gettime calls */
-        cycles = ((cycle_end1 + cycle_end2)
-                    - (cycle_start1 + cycle_start2)) / 2;
-
         /* Estimate the clock_gettime call time (assuming TSC is faster) */
         d_start = cycle_start2 - cycle_start1;
         d_end = cycle_end2 - cycle_end1;
+
+        /* Use the mean rdtsc value before and after clock_gettime calls */
+
+        // NOTE: Any one of these is probably equally valid, although results
+        // do vary slightly.  I am leaving them here until I can resolve which
+        // once is closest to the intended result.
+
+        //cycles = ((cycle_end1 + cycle_end2)
+        //            - (cycle_start1 + cycle_start2)) / 2;
+
+        //cycles = cycle_end1 - cycle_start1;
+
+        cycles = cycle_end2 - cycle_start2;
 
         /* Diagnostic testing */
         if (verbose) {
@@ -204,7 +215,7 @@ void stopwatch_set_tsc_freq(void)
             printf("TSC frequency: %.12f GHz\n",
                    (double) cycles / runtime / 1e9);
             printf("TSC residual: %.12f kHz\n",
-                   1e6 * ((double) cycles / runtime / 1e9 - 1.79592));
+                   1e6 * ((double) cycles / runtime - tsc_ref) / 1e9);
         }
 
     } while (d_start / d_end > 2 || d_end / d_start > 2);

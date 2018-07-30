@@ -138,6 +138,7 @@ AC_DEFUN([AX_CHECK_ASM],
 # TODO: More checks are probably needed here (and some are probably redundant)
 AX_CHECK_ASM(rdtsc, has_rdtsc)
 AX_CHECK_ASM(rdtscp, has_rdtscp)
+AX_CHECK_ASM(rdpmc, has_rdpmc)
 AX_CHECK_ASM(cpuid, has_cpuid)
 if test $has_rdtsc -eq 1 -a $has_rdtscp -eq 1 -a $has_cpuid -eq 1; then
     tsc_path=x86

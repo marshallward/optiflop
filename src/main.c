@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
     void *status;
 
     /* Output variables */
-    FILE *output;
-    double **results;
+    FILE *output = NULL;
+    double **results = NULL;
 
     double total_flops, total_bw_load, total_bw_store;
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
      * TODO: Create a separate function.
      */
     Stopwatch *timer;
-    volatile int a;
+    volatile int a = 0;
     unsigned long iter = 1;
     timer = stopwatch_create(cfg->timer_type);
     do {
