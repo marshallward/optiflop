@@ -19,9 +19,8 @@ IFS=$ac_ifs
 
 # Enable built-in subroutine substitution, e.g. memcpy()
 AC_MSG_CHECKING([whether built-in functions are to be used])
-AC_ARG_ENABLE(builtin, [
-    AC_HELP_STRING(--enable-builtin, [enable built-in functions])
-])
+AC_ARG_ENABLE(builtin,
+    AC_HELP_STRING(--enable-builtin, [enable built-in functions]))
 if test "$enable_builtin" = no; then
     CFLAGS="$CFLAGS -fno-builtin"
 else
