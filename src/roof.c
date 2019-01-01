@@ -32,6 +32,9 @@ void * roof_thread(void *args_in)
 
     struct roof_args *rargs;
 
+    x = NULL;
+    y = NULL;
+
     /* Read inputs */
     args = (struct thread_args *) args_in;
 

@@ -4,7 +4,7 @@ INC=inc
 OBJDIR=obj
 
 CC=@CC@
-CFLAGS=@CFLAGS@ -I$(INC)
+CFLAGS=@CFLAGS@ -Wall -I$(INC)
 
 # Optional flags
 LOOP_CFLAGS=@loop_cflags@
