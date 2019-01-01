@@ -155,7 +155,7 @@ void stopwatch_set_tsc_freq(void)
 
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
 
-        for (long i = 0; i < ncalls; i++)
+        for (unsigned long i = 0; i < ncalls; i++)
             clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
 
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
@@ -168,7 +168,7 @@ void stopwatch_set_tsc_freq(void)
     /* Use ncalls to estimate the TSC frequency */
     do {
         /* "Warm the cache" with multiple clock_gettime calls. */
-        for (long i = 0; i < ncalls; i++)
+        for (unsigned long i = 0; i < ncalls; i++)
             clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
 
         /* Match the first timestamp to TSC counters */
@@ -178,7 +178,7 @@ void stopwatch_set_tsc_freq(void)
 
         /* Perform a "long" (~1 sec) calculation.
          * Use clock_gettime to keep the final TSC-metered call in cache. */
-        for (long i = 0; i < ncalls; i++)
+        for (unsigned long i = 0; i < ncalls; i++)
             clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
 
         /* Match the final timestamp to the TSC counter */

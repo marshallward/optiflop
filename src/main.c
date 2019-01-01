@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     timer = stopwatch_create(cfg->timer_type);
     do {
         timer->start(timer);
-        for (int i = 0; i < iter; i++)
+        for (unsigned long i = 0; i < iter; i++)
             a++;
         timer->stop(timer);
         iter *= 2;

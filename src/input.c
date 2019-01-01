@@ -57,6 +57,7 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
                 break;
             case 'e':
                 cfg->ensembles = (int) strtol(optarg, (char **) NULL, 10);
+                break;
             case 'o':
                 cfg->save_output = 1;
                 break;
