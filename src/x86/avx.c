@@ -46,7 +46,9 @@ void * avx_add(void *args_in)
         t->start(t);
         for (r = 0; r < r_max; r++) {
             /* Intel icc requires an explicit unroll */
+            #ifdef __ICC
             #pragma unroll(n_avx)
+            #endif
             for (j = 0; j < n_avx; j++)
                 reg[j] = _mm256_add_ps(reg[j], add0);
         }
@@ -122,7 +124,9 @@ void * avx_mac(void *args_in)
         pthread_barrier_wait(&timer_barrier);
         t->start(t);
         for (i = 0; i < r_max; i++) {
+            #ifdef __ICC
             #pragma unroll
+            #endif
             for (j = 0; j < n_avx; j++) {
                 r[j] = _mm256_add_ps(r[j], add0);
                 r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul0);
