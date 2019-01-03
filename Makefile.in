@@ -100,4 +100,4 @@ $(OBJDIR)/gpu_roof.o: $(SRC)/cuda/gpu_roof.cu
 
 clean:
 	$(RM) optiflop gpuflop $(OBJDIR)/*.o $(INC)/*.h.gch
-	rmdir $(OBJDIR)
+	rm -rf $(OBJDIR)

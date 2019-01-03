@@ -97,6 +97,9 @@ AX_CHECK_FLAG([avx], cc_has_avx, 256)
 if test $cc_has_avx -eq 1; then
     avx_path=x86
     CFLAGS="$CFLAGS -mavx"
+    if test "$ac_cc" = "icc"; then
+        CFLAGS="$CFLAGS -xavx"
+    fi
 else
     avx_path=generic
 fi
