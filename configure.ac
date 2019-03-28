@@ -81,9 +81,15 @@ AC_DEFUN([AX_CHECK_FLAG],
     AC_MSG_CHECKING([if $CC supports $1])
     ac_saved_cflags="$CFLAGS"
     CFLAGS="-O0 -m$1"
+    # SSE mm_set intrinsics do not include the word length in their prefix
+    if test $3 -eq 128; then
+        ac_mm_prefix=""
+    else
+        ac_mm_prefix="$3"
+    fi
     AC_RUN_IFELSE(
         [AC_LANG_PROGRAM([#include <immintrin.h>],
-                         [[const __m$3 r = _mm$3_set1_ps(1.f);]]
+                         [[const __m$3 r = _mm${ac_mm_prefix}_set1_ps(1.f);]]
         )],
         [$2=1]
         [AC_MSG_RESULT([yes])],
@@ -92,6 +98,17 @@ AC_DEFUN([AX_CHECK_FLAG],
     )
     CFLAGS="$ac_saved_cflags"
 ])
+
+AX_CHECK_FLAG([sse], cc_has_sse, 128)
+if test $cc_has_sse -eq 1; then
+    sse_path=x86
+    CFLAGS="$CFLAGS -msse"
+    if test "$ac_cc" = "icc"; then
+        CFLAGS="$CFLAGS -xsse"
+    fi
+else
+    sse_path=generic
+fi
 
 AX_CHECK_FLAG([avx], cc_has_avx, 256)
 if test $cc_has_avx -eq 1; then
@@ -150,6 +167,7 @@ fi
 
 # Update and create the Makefile
 AC_SUBST(loop_cflags, $loop_cflags)
+AC_SUBST(sse_path, "$sse_path")
 AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx512_path, "$avx512_path")
 AC_SUBST(tsc_path, "$tsc_path")

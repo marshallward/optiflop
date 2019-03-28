@@ -7,6 +7,7 @@
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* strtol, malloc */
 
+#include "sse.h"
 #include "avx.h"
 #include "avx512.h"
 #include "roof.h"
@@ -83,6 +84,7 @@ int main(int argc, char *argv[])
     /* General benchmark loop */
     /* TODO: Combine name and bench into a struct, or add to t_args? */
     const bench_ptr_t benchmarks[] = {
+        &sse_add,
         &avx_add,
         &avx_mac,
         &avx512_add,
@@ -97,6 +99,7 @@ int main(int argc, char *argv[])
     0};
 
     const char * benchnames[] = {
+        "sse_add",
         "avx_add",
         "avx_mac",
         "avx512_add",
@@ -111,6 +114,7 @@ int main(int argc, char *argv[])
     0};
 
     const roof_ptr_t roof_tests[] = {
+        NULL,
         NULL,
         NULL,
         NULL,
