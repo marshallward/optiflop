@@ -89,13 +89,13 @@ int main(int argc, char *argv[])
         &avx_mac,
         &avx512_add,
         &avx512_fma,
+        //&roof_thread,
+        //&roof_thread,
+        //&roof_thread,
         &roof_thread,
-        &roof_thread,
-        &roof_thread,
-        &roof_thread,
-        &roof_thread,
-        &roof_thread,
-        &roof_thread,
+        //&roof_thread,
+        //&roof_thread,
+        //&roof_thread,
     0};
 
     const char * benchnames[] = {
@@ -104,13 +104,13 @@ int main(int argc, char *argv[])
         "avx_mac",
         "avx512_add",
         "avx512_fma",
-        "y[:] = x[:]",
-        "y[:] = a x[:]",
-        "y[:] = x[:] + y[:]",
+        //"y[:] = x[:]",
+        //"y[:] = a x[:]",
+        //"y[:] = x[:] + y[:]",
         "y[:] = a x[:] + y[:]",
-        "y[:] = a x[:] + b y[:]",
-        "y[1:] = x[1:] + x[:-1]",
-        "GPU: y[:] = a * x[:] + y[:]",
+        //"y[:] = a x[:] + b y[:]",
+        //"y[1:] = x[1:] + x[:-1]",
+        //"GPU: y[:] = a * x[:] + y[:]",
     0};
 
     const roof_ptr_t roof_tests[] = {
@@ -119,13 +119,13 @@ int main(int argc, char *argv[])
         NULL,
         NULL,
         NULL,
-        &roof_copy,
-        &roof_ax,
-        &roof_xpy,
+        //&roof_copy,
+        //&roof_ax,
+        //&roof_xpy,
         &roof_axpy,
-        &roof_axpby,
-        &roof_diff,
-        &gpu_axpy,
+        //&roof_axpby,
+        //&roof_diff,
+        //&gpu_axpy,
     0};
 
     /* IO setup */

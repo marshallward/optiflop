@@ -5,18 +5,18 @@
 #include "bench.h"
 #include "stopwatch.h"
 
-static inline void copy_kernel(int i, float a, float b, float *x, float *y)
+//static inline void copy_kernel(int i, float a, float b, float *x, float *y)
+//    __attribute__((always_inline));
+//static inline void ax_kernel(int i, float a, float b, float *x, float *y)
+//    __attribute__((always_inline));
+//static inline void xpy_kernel(int i, float a, float b, float *x, float *y)
+//    __attribute__((always_inline));
+static inline void axpy_kernel(int i, float *a, float **x)
     __attribute__((always_inline));
-static inline void ax_kernel(int i, float a, float b, float *x, float *y)
-    __attribute__((always_inline));
-static inline void xpy_kernel(int i, float a, float b, float *x, float *y)
-    __attribute__((always_inline));
-static inline void axpy_kernel(int i, float a, float b, float *x, float *y)
-    __attribute__((always_inline));
-static inline void axpby_kernel(int i, float a, float b, float *x, float *y)
-    __attribute__((always_inline));
-static inline void diff_kernel(int i, float a, float b, float *x, float *y)
-    __attribute__((always_inline));
+//static inline void axpby_kernel(int i, float a, float b, float *x, float *y)
+//    __attribute__((always_inline));
+//static inline void diff_kernel(int i, float a, float b, float *x, float *y)
+//    __attribute__((always_inline));
 
 
 void * roof_thread(void *args_in)
@@ -68,12 +68,17 @@ void * roof_thread(void *args_in)
 }
 
 
-void roof_kernel(int n, float a, float b,
+void roof_kernel(int n, float a_in, float b_in,
                  float * restrict x_in, float * restrict y_in,
                  struct roof_args *args, kernel_ptr_t kernel,
                  int flops, int load_bytes, int store_bytes, int offset)
 {
-    float *x, *y;
+    float *a;
+    float **x;
+
+    a = malloc(2 * sizeof(float));
+    a[0] = a_in;
+    a[1] = b_in;
 
     /* TODO: Create timer in thread function, not kernel */
     Stopwatch *t;
@@ -82,8 +87,11 @@ void roof_kernel(int n, float a, float b,
     int i;
     double runtime;
 
-    x = ASSUME_ALIGNED(x_in);
-    y = ASSUME_ALIGNED(y_in);
+    //x = ASSUME_ALIGNED(x_in);
+    //y = ASSUME_ALIGNED(y_in);
+    x = malloc(sizeof(float *));
+    x[0] = ASSUME_ALIGNED(x_in);
+    x[1] = ASSUME_ALIGNED(y_in);
 
     t = stopwatch_create(args->timer_type);
 
@@ -94,9 +102,9 @@ void roof_kernel(int n, float a, float b,
         t->start(t);
         for (r = 0; r < r_max; r++) {
             for (i = 0; i < (n - offset); i++)
-                kernel(i, a, b, x, y);
+                kernel(i, a, x);
             // Create an impossible branch to prevent loop interchange
-            if (y[0] < 0.) dummy(a, b, x, y);
+            if (x[1][0] < 0.) dummy(a[0], a[1], x[0], x[1]);
         }
         t->stop(t);
         runtime = t->runtime(t);
@@ -135,52 +143,52 @@ void roof_kernel(int n, float a, float b,
  * (usually with `-fno-builtin`).
  */
 
-void copy_kernel(int i, float a, float b, float *x, float *y) {
-    y[i] = x[i];
-}
-
-void roof_copy(int n, float a, float b,
-               float * restrict x_in, float * restrict y_in,
-               struct roof_args *args)
-{
-    roof_kernel(n, a, b, x_in, y_in, args, copy_kernel, 0, 1, 1, 0);
-}
-
-
-/* roof_ax */
-
-void ax_kernel(int i, float a, float b, float *x, float *y) {
-    y[i] = a * x[i];
-}
-
-void roof_ax(int n, float a, float b,
-             float * restrict x_in, float * restrict y_in,
-             struct roof_args *args)
-{
-    roof_kernel(n, a, b, x_in, y_in, args, ax_kernel, 1, 1, 1, 0);
-}
-
-
-/* roof_xpy */
-
-void xpy_kernel(int i, float a, float b, float *x, float *y)
-{
-    y[i] = x[i] + y[i];
-}
-
-void roof_xpy(int n, float a, float b,
-              float * restrict x_in, float * restrict y_in,
-              struct roof_args *args)
-{
-    roof_kernel(n, a, b, x_in, y_in, args, xpy_kernel, 1, 2, 1, 0);
-}
+//void copy_kernel(int i, float a, float b, float *x, float *y) {
+//    y[i] = x[i];
+//}
+//
+//void roof_copy(int n, float a, float b,
+//               float * restrict x_in, float * restrict y_in,
+//               struct roof_args *args)
+//{
+//    roof_kernel(n, a, b, x_in, y_in, args, copy_kernel, 0, 1, 1, 0);
+//}
+//
+//
+///* roof_ax */
+//
+//void ax_kernel(int i, float a, float b, float *x, float *y) {
+//    y[i] = a * x[i];
+//}
+//
+//void roof_ax(int n, float a, float b,
+//             float * restrict x_in, float * restrict y_in,
+//             struct roof_args *args)
+//{
+//    roof_kernel(n, a, b, x_in, y_in, args, ax_kernel, 1, 1, 1, 0);
+//}
+//
+//
+///* roof_xpy */
+//
+//void xpy_kernel(int i, float a, float b, float *x, float *y)
+//{
+//    y[i] = x[i] + y[i];
+//}
+//
+//void roof_xpy(int n, float a, float b,
+//              float * restrict x_in, float * restrict y_in,
+//              struct roof_args *args)
+//{
+//    roof_kernel(n, a, b, x_in, y_in, args, xpy_kernel, 1, 2, 1, 0);
+//}
 
 
 /* roof_axpy */
 
-void axpy_kernel(int i, float a, float b, float *x, float *y)
+void axpy_kernel(int i, float *a, float **x)
 {
-    y[i] = a * x[i] + y[i];
+    x[1][i] = a[0] * x[0][i] + x[1][i];
 }
 
 void roof_axpy(int n, float a, float b,
@@ -191,31 +199,31 @@ void roof_axpy(int n, float a, float b,
 }
 
 
-/* roof_axpby */
-
-void axpby_kernel(int i, float a, float b, float *x, float *y)
-{
-    y[i] = a * x[i] + b * y[i];
-}
-
-
-void roof_axpby(int n, float a, float b,
-                float * restrict x_in, float * restrict y_in,
-                struct roof_args *args)
-{
-    roof_kernel(n, a, b, x_in, y_in, args, axpby_kernel, 3, 2, 1, 0);
-}
-
-
-void diff_kernel(int i, float a, float b, float *x, float *y)
-{
-    y[i] = x[i + 1] - x[i];
-}
-
-
-void roof_diff(int n, float a, float b,
-               float * restrict x_in, float * restrict y_in,
-               struct roof_args *args)
-{
-    roof_kernel(n, a, b, x_in, y_in, args, diff_kernel, 1, 1, 1, 1);
-}
+///* roof_axpby */
+//
+//void axpby_kernel(int i, float a, float b, float *x, float *y)
+//{
+//    y[i] = a * x[i] + b * y[i];
+//}
+//
+//
+//void roof_axpby(int n, float a, float b,
+//                float * restrict x_in, float * restrict y_in,
+//                struct roof_args *args)
+//{
+//    roof_kernel(n, a, b, x_in, y_in, args, axpby_kernel, 3, 2, 1, 0);
+//}
+//
+//
+//void diff_kernel(int i, float a, float b, float *x, float *y)
+//{
+//    y[i] = x[i + 1] - x[i];
+//}
+//
+//
+//void roof_diff(int n, float a, float b,
+//               float * restrict x_in, float * restrict y_in,
+//               struct roof_args *args)
+//{
+//    roof_kernel(n, a, b, x_in, y_in, args, diff_kernel, 1, 1, 1, 1);
+//}
