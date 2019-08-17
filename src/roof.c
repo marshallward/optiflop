@@ -9,6 +9,8 @@ static inline void copy_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 static inline void ax_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
+static inline void xpx_kernel(int i, float a, float b, float *x, float *y)
+    __attribute__((always_inline));
 static inline void xpy_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 static inline void axpy_kernel(int i, float a, float b, float *x, float *y)
@@ -16,6 +18,8 @@ static inline void axpy_kernel(int i, float a, float b, float *x, float *y)
 static inline void axpby_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 static inline void diff_kernel(int i, float a, float b, float *x, float *y)
+    __attribute__((always_inline));
+static inline void diff8_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 
 
@@ -161,6 +165,21 @@ void roof_ax(int n, float a, float b,
 }
 
 
+/* roof_xpx */
+
+void xpx_kernel(int i, float a, float b, float *x, float *y)
+{
+    y[i] = x[i] + x[i];
+}
+
+void roof_xpx(int n, float a, float b,
+              float * restrict x_in, float * restrict y_in,
+              struct roof_args *args)
+{
+    roof_kernel(n, a, b, x_in, y_in, args, xpx_kernel, 1, 2, 1, 0);
+}
+
+
 /* roof_xpy */
 
 void xpy_kernel(int i, float a, float b, float *x, float *y)
@@ -218,4 +237,18 @@ void roof_diff(int n, float a, float b,
                struct roof_args *args)
 {
     roof_kernel(n, a, b, x_in, y_in, args, diff_kernel, 1, 1, 1, 1);
+}
+
+
+void diff8_kernel(int i, float a, float b, float *x, float *y)
+{
+    y[i] = x[i + 8] - x[i];
+}
+
+
+void roof_diff8(int n, float a, float b,
+                float * restrict x_in, float * restrict y_in,
+                struct roof_args *args)
+{
+    roof_kernel(n, a, b, x_in, y_in, args, diff8_kernel, 1, 1, 1, 8);
 }

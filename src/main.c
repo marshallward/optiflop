@@ -96,6 +96,8 @@ int main(int argc, char *argv[])
         &roof_thread,
         &roof_thread,
         &roof_thread,
+        &roof_thread,
+        &roof_thread,
     0};
 
     const char * benchnames[] = {
@@ -106,10 +108,12 @@ int main(int argc, char *argv[])
         "avx512_fma",
         "y[:] = x[:]",
         "y[:] = a x[:]",
+        "y[:] = x[:] + x[:]",
         "y[:] = x[:] + y[:]",
         "y[:] = a x[:] + y[:]",
         "y[:] = a x[:] + b y[:]",
         "y[1:] = x[1:] + x[:-1]",
+        "y[8:] = x[8:] + x[:-8]",
         "GPU: y[:] = a * x[:] + y[:]",
     0};
 
@@ -121,10 +125,12 @@ int main(int argc, char *argv[])
         NULL,
         &roof_copy,
         &roof_ax,
+        &roof_xpx,
         &roof_xpy,
         &roof_axpy,
         &roof_axpby,
         &roof_diff,
+        &roof_diff8,
         &gpu_axpy,
     0};
 
@@ -257,11 +263,13 @@ int main(int argc, char *argv[])
         }
 
         if (cfg->save_output)
-            fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
+            fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
                     vlen,
-                    results[0][5], results[0][6], results[0][7], results[0][8],
-                    results[1][4], results[1][5], results[1][6], results[1][7],
-                    results[1][8]
+                    results[0][6], results[0][7], results[0][8], results[0][9],
+                    results[0][10], results[0][11], results[0][12], results[0][13],
+                    results[1][5],
+                    results[1][6], results[1][7], results[1][8], results[1][9],
+                    results[1][10], results[1][11], results[1][12], results[1][13]
             );
     }
 

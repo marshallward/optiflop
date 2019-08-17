@@ -8,7 +8,6 @@ import numpy as np
 
 results = {}
 with open('results.txt', 'r') as flopfile:
-
     flopreader = csv.reader(flopfile)
     for row in flopreader:
         n = int(row[0])
@@ -21,7 +20,7 @@ with open('results.txt', 'r') as flopfile:
 x = np.array([n for n in results])
 
 y_results = []
-for i in range(len(results[1])):
+for i in range(len(results[x[0]])):
     y_results.append(np.array([results[n][i] for n in results]))
 
 # Plot results
