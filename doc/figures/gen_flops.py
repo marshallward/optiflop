@@ -37,10 +37,13 @@ for ax in (ax1, ax2):
     ax.set_xscale('log')
     ax.set_xlabel('Vector length')
 
-for y in y_results[:4]:
+for y in y_results[:8]:
     ax1.plot(x, y / 1e9)
 
-for y in y_results[4:]:
+for y in y_results[9:15]:
+    ax2.plot(x, y / 1e9)
+
+for y in y_results[16:]:
     ax2.plot(x, y / 1e9)
 
 plt.show()
