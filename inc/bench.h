@@ -6,6 +6,11 @@
 
 /* Types */
 
+struct microbench {
+    char *name;
+    void * (*thread) (void *);
+};
+
 /* TODO: Create a type here, or reduce the number of arguments */
 typedef void * (*bench_ptr_t) (void *);
 

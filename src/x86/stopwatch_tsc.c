@@ -144,8 +144,8 @@ void stopwatch_set_tsc_freq(void)
 
     unsigned long ncalls;   /* 32 or 64 byte? */
 
-    int verbose = 0;    /* Not yet supported */
-    const double tsc_ref = 2.4e9;   /* Manufacturer TSC frequency */
+    int verbose = 1;    /* Not yet supported */
+    const double tsc_ref = 3.4e9;   /* Manufacturer TSC frequency */
                                     /* TODO: Need to get this number somehow */
 
     /* Determine the number of iterations to get ns precision */

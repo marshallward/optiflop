@@ -19,14 +19,17 @@
 
 int main(int argc, char *argv[])
 {
+    /* Input variables */
+    struct input_config *cfg;
+
+    cfg = malloc(sizeof(struct input_config));
+    parse_input(argc, argv, cfg);
+
     /* CPU set variables */
     cpu_set_t cpuset;
     int ncpus;
     int *cpus;
     int id, c;
-
-    /* Input variables */
-    struct input_config *cfg;
 
     int b, t;
     int vlen, vlen_start, vlen_end;
@@ -48,9 +51,6 @@ int main(int argc, char *argv[])
     /* Ensemble handler */
     int ens;
     double max_total_flops, max_total_bw_load, max_total_bw_store;
-
-    cfg = malloc(sizeof(struct input_config));
-    parse_input(argc, argv, cfg);
 
     vlen_start = cfg->vlen_start;
     vlen_end = cfg->vlen_end;
@@ -81,12 +81,18 @@ int main(int argc, char *argv[])
         }
     }
 
+    ///* Testing a struct for SIMD benchmarks */
+    //const struct microbench mbenches[] = {
+    //    {.thread = &sse_add, .name = "sse_add"},
+    //};
+
     /* General benchmark loop */
     /* TODO: Combine name and bench into a struct, or add to t_args? */
     const bench_ptr_t benchmarks[] = {
         &sse_add,
         &avx_add,
         &avx_mac,
+        &avx_fma,
         &avx512_add,
         &avx512_fma,
         &roof_thread,
@@ -104,6 +110,7 @@ int main(int argc, char *argv[])
         "sse_add",
         "avx_add",
         "avx_mac",
+        "avx_fma",
         "avx512_add",
         "avx512_fma",
         "y[:] = x[:]",
@@ -118,6 +125,7 @@ int main(int argc, char *argv[])
     0};
 
     const roof_ptr_t roof_tests[] = {
+        NULL,
         NULL,
         NULL,
         NULL,
