@@ -178,8 +178,8 @@ void * avx_fma(void *args_in)
     const int n_avx = VMULPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
     const __m256 mul0 = _mm256_set1_ps((float) (1. + 1e-6));
-    __m256 r[n_avx];
-    //__m256 r[2 * n_avx];
+    //__m256 r[n_avx];
+    __m256 r[2 * n_avx];
 
     // Declare as volatile to prevent removal during optimisation
     volatile float result __attribute__((unused));
@@ -196,7 +196,7 @@ void * avx_fma(void *args_in)
 
     for (j = 0; j < n_avx; j++) {
         r[j] = _mm256_set1_ps((float) j);
-        //r[j + n_avx] = _mm256_set1_ps((float) j);
+        r[j + n_avx] = _mm256_set1_ps((float) j);
     }
 
     /* Add over registers r0-r4, multiply over r5-r9, and rely on pipelining,
@@ -214,7 +214,7 @@ void * avx_fma(void *args_in)
             #endif
             for (j = 0; j < n_avx; j++) {
                 r[j] = _mm256_fmadd_ps(r[j], add0, mul0);
-                //r[j + n_avx] = _mm256_fmadd_ps(r[j + n_avx], add0, mul0);
+                r[j + n_avx] = _mm256_fmadd_ps(r[j + n_avx], add0, mul0);
             }
         }
         t->stop(t);
@@ -235,14 +235,14 @@ void * avx_fma(void *args_in)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
 
-    for (j = 0; j < n_avx; j++)
-    //for (j = 0; j < 2 * n_avx; j++)
+    //for (j = 0; j < n_avx; j++)
+    for (j = 0; j < 2 * n_avx; j++)
         r[0] = _mm256_add_ps(r[0], r[j]);
     result = reduce_AVX(r[0]);
 
     /* (iterations) * (16 flops / register) * (n_avx registers / iteration) */
-    flops = r_max * 16 * n_avx / runtime;
-    //flops = r_max * 16 * (2 * n_avx) / runtime;
+    //flops = r_max * 16 * n_avx / runtime;
+    flops = r_max * 16 * (2 * n_avx) / runtime;
 
     /* Cleanup */
     t->destroy(t);

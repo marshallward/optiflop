@@ -75,7 +75,7 @@ AC_SEARCH_LIBS(ceil, m)
 AC_SEARCH_LIBS(clock_gettime, rt)
 
 
-# Vectorisation check
+# SIMD support
 AC_DEFUN([AX_CHECK_FLAG],
 [
     AC_MSG_CHECKING([if $CC supports $1])
@@ -99,12 +99,51 @@ AC_DEFUN([AX_CHECK_FLAG],
     CFLAGS="$ac_saved_cflags"
 ])
 
+
+# SIMD FMA intrinsic support
+AC_DEFUN([AX_CHECK_FMA],
+[
+    AC_MSG_CHECKING([if $CC supports $1 FMA])
+    ac_saved_cflags="$CFLAGS"
+    CFLAGS="-O0 -m$1 -mfma"
+    # SSE mm_set intrinsics do not include the word length in their prefix
+    if test $3 -eq 128; then
+        ac_mm_prefix=""
+    else
+        ac_mm_prefix="$3"
+    fi
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+            [#include <immintrin.h>],
+            [[__m$3 r;
+              r = _mm${ac_mm_prefix}_fmadd_ps(r, r, r);
+            ]]
+        )],
+        [$2=1]
+        [AC_MSG_RESULT([yes])],
+        [$2=0]
+        [AC_MSG_RESULT([no])],
+    )
+    CFLAGS="$ac_saved_cflags"
+])
+
+
+# Reset cc_has_fma flag
+cc_has_fma=0
+
 AX_CHECK_FLAG([sse], cc_has_sse, 128)
 if test $cc_has_sse -eq 1; then
     sse_path=x86
     CFLAGS="$CFLAGS -msse"
     if test "$ac_cc" = "icc"; then
         CFLAGS="$CFLAGS -xsse"
+    fi
+    AX_CHECK_FMA([sse], cc_has_sse_fma, 256)
+    if test "$cc_has_sse_fma" -eq 1; then
+        if test $cc_has_fma -ne 1; then
+            CFLAGS="$CFLAGS -mfma"
+            cc_has_fma=1
+        fi
     fi
 else
     sse_path=generic
@@ -116,6 +155,13 @@ if test $cc_has_avx -eq 1; then
     CFLAGS="$CFLAGS -mavx"
     if test "$ac_cc" = "icc"; then
         CFLAGS="$CFLAGS -xavx"
+    fi
+    AX_CHECK_FMA([avx], cc_has_avx_fma, 256)
+    if test "$cc_has_avx_fma" -eq 1; then
+        if test $cc_has_fma -ne 1; then
+            CFLAGS="$CFLAGS -mfma"
+            cc_has_fma=1
+        fi
     fi
 else
     avx_path=generic
