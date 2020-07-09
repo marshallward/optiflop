@@ -133,7 +133,7 @@ cc_has_fma=0
 
 AX_CHECK_FLAG([sse], cc_has_sse, 128)
 if test $cc_has_sse -eq 1; then
-    sse_path=x86
+    sse_path=x86/sse
     CFLAGS="$CFLAGS -msse"
     if test "$ac_cc" = "icc"; then
         CFLAGS="$CFLAGS -xsse"
@@ -141,9 +141,13 @@ if test $cc_has_sse -eq 1; then
     AX_CHECK_FMA([sse], cc_has_sse_fma, 256)
     if test "$cc_has_sse_fma" -eq 1; then
         cc_has_fma=1
+        sse_fma_path=x86/sse
+    else
+        sse_fma_path=generic
     fi
 else
     sse_path=generic
+    sse_fma_path=generic
 fi
 
 AX_CHECK_FLAG([avx], cc_has_avx, 256)
@@ -162,6 +166,7 @@ if test $cc_has_avx -eq 1; then
     fi
 else
     avx_path=generic
+    avx_fma_path=generic
 fi
 
 AX_CHECK_FLAG([avx512f], cc_has_avx512, 512)
@@ -216,6 +221,7 @@ fi
 # Update and create the Makefile
 AC_SUBST(loop_cflags, $loop_cflags)
 AC_SUBST(sse_path, "$sse_path")
+AC_SUBST(sse_fma_path, "$sse_fma_path")
 AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
