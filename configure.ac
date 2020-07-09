@@ -140,10 +140,7 @@ if test $cc_has_sse -eq 1; then
     fi
     AX_CHECK_FMA([sse], cc_has_sse_fma, 256)
     if test "$cc_has_sse_fma" -eq 1; then
-        if test $cc_has_fma -ne 1; then
-            CFLAGS="$CFLAGS -mfma"
-            cc_has_fma=1
-        fi
+        cc_has_fma=1
     fi
 else
     sse_path=generic
@@ -151,17 +148,17 @@ fi
 
 AX_CHECK_FLAG([avx], cc_has_avx, 256)
 if test $cc_has_avx -eq 1; then
-    avx_path=x86
+    avx_path=x86/avx
     CFLAGS="$CFLAGS -mavx"
     if test "$ac_cc" = "icc"; then
         CFLAGS="$CFLAGS -xavx"
     fi
     AX_CHECK_FMA([avx], cc_has_avx_fma, 256)
     if test "$cc_has_avx_fma" -eq 1; then
-        if test $cc_has_fma -ne 1; then
-            CFLAGS="$CFLAGS -mfma"
-            cc_has_fma=1
-        fi
+        cc_has_fma=1
+        avx_fma_path=x86/avx
+    else
+        avx_fma_path=generic
     fi
 else
     avx_path=generic
@@ -172,6 +169,11 @@ if test $cc_has_avx512 -eq 1; then
     avx512_path=x86/avx512
 else
     avx512_path=generic
+fi
+
+# FMA flag support
+if test "$cc_has_fma" -eq 1; then
+    CFLAGS="$CFLAGS -mfma"
 fi
 
 # x86 Vectorisation flags (need to redo this)
@@ -215,6 +217,7 @@ fi
 AC_SUBST(loop_cflags, $loop_cflags)
 AC_SUBST(sse_path, "$sse_path")
 AC_SUBST(avx_path, "$avx_path")
+AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
 AC_SUBST(tsc_path, "$tsc_path")
 AC_OUTPUT(Makefile)

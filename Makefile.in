@@ -16,13 +16,14 @@ LDFLAGS=@LIBS@
 TSC_PATH=$(SRC)/@tsc_path@
 SSE_PATH=$(SRC)/@sse_path@
 AVX_PATH=$(SRC)/@avx_path@
+AVX_FMA_PATH=$(SRC)/@avx_fma_path@
 AVX512_PATH=$(SRC)/@avx512_path@
 
 # Object files
 # TODO: Generate this list
 # TODO: Include GPU object file
 _OBJS=main.o input.o bench.o stopwatch.o stopwatch_tsc.o \
-	sse.o avx.o avx512.o roof.o dummy.o
+	sse.o avx.o avx_fma.o avx512.o roof.o dummy.o
 
 OBJS=$(addprefix $(OBJDIR)/, $(_OBJS))
 
@@ -79,6 +80,9 @@ $(OBJDIR)/sse.o: $(SSE_PATH)/sse.c $(INC)/sse.h $(INC)/bench.h $(INC)/stopwatch.
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/avx.o: $(AVX_PATH)/avx.c $(INC)/avx.h $(INC)/bench.h $(INC)/stopwatch.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/avx_fma.o: $(AVX_FMA_PATH)/avx_fma.c $(INC)/avx_fma.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC)/stopwatch.h

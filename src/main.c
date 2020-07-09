@@ -9,6 +9,7 @@
 
 #include "sse.h"
 #include "avx.h"
+#include "avx_fma.h"
 #include "avx512.h"
 #include "roof.h"
 #include "bench.h"
@@ -93,6 +94,7 @@ int main(int argc, char *argv[])
         &avx_add,
         &avx_mac,
         &avx_fma,
+        &avx_fmac,
         &avx512_add,
         &avx512_fma,
         &roof_thread,
@@ -111,6 +113,7 @@ int main(int argc, char *argv[])
         "avx_add",
         "avx_mac",
         "avx_fma",
+        "avx_fmac",
         "avx512_add",
         "avx512_fma",
         "y[:] = x[:]",
@@ -125,6 +128,7 @@ int main(int argc, char *argv[])
     0};
 
     const roof_ptr_t roof_tests[] = {
+        NULL,
         NULL,
         NULL,
         NULL,
