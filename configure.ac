@@ -3,18 +3,21 @@ AC_INIT([optiflop], [0.1],
         [],
         [https://github.com/marshallward/optiflop.git])
 
+AC_CONFIG_MACRO_DIR([m4])
+
+
 # Set CFLAGS to a default value to replace the AC_PROG_CC default (-g -O2)
 : ${CFLAGS="-g -O3"}
 
-AC_LANG(C)
-AC_PROG_CC_STDC
+# C compiler configuration
+AC_LANG([C])
+AC_PROG_CC
 
-# NOTE: The STDC check appends -std=gnu99 to $CC
-# Split compiler name and flags
-ac_ifs=$IFS
-IFS=" "
-read ac_cc ac_cc_flags <<< $CC
-IFS=$ac_ifs
+
+# Validate the following keywords
+AX_C_ASM
+AC_C_RESTRICT
+AC_C_VOLATILE
 
 
 # Enable built-in subroutine substitution, e.g. memcpy()
@@ -192,20 +195,20 @@ fi
 
 
 # x86 assembly check
-AC_DEFUN([AX_CHECK_ASM],
-[
-    AC_MSG_CHECKING([if $CC supports $1])
-    ac_saved_cflags="$CFLAGS"
-    CFLAGS="-O0"
-    AC_RUN_IFELSE(
-        [AC_LANG_PROGRAM([], [[__asm__ __volatile__ ("$1");]])],
-        [$2=1]
-        [AC_MSG_RESULT([yes])],
-        [$2=0]
-        [AC_MSG_RESULT([no])],
-    )
-    CFLAGS="$ac_saved_cflags"
+AC_DEFUN([AX_CHECK_ASM], [
+  AC_MSG_CHECKING([if $CC supports $1])
+  ac_saved_cflags="$CFLAGS"
+  CFLAGS="-O0"
+  AC_RUN_IFELSE(
+    [AC_LANG_PROGRAM([], [[$ac_cv_c_asm volatile ("$1");]])],
+    [$2=1]
+    [AC_MSG_RESULT([yes])],
+    [$2=0]
+    [AC_MSG_RESULT([no])],
+  )
+  CFLAGS="$ac_saved_cflags"
 ])
+
 
 # TODO: More checks are probably needed here (and some are probably redundant)
 AX_CHECK_ASM(rdtsc, has_rdtsc)
@@ -217,6 +220,7 @@ if test $has_rdtsc -eq 1 -a $has_rdtscp -eq 1 -a $has_cpuid -eq 1; then
 else
     tsc_path=generic
 fi
+
 
 # Update and create the Makefile
 AC_SUBST(loop_cflags, $loop_cflags)

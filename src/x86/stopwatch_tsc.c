@@ -29,7 +29,7 @@ void stopwatch_start_tsc(Stopwatch *t)
      * Based on Gabriele Paolini's benchmark document for Intel.
      */
 
-    __asm__ __volatile__ (
+    asm volatile (
         "cpuid\n"
         "rdtsc\n"
         "movq %%rax, %0\n"
@@ -49,7 +49,7 @@ void stopwatch_stop_tsc(Stopwatch *t)
      * Based on Gabriele Paolini's benchmark document for Intel.
      */
 
-    __asm__ __volatile__ (
+    asm volatile (
         "rdtscp\n"
         "movq %%rax, %0\n"
         "movq %%rdx, %1\n"
@@ -88,7 +88,7 @@ uint64_t rdtsc(void)
     uint64_t rax, rdx;
     uint32_t aux;
 
-    __asm__ __volatile__ ("rdtscp" : "=a" (rax), "=d" (rdx), "=c" (aux));
+    asm volatile ("rdtscp" : "=a" (rax), "=d" (rdx), "=c" (aux));
     return (rdx << 32) | rax;
 }
 
