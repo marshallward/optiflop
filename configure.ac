@@ -3,6 +3,7 @@ AC_INIT([optiflop], [0.1],
         [],
         [https://github.com/marshallward/optiflop.git])
 
+AC_CONFIG_HEADERS([inc/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 

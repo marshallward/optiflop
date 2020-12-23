@@ -4,9 +4,11 @@ optiflop
 *.h.gch
 
 # Autoconf
-aclocal.m4
-autom4te.cache/
-config.log
-config.status
-configure
-Makefile
+/aclocal.m4
+/autom4te.cache/
+/config.log
+/config.status
+/configure
+/Makefile
+/inc/config.h.in
+/inc/config.h

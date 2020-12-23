@@ -32,7 +32,9 @@ AC_DEFUN([AX_C_ASM], [
     [asm], [AC_MSG_RESULT([$ac_cv_c_asm])],
     [unknown], [AC_MSG_RESULT([unsupported])],
     [
-      AC_DEFINE_UNQUOTED([asm],[$ac_cv_c_asm])
+      AC_DEFINE_UNQUOTED([asm], [$ac_cv_c_asm],
+        [Define to the inline assembly keyword]
+      )
       AC_MSG_RESULT([$ac_cv_c_asm])
     ]
   )
