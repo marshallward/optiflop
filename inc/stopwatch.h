@@ -1,7 +1,6 @@
 #ifndef STOPWATCH_H_
 #define STOPWATCH_H_
 
-#include <stdint.h> /* uint64_t */
 #include <time.h>   /* clockid_t, timespec */
 
 /* If RAW clock is not present, replace with NTP-adjusted clock */

@@ -1,7 +1,5 @@
-#include <stdint.h>     /* uint64_t */
 #include <stdlib.h>     /* malloc, free */
-#include <time.h>       /* clock[id]_* */
-#include <stdio.h>
+#include <time.h>       /* clock_t, clock(), CLOCKS_PER_SEC */
 
 #include "stopwatch.h"
 #include "stopwatch_std.h"
