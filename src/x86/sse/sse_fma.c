@@ -42,7 +42,7 @@ void * sse_fma(void *args_in)
         r[j] = _mm_set1_ps((float) j);
     }
 
-    runtime_flag = 0;
+    *(args->runtime_flag) = 0;
     r_max = 1;
     do {
         pthread_barrier_wait(args->barrier);
@@ -61,14 +61,14 @@ void * sse_fma(void *args_in)
         /* Set runtime flag if any thread exceeds runtime limit */
         if (runtime > args->min_runtime) {
             pthread_mutex_lock(args->mutex);
-            runtime_flag = 1;
+            *(args->runtime_flag) = 1;
             pthread_mutex_unlock(args->mutex);
         }
 
         pthread_barrier_wait(args->barrier);
-        if (!runtime_flag) r_max *= 2;
+        if (! *(args->runtime_flag)) r_max *= 2;
 
-    } while (!runtime_flag);
+    } while (! *(args->runtime_flag));
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
@@ -124,7 +124,7 @@ void * sse_fmac(void *args_in)
 
     /* Run independent FMAs concurrently on the first and second halves of r */
 
-    runtime_flag = 0;
+    *(args->runtime_flag) = 0;
     r_max = 1;
     do {
         pthread_barrier_wait(args->barrier);
@@ -144,14 +144,14 @@ void * sse_fmac(void *args_in)
         /* Set runtime flag if any thread exceeds runtime limit */
         if (runtime > args->min_runtime) {
             pthread_mutex_lock(args->mutex);
-            runtime_flag = 1;
+            *(args->runtime_flag) = 1;
             pthread_mutex_unlock(args->mutex);
         }
 
         pthread_barrier_wait(args->barrier);
-        if (!runtime_flag) r_max *= 2;
+        if (! *(args->runtime_flag)) r_max *= 2;
 
-    } while (!runtime_flag);
+    } while (! *(args->runtime_flag));
 
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */

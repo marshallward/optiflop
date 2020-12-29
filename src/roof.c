@@ -59,6 +59,7 @@ void * roof_thread(void *args_in)
     rargs->timer_type = args->timer_type;
     rargs->mutex = args->mutex;
     rargs->barrier = args->barrier;
+    rargs->runtime_flag = args->runtime_flag;
 
     (*(args->roof))(n, a, b, x, y, rargs);
 
@@ -94,7 +95,7 @@ void roof_kernel(int n, float a, float b,
     t = stopwatch_create(args->timer_type);
 
     r_max = 1;
-    runtime_flag = 0;
+    *(args->runtime_flag) = 0;
     do {
         pthread_barrier_wait(args->barrier);
         t->start(t);
@@ -110,14 +111,14 @@ void roof_kernel(int n, float a, float b,
         /* Set runtime flag if any thread exceeds runtime limit */
         if (runtime > (args->min_runtime)) {
             pthread_mutex_lock(args->mutex);
-            runtime_flag = 1;
+            *(args->runtime_flag) = 1;
             pthread_mutex_unlock(args->mutex);
         }
 
         pthread_barrier_wait(args->barrier);
-        if (!runtime_flag) r_max *= 2;
+        if (! *(args->runtime_flag)) r_max *= 2;
 
-    } while (!runtime_flag);
+    } while (! *(args->runtime_flag));
 
     args->runtime = runtime;
     args->flops = flops * (n - offset) * r_max / runtime;

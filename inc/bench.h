@@ -20,6 +20,7 @@ struct roof_args {
     enum stopwatch_backend timer_type;
     pthread_mutex_t *mutex;
     pthread_barrier_t *barrier;
+    volatile int *runtime_flag;
 
     /* Fields */
     int n;
@@ -50,6 +51,7 @@ struct thread_args {
     enum stopwatch_backend timer_type;
     pthread_mutex_t *mutex;
     pthread_barrier_t *barrier;
+    volatile int *runtime_flag;
 
     /* Output */
     double runtime;
@@ -58,6 +60,4 @@ struct thread_args {
     double bw_store;
 };
 
-/* Declarations */
-extern volatile int runtime_flag;
 #endif  // FLOP_BENCH_H_

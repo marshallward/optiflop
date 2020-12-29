@@ -14,12 +14,6 @@
 #define ASSUME_ALIGNED(x) x
 #endif
 
-#ifdef ROOF_OFFSET
-#define OFFSET_INDEX ROOF_OFFSET
-#else
-#define OFFSET_INDEX 0
-#endif
-
 void * roof_thread(void *);
 
 void roof_copy(int, float, float, float *, float *, struct roof_args *);

@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
     struct thread_args *t_args;
     void *status;
 
+    volatile int runtime_flag;
+
     /* Output variables */
     FILE *output = NULL;
     double **results = NULL;
@@ -222,6 +224,7 @@ int main(int argc, char *argv[])
                     t_args[t].timer_type = cfg->timer_type;
                     t_args[t].mutex = &mutex;
                     t_args[t].barrier = &barrier;
+                    t_args[t].runtime_flag = &runtime_flag;
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
                                    (void *) &t_args[t]);
