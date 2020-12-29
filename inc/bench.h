@@ -18,6 +18,8 @@ struct roof_args {
     /* Config */
     float min_runtime;
     enum stopwatch_backend timer_type;
+    pthread_mutex_t *mutex;
+    pthread_barrier_t *barrier;
 
     /* Fields */
     int n;
@@ -41,10 +43,13 @@ typedef void (*kernel_ptr_t) (int, float, float, float *, float *);
 struct thread_args {
     /* Input */
     int tid;
-    double min_runtime;
-    enum stopwatch_backend timer_type;
     int vlen;
     roof_ptr_t roof;
+
+    double min_runtime;
+    enum stopwatch_backend timer_type;
+    pthread_mutex_t *mutex;
+    pthread_barrier_t *barrier;
 
     /* Output */
     double runtime;
@@ -54,7 +59,5 @@ struct thread_args {
 };
 
 /* Declarations */
-extern pthread_barrier_t timer_barrier;
-extern pthread_mutex_t runtime_mutex;
 extern volatile int runtime_flag;
 #endif  // FLOP_BENCH_H_

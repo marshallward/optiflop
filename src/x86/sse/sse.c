@@ -42,7 +42,7 @@ void * sse_add(void *args_in)
     runtime_flag = 0;
     r_max = 1;
     do {
-        pthread_barrier_wait(&timer_barrier);
+        pthread_barrier_wait(args->barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
             /* Intel icc requires an explicit unroll */
@@ -57,12 +57,12 @@ void * sse_add(void *args_in)
 
         /* Set runtime flag if any thread exceeds runtime limit */
         if (runtime > args->min_runtime) {
-            pthread_mutex_lock(&runtime_mutex);
+            pthread_mutex_lock(args->mutex);
             runtime_flag = 1;
-            pthread_mutex_unlock(&runtime_mutex);
+            pthread_mutex_unlock(args->mutex);
         }
 
-        pthread_barrier_wait(&timer_barrier);
+        pthread_barrier_wait(args->barrier);
         if (!runtime_flag) r_max *= 2;
 
     } while (!runtime_flag);

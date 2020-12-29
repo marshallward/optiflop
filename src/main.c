@@ -39,8 +39,10 @@ int main(int argc, char *argv[])
     int nthreads;
 
     /* Thread control variables */
-    pthread_t *threads;
+    pthread_mutex_t mutex;
     pthread_attr_t attr;
+    pthread_barrier_t barrier;
+    pthread_t *threads;
     struct thread_args *t_args;
     void *status;
 
@@ -64,11 +66,11 @@ int main(int argc, char *argv[])
     threads = malloc(nthreads * sizeof(pthread_t));
     t_args = malloc(nthreads * sizeof(struct thread_args));
 
-    pthread_mutex_init(&runtime_mutex, NULL);
+    pthread_mutex_init(&mutex, NULL);
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    pthread_barrier_init(&timer_barrier, NULL, nthreads);
+    pthread_barrier_init(&barrier, NULL, nthreads);
 
     /* Generate the CPU set */
     sched_getaffinity(0, sizeof(cpuset), &cpuset);
@@ -218,6 +220,8 @@ int main(int argc, char *argv[])
                     t_args[t].min_runtime = cfg->min_runtime;
                     t_args[t].roof = roof_tests[b];
                     t_args[t].timer_type = cfg->timer_type;
+                    t_args[t].mutex = &mutex;
+                    t_args[t].barrier = &barrier;
 
                     pthread_create(&threads[t], &attr, benchmarks[b],
                                    (void *) &t_args[t]);
@@ -298,8 +302,9 @@ int main(int argc, char *argv[])
         fclose(output);
     }
 
+    pthread_barrier_destroy(&barrier);
     pthread_attr_destroy(&attr);
-    pthread_mutex_destroy(&runtime_mutex);
+    pthread_mutex_destroy(&mutex);
     free(cpus);
     free(t_args);
     free(threads);
