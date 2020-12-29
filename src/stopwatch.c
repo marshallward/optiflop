@@ -70,14 +70,14 @@ Stopwatch * stopwatch_create(enum stopwatch_backend type)
  * good fallback option if no other timers are available.
  */
 
-struct stopwatch_context_std_t {
+struct stopwatch_context_std {
     clock_t c_start, c_end;
 };
 
 void stopwatch_init_std(Stopwatch *t)
 {
-    t->context = malloc(sizeof(union stopwatch_context_t));
-    t->context->tc_std = malloc(sizeof(struct stopwatch_context_std_t));
+    t->context = malloc(sizeof(union stopwatch_context));
+    t->context->tc_std = malloc(sizeof(struct stopwatch_context_std));
 }
 
 void stopwatch_start_std(Stopwatch *t)

@@ -9,7 +9,7 @@
 
 /* POSIX Stopwatch methods */
 
-struct stopwatch_context_posix_t {
+struct stopwatch_context_posix {
     clockid_t clock;
     struct timespec ts_start, ts_end;
 };
@@ -17,8 +17,8 @@ struct stopwatch_context_posix_t {
 
 void stopwatch_init_posix(Stopwatch *t)
 {
-    t->context = malloc(sizeof(union stopwatch_context_t));
-    t->context->tc_posix = malloc(sizeof(struct stopwatch_context_posix_t));
+    t->context = malloc(sizeof(union stopwatch_context));
+    t->context->tc_posix = malloc(sizeof(struct stopwatch_context_posix));
     t->context->tc_posix->clock = CLOCK_MONOTONIC_RAW;
 }
 

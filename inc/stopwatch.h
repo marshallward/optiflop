@@ -22,7 +22,7 @@ enum stopwatch_backend {
 
 /* Stopwatch class */
 typedef struct Stopwatch_struct {
-    union stopwatch_context_t *context;
+    union stopwatch_context *context;
 
     void (*start)();
     void (*stop)();
@@ -32,10 +32,10 @@ typedef struct Stopwatch_struct {
 
 
 /* Context */
-union stopwatch_context_t {
-    struct stopwatch_context_std_t *tc_std;
-    struct stopwatch_context_posix_t *tc_posix;
-    struct stopwatch_context_tsc_t *tc_tsc;
+union stopwatch_context {
+    struct stopwatch_context_std *tc_std;
+    struct stopwatch_context_posix *tc_posix;
+    struct stopwatch_context_tsc *tc_tsc;
 };
 
 

@@ -10,7 +10,7 @@
 double tsc_freq;
 
 /* Context */
-struct stopwatch_context_tsc_t {
+struct stopwatch_context_tsc {
     uint64_t rax0, rdx0, rax1, rdx1;
 };
 
@@ -18,8 +18,8 @@ struct stopwatch_context_tsc_t {
 
 void stopwatch_init_tsc(Stopwatch *t)
 {
-    t->context = malloc(sizeof(union stopwatch_context_t));
-    t->context->tc_tsc = malloc(sizeof(struct stopwatch_context_tsc_t));
+    t->context = malloc(sizeof(union stopwatch_context));
+    t->context->tc_tsc = malloc(sizeof(struct stopwatch_context_tsc));
 }
 
 void stopwatch_start_tsc(Stopwatch *t)
