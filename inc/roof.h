@@ -1,7 +1,8 @@
 #ifndef FLOP_AXPY_H_
 #define FLOP_AXPY_H_
 
-#include "bench.h"
+#include <pthread.h>
+#include "stopwatch.h"
 
 /* If unset, assume AVX alignment */
 #ifndef BYTEALIGN
@@ -14,8 +15,41 @@
 #define ASSUME_ALIGNED(x) x
 #endif
 
+
+struct roof_args {
+    /* Config */
+    float min_runtime;
+    enum stopwatch_backend timer_type;
+    pthread_mutex_t *mutex;
+    pthread_barrier_t *barrier;
+    volatile int *runtime_flag;
+
+    /* Fields */
+    int n;
+    float a;
+    float b;
+    float *x;
+    float *y;
+
+    /* Output */
+    double runtime;
+    double flops;
+    double bw_load;
+    double bw_store;
+};
+
+
+/* A dummy function in the SIMD benchmark list indicatind a roofline test.
+ * This can be phased out once those tests have been separated.
+ */
 void * roof_thread(void *);
 
+
+/* Roofline test function pointer */
+typedef void (*roof_ptr_t) (int, float, float, float *, float *,
+                            struct roof_args *);
+
+/* Roofline tests */
 void roof_copy(int, float, float, float *, float *, struct roof_args *);
 void roof_ax(int, float, float, float *, float *, struct roof_args *);
 void roof_xpx(int, float, float, float *, float *, struct roof_args *);

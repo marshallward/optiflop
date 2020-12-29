@@ -1,10 +1,15 @@
-#include <stdlib.h>
-#include <time.h> /* timespec, clock_gettime */
+#include <stdlib.h>     /* malloc, posix_memalign, free */
 
 #include "roof.h"
 #include "bench.h"
 #include "stopwatch.h"
 
+
+/* Kernel pointer definition */
+typedef void (*compute_kernel) (int, float, float, float *, float *);
+
+
+/* Kernel definitions */
 static inline void copy_kernel(int i, float a, float b, float *x, float *y)
     __attribute__((always_inline));
 static inline void ax_kernel(int i, float a, float b, float *x, float *y)
@@ -77,7 +82,7 @@ void * roof_thread(void *args_in)
 
 void roof_kernel(int n, float a, float b,
                  float * restrict x_in, float * restrict y_in,
-                 struct roof_args *args, kernel_ptr_t kernel,
+                 struct roof_args *args, compute_kernel kernel,
                  int flops, int load_bytes, int store_bytes, int offset)
 {
     float *x, *y;
