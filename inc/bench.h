@@ -5,14 +5,7 @@
 #include "roof.h"
 #include "stopwatch.h"
 
-/* Types */
-struct microbench {
-    char *name;
-    void * (*thread) (void *);
-};
 
-
-/* TODO: Create a type here, or reduce the number of arguments */
 typedef void * (*bench_ptr_t) (void *);
 
 
@@ -20,7 +13,7 @@ struct thread_args {
     /* Input */
     int tid;
     int vlen;
-    roof_ptr_t roof;
+    roof_ptr_t roof;    /* TODO: Phase this out! */
 
     double min_runtime;
     enum stopwatch_backend timer_type;
@@ -33,6 +26,25 @@ struct thread_args {
     double flops;
     double bw_load;
     double bw_store;
+};
+
+
+/* Types */
+struct task {
+    /* Simple descriptive name of test */
+    char *name;
+
+    /* Thread subroutine */
+    union {
+        bench_ptr_t simd;
+        roof_ptr_t roof;
+    } thread;
+
+    /* Thread arguments */
+    union {
+        struct thread_args *simd;
+        struct roof_args   *roof;
+    } args;
 };
 
 #endif  // FLOP_BENCH_H_
