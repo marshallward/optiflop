@@ -24,7 +24,7 @@ AC_C_VOLATILE
 # Enable built-in subroutine substitution, e.g. memcpy()
 AC_MSG_CHECKING([whether built-in functions are to be used])
 AC_ARG_ENABLE(builtin,
-    AC_HELP_STRING(--enable-builtin, [enable built-in functions]))
+    AS_HELP_STRING(--enable-builtin, [enable built-in functions]))
 if test "$enable_builtin" = no; then
     CFLAGS="$CFLAGS -fno-builtin"
 else
@@ -36,7 +36,7 @@ AC_MSG_RESULT($enable_builtin)
 # Enable direct streaming from RAM to cache via movnt
 AC_MSG_CHECKING([whether streaming stores are to be used])
 AC_ARG_ENABLE(stream,
-    AC_HELP_STRING(--enable-stream, [enable streaming stores (e.g. STREAM)]))
+    AS_HELP_STRING(--enable-stream, [enable streaming stores (e.g. STREAM)]))
 if test "$ac_cc" = "icc" -a "$enable_stream" = yes; then
     CFLAGS="$CFLAGS -mcmodel=medium -ffreestanding -qopt-streaming-stores always"
 else
@@ -48,7 +48,7 @@ AC_MSG_RESULT($enable_stream)
 # Loop unroll check
 AC_MSG_CHECKING([loop unroll factor])
 AC_ARG_ENABLE(unroll,
-    AC_HELP_STRING(--enable-unroll, [set the loop unrolling factor]))
+    AS_HELP_STRING(--enable-unroll, [set the loop unrolling factor]))
 if test "$enable_unroll" = "no"; then
     # Set default unroll rate to two
     enable_unroll=0
@@ -231,4 +231,5 @@ AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
 AC_SUBST(tsc_path, "$tsc_path")
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
