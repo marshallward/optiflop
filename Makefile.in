@@ -65,10 +65,10 @@ gpuflop: $(OBJS) $(OBJDIR)/gpu_roof.o
 optiflop: $(OBJS) $(OBJDIR)/gpu_roof_null.o
 	$(CC) -pthread -o $@ $^ $(LDFLAGS)
 
-$(OBJS): $(OBJDIR)
+$(OBJS): | $(OBJDIR)
 
 $(OBJDIR):
-	mkdir $(OBJDIR)
+	mkdir -p $(OBJDIR)
 
 # Object rules
 
