@@ -1,8 +1,7 @@
-#include <stdlib.h>     /* malloc, posix_memalign, free */
+#include <pthread.h>    /* pthread_* */
 
-#include "roof.h"
-#include "bench.h"
-#include "stopwatch.h"
+#include "roof.h"       /* roof_args */
+#include "stopwatch.h"  /* Stopwatch */
 
 
 /* Kernel pointer definition */

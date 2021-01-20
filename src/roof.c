@@ -1,12 +1,8 @@
 #include <stdlib.h>     /* malloc, posix_memalign, free */
 
-#include "roof.h"
-#include "bench.h"
-#include "stopwatch.h"
-
-
-/* Kernel pointer definition */
-typedef void (*compute_kernel) (int, float, float, float *, float *);
+#include "roof.h"       /* roof_args */
+#include "bench.h"      /* thread_args */
+#include "stopwatch.h"  /* Stopwatch */
 
 
 void * roof_thread(void *args_in)

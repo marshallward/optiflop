@@ -1,4 +1,3 @@
-# Dummy comment
 SRC=src
 INC=inc
 OBJDIR=obj
