@@ -38,7 +38,6 @@ void * roof_thread(void *args_in)
         timer->stop(timer);
         iter *= 2;
     } while (timer->runtime(timer) < 0.01);
-    timer->destroy(timer);
 
     n = args->vlen;
 
@@ -53,8 +52,10 @@ void * roof_thread(void *args_in)
     }
 
     rargs = malloc(sizeof(struct roof_args));
+
+    rargs->timer = timer;
     rargs->min_runtime = args->min_runtime;
-    rargs->timer_type = args->timer_type;
+
     rargs->mutex = args->mutex;
     rargs->barrier = args->barrier;
     rargs->runtime_flag = args->runtime_flag;
@@ -66,6 +67,7 @@ void * roof_thread(void *args_in)
     args->bw_load = rargs->bw_load;
     args->bw_store = rargs->bw_store;
 
+    timer->destroy(timer);
     free(x);
     free(y);
     free(rargs);

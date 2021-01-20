@@ -17,19 +17,15 @@
 
 
 struct roof_args {
-    /* Config */
+    /* Timimg */
+    //enum stopwatch_backend timer_type;
+    Stopwatch *timer;
     float min_runtime;
-    enum stopwatch_backend timer_type;
+
+    /* Thread control */
     pthread_mutex_t *mutex;
     pthread_barrier_t *barrier;
     volatile int *runtime_flag;
-
-    /* Fields */
-    int n;
-    float a;
-    float b;
-    float *x;
-    float *y;
 
     /* Output */
     double runtime;

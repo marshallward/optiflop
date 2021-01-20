@@ -34,9 +34,7 @@ void roof_kernel(int n, float a, float b,
 {
     float *x, *y;
 
-    /* TODO: Create timer in thread function, not kernel */
     Stopwatch *t;
-
     long r, r_max;
     int i;
     double runtime;
@@ -44,7 +42,7 @@ void roof_kernel(int n, float a, float b,
     x = ASSUME_ALIGNED(x_in);
     y = ASSUME_ALIGNED(y_in);
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     r_max = 1;
     *(args->runtime_flag) = 0;
@@ -78,9 +76,6 @@ void roof_kernel(int n, float a, float b,
                         / runtime;
     args->bw_store = store_bytes * (n - offset) * sizeof(float) * r_max
                         / runtime;
-
-    /* Cleanup */
-    t->destroy(t);
 }
 
 
