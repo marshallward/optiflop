@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
                 t_args[t].tid = t;
                 t_args[t].vlen = 1;
                 t_args[t].min_runtime = cfg->min_runtime;
-                t_args[t].roof = NULL;
+                t_args[t].benchmark.simd = simd_tasks[b].thread.simd;
                 t_args[t].timer_type = cfg->timer_type;
                 t_args[t].mutex = &mutex;
                 t_args[t].barrier = &barrier;
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
                     t_args[t].tid = t;
                     t_args[t].vlen = vlen;
                     t_args[t].min_runtime = cfg->min_runtime;
-                    t_args[t].roof = roof_tasks[b].thread.roof;
+                    t_args[t].benchmark.roof = roof_tasks[b].thread.roof;
                     t_args[t].timer_type = cfg->timer_type;
                     t_args[t].mutex = &mutex;
                     t_args[t].barrier = &barrier;

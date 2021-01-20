@@ -60,7 +60,7 @@ void * roof_thread(void *args_in)
     rargs->barrier = args->barrier;
     rargs->runtime_flag = args->runtime_flag;
 
-    (*(args->roof))(n, a, b, x, y, rargs);
+    (*(args->benchmark).roof)(n, a, b, x, y, rargs);
 
     args->runtime = rargs->runtime;
     args->flops = rargs->flops;

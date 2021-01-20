@@ -10,13 +10,21 @@ typedef void * (*bench_ptr_t) (void *);
 
 
 struct thread_args {
+    /* Compute subroutine*/
+    union {
+        roof_ptr_t roof;
+        bench_ptr_t simd;
+    } benchmark;
+
+    /* Timing control */
+    double min_runtime;
+    enum stopwatch_backend timer_type;
+
     /* Input */
     int tid;
     int vlen;
-    roof_ptr_t roof;    /* TODO: Phase this out! */
 
-    double min_runtime;
-    enum stopwatch_backend timer_type;
+    /* Thread management */
     pthread_mutex_t *mutex;
     pthread_barrier_t *barrier;
     volatile int *runtime_flag;
