@@ -28,7 +28,7 @@ _OBJS=main.o input.o \
 	sse.o sse_fma.o \
 	avx.o avx_fma.o \
 	avx512.o \
-	roof.o dummy.o
+	roof.o kernel.o dummy.o
 
 OBJS=$(addprefix $(OBJDIR)/, $(_OBJS))
 
@@ -94,6 +94,9 @@ $(OBJDIR)/avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
+	$(CC) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/kernel.o: $(SRC)/kernel.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/dummy.o: $(SRC)/dummy.c
