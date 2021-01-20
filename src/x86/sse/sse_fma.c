@@ -15,10 +15,10 @@ float reduce_sse_fma(__m128);
 
 
 /* Sequential SSE FMA */
-void * sse_fma(void *args_in)
+void sse_fma(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_sse = VMULPS_LATENCY;
     const __m128 add0 = _mm_set1_ps((float) 1e-6);
@@ -34,9 +34,9 @@ void * sse_fma(void *args_in)
     Stopwatch *t;
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_sse; j++) {
         r[j] = _mm_set1_ps((float) j);
@@ -80,24 +80,19 @@ void * sse_fma(void *args_in)
     /* (iterations) * (8 flops / register) * (n_sse registers / iteration) */
     flops = r_max * 8 * n_sse / runtime;
 
-    /* Cleanup */
-    t->destroy(t);
-
     /* Thread output */
     args->runtime = runtime;
     args->flops = flops;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    pthread_exit(NULL);
 }
 
 
 /* Concurrent SSE FMA */
-void * sse_fmac(void *args_in)
+void sse_fmac(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_sse = VMULPS_LATENCY;
     const __m128 add0 = _mm_set1_ps((float) 1e-6);
@@ -113,9 +108,10 @@ void * sse_fmac(void *args_in)
     Stopwatch *t;
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    //t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_sse; j++) {
         r[j] = _mm_set1_ps((float) j);
@@ -163,16 +159,11 @@ void * sse_fmac(void *args_in)
     /* (iterations) * (8 flops / register) * (n_sse registers / iteration) */
     flops = r_max * 8 * (2 * n_sse) / runtime;
 
-    /* Cleanup */
-    t->destroy(t);
-
     /* Thread output */
     args->runtime = runtime;
     args->flops = flops;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    pthread_exit(NULL);
 }
 
 

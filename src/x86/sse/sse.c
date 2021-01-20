@@ -14,10 +14,10 @@
 float reduce_sse(__m128);
 
 
-void * sse_add(void *args_in)
+void sse_add(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_sse = VADDPS_LATENCY;
     const __m128 add0 = _mm_set1_ps((float) 1e-6);
@@ -32,9 +32,9 @@ void * sse_add(void *args_in)
     volatile float result __attribute__((unused));
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_sse; j++)
         reg[j] = _mm_set1_ps((float) j);
@@ -78,11 +78,6 @@ void * sse_add(void *args_in)
     args->flops = r_max * 4 * n_sse / runtime;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    /* Cleanup */
-    t->destroy(t);
-
-    pthread_exit(NULL);
 }
 
 

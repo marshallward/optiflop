@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
                 t_args[t].barrier = &barrier;
                 t_args[t].runtime_flag = &runtime_flag;
 
-                pthread_create(&threads[t], &attr, simd_tasks[b].thread.simd,
+                pthread_create(&threads[t], &attr, &simd_thread,
                     (void *) &t_args[t]
                 );
             }

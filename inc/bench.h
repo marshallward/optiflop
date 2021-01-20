@@ -6,7 +6,10 @@
 #include "stopwatch.h"
 
 
-typedef void * (*bench_ptr_t) (void *);
+void * simd_thread(void *);
+
+
+typedef void (*bench_ptr_t) (void *);
 
 
 struct thread_args {

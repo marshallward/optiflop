@@ -14,10 +14,10 @@
 float reduce_AVX512(__m512);
 
 
-void * avx512_add(void *args_in)
+void avx512_add(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_avx512 = VADDPS_LATENCY;
     const __m512 add0 = _mm512_set1_ps((float) 1e-6);
@@ -32,9 +32,9 @@ void * avx512_add(void *args_in)
     volatile float result;
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_avx512; j++) {
         r[j] = _mm512_set1_ps((float) j);
@@ -75,23 +75,18 @@ void * avx512_add(void *args_in)
     /* (iter) * (16 instr / reg) * (1 flops / instr) * (n_avx512 reg / iter) */
     flops = r_max * 16 * n_avx512 / runtime;
 
-    /* Cleanup */
-    t->destroy(t);
-
     /* Thread output */
     args->runtime = runtime;
     args->flops = flops;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    pthread_exit(NULL);
 }
 
 
-void * avx512_fma(void *args_in)
+void avx512_fma(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_avx512 = VFMAPS_LATENCY;
     const __m512 add0 = _mm512_set1_ps((float) 1e-6);
@@ -107,9 +102,9 @@ void * avx512_fma(void *args_in)
     Stopwatch *t;
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_avx512; j++) {
         r[j] = _mm512_set1_ps((float) j);
@@ -154,16 +149,11 @@ void * avx512_fma(void *args_in)
     /* (iter) * (16 instr / reg) * (2 flops / instr) * (n_avx512 reg / iter) */
     flops = r_max * 16 * 2 * n_avx512 / runtime;
 
-    /* Cleanup */
-    t->destroy(t);
-
     /* Thread output */
     args->runtime = runtime;
     args->flops = flops;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    pthread_exit(NULL);
 }
 
 

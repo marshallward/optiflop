@@ -14,10 +14,10 @@
 float reduce_AVX(__m256);
 
 
-void * avx_add(void *args_in)
+void avx_add(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_avx = VADDPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
@@ -32,9 +32,9 @@ void * avx_add(void *args_in)
     volatile float result __attribute__((unused));
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_avx; j++)
         reg[j] = _mm256_set1_ps((float) j);
@@ -78,18 +78,13 @@ void * avx_add(void *args_in)
     args->flops = r_max * 8 * n_avx / runtime;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    /* Cleanup */
-    t->destroy(t);
-
-    pthread_exit(NULL);
 }
 
 
-void * avx_mac(void *args_in)
+void avx_mac(void *args_in)
 {
     /* Thread input */
-    struct thread_args *args;
+    struct roof_args *args;
 
     const int n_avx = VMULPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((float) 1e-6);
@@ -105,9 +100,9 @@ void * avx_mac(void *args_in)
     Stopwatch *t;
 
     /* Read inputs */
-    args = (struct thread_args *) args_in;
+    args = (struct roof_args *) args_in;
 
-    t = stopwatch_create(args->timer_type);
+    t = args->timer;
 
     for (j = 0; j < n_avx; j++) {
         r[j] = _mm256_set1_ps((float) j);
@@ -157,16 +152,11 @@ void * avx_mac(void *args_in)
     /* (iterations) * (8 flops / register) * (2*n_avx registers / iteration) */
     flops = r_max * 8 * (2 * n_avx) / runtime;
 
-    /* Cleanup */
-    t->destroy(t);
-
     /* Thread output */
     args->runtime = runtime;
     args->flops = flops;
     args->bw_load = 0.;
     args->bw_store = 0.;
-
-    pthread_exit(NULL);
 }
 
 
