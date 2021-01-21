@@ -29,20 +29,22 @@ static inline void diff8_kernel(int i, float a, float b, float *x, float *y)
 
 void roof_kernel(int n, float a, float b,
                  float * restrict x_in, float * restrict y_in,
-                 struct roof_args *args, compute_kernel kernel,
-                 int flops, int load_bytes, int store_bytes, int offset)
+                 struct roof_args *args, compute_kernel kernel)
 {
     float *x, *y;
 
     Stopwatch *t;
     long r, r_max;
-    int i;
+    int nk;
     double runtime;
 
+    /* If possible, assert alignment of x_in and y_in */
     x = ASSUME_ALIGNED(x_in);
     y = ASSUME_ALIGNED(y_in);
 
     t = args->timer;
+
+    nk = n - args->offset;
 
     r_max = 1;
     *(args->runtime_flag) = 0;
@@ -50,7 +52,7 @@ void roof_kernel(int n, float a, float b,
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (r = 0; r < r_max; r++) {
-            for (i = 0; i < (n - offset); i++)
+            for (int i = 0; i < nk; i++)
                 kernel(i, a, b, x, y);
             // Create an impossible branch to prevent loop interchange
             if (y[0] < 0.) dummy(a, b, x, y);
@@ -70,12 +72,19 @@ void roof_kernel(int n, float a, float b,
 
     } while (! *(args->runtime_flag));
 
+    /* Total number of kernel calls */
+
+    //args->runtime = runtime;
+    //args->flops = args->nflops * (n - offset) * r_max / runtime;
+    //args->bw_load = args->load_bytes * (n - args->offset) * sizeof(float) * r_max
+    //                    / runtime;
+    //args->bw_store = args->store_bytes * (n - offset) * sizeof(float) * r_max
+    //                    / runtime;
+
     args->runtime = runtime;
-    args->flops = flops * (n - offset) * r_max / runtime;
-    args->bw_load = load_bytes * (n - offset) * sizeof(float) * r_max
-                        / runtime;
-    args->bw_store = store_bytes * (n - offset) * sizeof(float) * r_max
-                        / runtime;
+    args->flops = args->kflops * nk * r_max / runtime;
+    args->bw_load = args->kloads * sizeof(float) * nk * r_max / runtime;
+    args->bw_store = args->kstores * sizeof(float) * nk * r_max / runtime;
 }
 
 
@@ -97,7 +106,12 @@ void roof_copy(int n, float a, float b,
                float * restrict x_in, float * restrict y_in,
                struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, copy_kernel, 0, 1, 1, 0);
+    args->kflops = 0;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, copy_kernel);
 }
 
 
@@ -111,7 +125,12 @@ void roof_ax(int n, float a, float b,
              float * restrict x_in, float * restrict y_in,
              struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, ax_kernel, 1, 1, 1, 0);
+    args->kflops = 1;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, ax_kernel);
 }
 
 
@@ -126,7 +145,12 @@ void roof_xpx(int n, float a, float b,
               float * restrict x_in, float * restrict y_in,
               struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, xpx_kernel, 1, 2, 1, 0);
+    args->kflops = 1;
+    args->kloads = 2;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, xpx_kernel);
 }
 
 
@@ -141,7 +165,12 @@ void roof_xpy(int n, float a, float b,
               float * restrict x_in, float * restrict y_in,
               struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, xpy_kernel, 1, 2, 1, 0);
+    args->kflops = 1;
+    args->kloads = 2;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, xpy_kernel);
 }
 
 
@@ -156,7 +185,12 @@ void roof_axpy(int n, float a, float b,
                float * restrict x_in, float * restrict y_in,
                struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, axpy_kernel, 2, 2, 1, 0);
+    args->kflops = 2;
+    args->kloads = 2;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, axpy_kernel);
 }
 
 
@@ -172,7 +206,12 @@ void roof_axpby(int n, float a, float b,
                 float * restrict x_in, float * restrict y_in,
                 struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, axpby_kernel, 3, 2, 1, 0);
+    args->kflops = 3;
+    args->kloads = 2;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, axpby_kernel);
 }
 
 
@@ -186,7 +225,12 @@ void roof_diff(int n, float a, float b,
                float * restrict x_in, float * restrict y_in,
                struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, diff_kernel, 1, 1, 1, 1);
+    args->kflops = 1;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = 1;
+
+    roof_kernel(n, a, b, x_in, y_in, args, diff_kernel);
 }
 
 
@@ -200,5 +244,10 @@ void roof_diff8(int n, float a, float b,
                 float * restrict x_in, float * restrict y_in,
                 struct roof_args *args)
 {
-    roof_kernel(n, a, b, x_in, y_in, args, diff8_kernel, 1, 1, 1, 8);
+    args->kflops = 1;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = 8;
+
+    roof_kernel(n, a, b, x_in, y_in, args, diff8_kernel);
 }
