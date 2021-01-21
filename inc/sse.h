@@ -1,6 +1,6 @@
-#ifndef FLOP_SSE_H_
-#define FLOP_SSE_H_
+#ifndef OPTIFLOP_SSE_H_
+#define OPTIFLOP_SSE_H_
 
 void sse_add(void *);
 
-#endif  // FLOP_SSE_H_
+#endif  // OPTIFLOP_SSE_H_

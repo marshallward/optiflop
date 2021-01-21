@@ -1,5 +1,5 @@
-#ifndef FLOP_AXPY_H_
-#define FLOP_AXPY_H_
+#ifndef OPTIFLOP_ROOF_H_
+#define OPTIFLOP_ROOF_H_
 
 #include <pthread.h>
 #include "stopwatch.h"
@@ -57,4 +57,4 @@ void roof_diff8(int, float, float, float *, float *, struct roof_args *);
 
 void dummy(float, float, float *, float *);
 
-#endif  // FLOP_AXPY_H_
+#endif  // OPTIFLOP_ROOF_H_

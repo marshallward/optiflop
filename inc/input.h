@@ -1,5 +1,5 @@
-#ifndef ARGS_H_
-#define ARGS_H_
+#ifndef OPTIFLOP_ARGS_H_
+#define OPTIFLOP_ARGS_H_
 
 #include "stopwatch.h"
 
@@ -18,4 +18,4 @@ struct input_config {
 
 void parse_input(int, char **, struct input_config *);
 
-#endif  // ARGS_H_
+#endif  // OPTIFLOP_ARGS_H_

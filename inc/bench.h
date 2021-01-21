@@ -1,5 +1,5 @@
-#ifndef FLOP_BENCH_H_
-#define FLOP_BENCH_H_
+#ifndef OPTIFLOP_BENCH_H_
+#define OPTIFLOP_BENCH_H_
 
 #include <pthread.h>
 #include "roof.h"
@@ -58,4 +58,4 @@ struct task {
     } args;
 };
 
-#endif  // FLOP_BENCH_H_
+#endif  // OPTIFLOP_BENCH_H_
