@@ -24,6 +24,7 @@ AVX512_PATH=$(SRC)/@avx512_path@
 # TODO: Include GPU object file
 _OBJS=main.o input.o \
 	stopwatch.o stopwatch_posix.o stopwatch_tsc.o \
+	simd.o \
 	sse.o sse_fma.o \
 	avx.o avx_fma.o \
 	avx512.o \
@@ -76,6 +77,9 @@ $(OBJDIR)/main.o: $(SRC)/main.c $(INC)/sse.h $(INC)/sse_fma.h $(INC)/avx.h $(INC
 
 $(OBJDIR)/input.o: $(SRC)/input.c $(INC)/input.h
 	$(CC) $(CFLAGS) -c -pthread -o $@ $<
+
+$(OBJDIR)/simd.o: $(SRC)/simd.c $(INC)/bench.h $(INC)/stopwatch.h
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/sse.o: $(SSE_PATH)/sse.c $(INC)/sse.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<

@@ -212,12 +212,12 @@ int main(int argc, char *argv[])
         total_bw_store = max_total_bw_store;
 
         if (total_flops > 0.)
-            printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
+            printf("%s GFLOP/s: %.3f (%.3f / thread)\n",
                     simd_tasks[b].name, total_flops / 1e9,
                     total_flops / nthreads / 1e9);
 
         if (total_bw_load > 0. && total_bw_store > 0.)
-            printf("%s GB/s: %.12f (%.12f / thread)\n",
+            printf("%s GB/s: %.3f (%.3f / thread)\n",
                     simd_tasks[b].name, (total_bw_load + total_bw_store) / 1e9,
                     (total_bw_load + total_bw_store) / nthreads / 1e9);
 
@@ -303,12 +303,12 @@ int main(int argc, char *argv[])
             total_bw_store = max_total_bw_store;
 
             if (total_flops > 0.)
-                printf("%s GFLOP/s: %.12f (%.12f / thread)\n",
+                printf("%s GFLOP/s: %.3f (%.3f / thread)\n",
                         roof_tasks[b].name, total_flops / 1e9,
                         total_flops / nthreads / 1e9);
 
             if (total_bw_load > 0. && total_bw_store > 0.)
-                printf("%s GB/s: %.12f (%.12f / thread)\n",
+                printf("%s GB/s: %.3f (%.3f / thread)\n",
                         roof_tasks[b].name, (total_bw_load + total_bw_store) / 1e9,
                         (total_bw_load + total_bw_store) / nthreads / 1e9);
 
