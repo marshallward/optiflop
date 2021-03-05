@@ -21,7 +21,7 @@ or two.
 
 1. Generate the ``configure`` script and ``Makefile``, then ``make``.::
 
-      $ autoconf
+      $ autoreconf
       $ ./configure
       $ make
 
