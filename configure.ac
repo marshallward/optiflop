@@ -14,6 +14,15 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_LANG([C])
 AC_PROG_CC
 
+# Much of the legacy content relies on the $ac_cc cache variable.  In the past,
+# I can only presume that AC_PROG_CC would have set this variable.  But newer
+# versions of autoconf do not appear to use this anymore, so we define the
+# variable here.
+#
+# But this whole approach is wrong, and we should not be making decisions based
+# on the name of a compiler.  So we need to restructure this configuration.
+# This is just a temporary fix.
+ac_cc="${CC}"
 
 # Validate the following keywords
 AX_C_ASM
