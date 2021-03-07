@@ -14,20 +14,52 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_LANG([C])
 AC_PROG_CC
 
-# Much of the legacy content relies on the $ac_cc cache variable.  In the past,
-# I can only presume that AC_PROG_CC would have set this variable.  But newer
+# Many of the macros below use the $ac_cc cache variable.  In the past, I can
+# only presume that AC_PROG_CC would have set this variable.  But newer
 # versions of autoconf do not appear to use this anymore, so we define the
 # variable here.
-#
+ac_cc="${CC}"
 # But this whole approach is wrong, and we should not be making decisions based
 # on the name of a compiler.  So we need to restructure this configuration.
 # This is just a temporary fix.
-ac_cc="${CC}"
+
 
 # Validate the following keywords
 AX_C_ASM
 AC_C_RESTRICT
 AC_C_VOLATILE
+
+
+# Timer configuration
+
+# NOTES:
+# - clockid_t may be defined in <sys/types.h>, even if it is not defined in
+#   <time.h> (e.g. C99 builds), so we explicitly search in <time.h>.
+#
+# - librt (POSIX1.b realtime library) is integrated into glibc, but platforms
+#   using their own libc may separate them, so -lrt may be needed.
+#
+AC_CHECK_TYPE([clockid_t],
+  [
+    posix_timer_path='posix'
+    AC_SEARCH_LIBS([clock_gettime], [rt])
+  ],
+  [posix_timer_path='generic'],
+  [[#include <time.h>]]
+)
+
+# TODO: Our TSC test uses the POSIX timer, but we could relax this.
+AS_IF([test $posix_timer_path = "posix"], [
+  AX_CHECK_ASM([rdtsc], [has_rdtsc])
+  AX_CHECK_ASM([rdtscp], [has_rdtscp])
+  AX_CHECK_ASM([rdpmc], [has_rdpmc])
+  AX_CHECK_ASM([cpuid], [has_cpuid])
+  AS_IF([test $has_rdtsc -eq 1 -a $has_rdtscp -eq 1 -a $has_cpuid -eq 1],
+    [tsc_timer_path=x86],
+    [tsc_timer_path=generic]
+  )],
+  [tsc_timer_path=generic]
+)
 
 
 # Enable built-in subroutine substitution, e.g. memcpy()
@@ -85,7 +117,6 @@ AC_MSG_RESULT($enable_unroll)
 
 # Libraries
 AC_SEARCH_LIBS(ceil, m)
-AC_SEARCH_LIBS(clock_gettime, rt)
 
 
 # SIMD support
@@ -204,41 +235,14 @@ if test $cc_has_avx512 -eq 1 -a "$ac_cc" = "icc"; then
 fi
 
 
-# x86 assembly check
-AC_DEFUN([AX_CHECK_ASM], [
-  AC_MSG_CHECKING([if $CC supports $1])
-  ac_saved_cflags="$CFLAGS"
-  CFLAGS="-O0"
-  AC_RUN_IFELSE(
-    [AC_LANG_PROGRAM([], [[$ac_cv_c_asm volatile ("$1");]])],
-    [$2=1]
-    [AC_MSG_RESULT([yes])],
-    [$2=0]
-    [AC_MSG_RESULT([no])],
-  )
-  CFLAGS="$ac_saved_cflags"
-])
-
-
-# TODO: More checks are probably needed here (and some are probably redundant)
-AX_CHECK_ASM(rdtsc, has_rdtsc)
-AX_CHECK_ASM(rdtscp, has_rdtscp)
-AX_CHECK_ASM(rdpmc, has_rdpmc)
-AX_CHECK_ASM(cpuid, has_cpuid)
-if test $has_rdtsc -eq 1 -a $has_rdtscp -eq 1 -a $has_cpuid -eq 1; then
-    tsc_path=x86
-else
-    tsc_path=generic
-fi
-
-
 # Update and create the Makefile
+AC_SUBST(posix_timer_path, "$posix_timer_path")
+AC_SUBST(tsc_timer_path, "$tsc_timer_path")
 AC_SUBST(loop_cflags, $loop_cflags)
 AC_SUBST(sse_path, "$sse_path")
 AC_SUBST(sse_fma_path, "$sse_fma_path")
 AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
-AC_SUBST(tsc_path, "$tsc_path")
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

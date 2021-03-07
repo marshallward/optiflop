@@ -12,7 +12,8 @@ LD=@CC@
 LDFLAGS=@LIBS@
 
 # Paths to platform-specific source
-TSC_PATH=$(SRC)/@tsc_path@
+POSIX_TIMER_PATH=$(SRC)/@posix_timer_path@
+TSC_TIMER_PATH=$(SRC)/@tsc_timer_path@
 SSE_PATH=$(SRC)/@sse_path@
 SSE_FMA_PATH=$(SRC)/@sse_fma_path@
 AVX_PATH=$(SRC)/@avx_path@
@@ -108,10 +109,10 @@ $(OBJDIR)/dummy.o: $(SRC)/dummy.c
 $(OBJDIR)/stopwatch.o: $(SRC)/stopwatch.c $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/stopwatch_posix.o: $(SRC)/posix/stopwatch_posix.c
+$(OBJDIR)/stopwatch_posix.o: $(POSIX_TIMER_PATH)/stopwatch_posix.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/stopwatch_tsc.o: $(TSC_PATH)/stopwatch_tsc.c
+$(OBJDIR)/stopwatch_tsc.o: $(TSC_TIMER_PATH)/stopwatch_tsc.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/gpu_roof_null.o: $(SRC)/generic/gpu_roof.c
