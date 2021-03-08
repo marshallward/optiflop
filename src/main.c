@@ -128,30 +128,6 @@ int main(int argc, char *argv[])
     if (cfg->timer_type == TIMER_TSC)
         stopwatch_set_tsc_freq();
 
-    /* Here we "rev up" the cpu frequency.  This has two effects:
-     * 1. Removes the need for redundant ensembles.
-     * 2. Consistency bewteen POSIX and TSC, since the TSC frequency estimation
-     *    revs up the frequency.
-     * Rev time needs to be more than 0.01s, but surely this is highly platform
-     * dependent.  (Also may be a very x86 issue)
-     *
-     * TODO: Yes, this needs to be cleaned up.
-     * TODO: Don't do this if using TSC, it's already revved.
-     * TODO: Create a separate function.
-     */
-    Stopwatch *timer;
-    volatile int a = 0;
-    unsigned long iter = 1;
-    timer = stopwatch_create(cfg->timer_type);
-    do {
-        timer->start(timer);
-        for (unsigned long i = 0; i < iter; i++)
-            a++;
-        timer->stop(timer);
-        iter *= 2;
-    } while (timer->runtime(timer) < 0.1);
-    timer->destroy(timer);
-
     /* SIMD tests */
     for (b = 0; b < nsimd; b++) {
         max_total_flops = 0.;
