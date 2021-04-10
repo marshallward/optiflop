@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     int id, c;
 
     int b, t;
-    int vlen, vlen_start, vlen_end;
+    long vlen, vlen_start, vlen_end;
     double vlen_scale;
     int nthreads;
 
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
         }
 
         if (cfg->save_output)
-            fprintf(output, "%i,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
+            fprintf(output, "%li,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
                     vlen,
                     results[0][1], results[0][2], results[0][3], results[0][4],
                     results[0][5], results[0][6], results[0][7], results[0][8],

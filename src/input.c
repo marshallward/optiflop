@@ -63,10 +63,10 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
                 break;
             case 'l':
                 token = strtok(optarg, ",");
-                cfg->vlen_start = (int) strtol(token, (char **) NULL, 10);
+                cfg->vlen_start = strtol(token, (char **) NULL, 10);
                 token = strtok(NULL, ",");
                 if (token != NULL)
-                    cfg->vlen_end = (int) strtol(token, (char **) NULL, 10);
+                    cfg->vlen_end = strtol(token, (char **) NULL, 10);
                 break;
             case 's':
                 cfg->vlen_scale = strtod(optarg, NULL);

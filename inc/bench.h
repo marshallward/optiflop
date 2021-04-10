@@ -25,7 +25,7 @@ struct thread_args {
 
     /* Input */
     int tid;
-    int vlen;
+    long vlen;
 
     /* Thread management */
     pthread_mutex_t *mutex;

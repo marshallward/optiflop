@@ -7,8 +7,8 @@ struct input_config {
     int print_help;
     int verbose;
     int save_output;
-    int vlen_start;
-    int vlen_end;
+    long vlen_start;
+    long vlen_end;
     double vlen_scale;
     int nthreads;
     double min_runtime;
