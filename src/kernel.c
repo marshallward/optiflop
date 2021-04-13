@@ -146,7 +146,7 @@ void roof_xpx(int n, float a, float b,
               struct roof_args *args)
 {
     args->kflops = 1;
-    args->kloads = 2;
+    args->kloads = 1;
     args->kstores = 1;
     args->offset = 0;
 
