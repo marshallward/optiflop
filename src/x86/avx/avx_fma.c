@@ -11,7 +11,7 @@
 #define VMULPS_LATENCY 5
 
 /* Headers */
-float reduce_AVX_FMA(__m256);
+double reduce_AVX_FMA(__m256);
 
 
 /* Sequential AVX FMA */
@@ -21,12 +21,12 @@ void avx_fma(void *args_in)
     struct roof_args *args;
 
     const int n_avx = VMULPS_LATENCY;
-    const __m256 add0 = _mm256_set1_ps((float) 1e-6);
-    const __m256 mul0 = _mm256_set1_ps((float) (1. + 1e-6));
+    const __m256 add0 = _mm256_set1_ps((double) 1e-6);
+    const __m256 mul0 = _mm256_set1_ps((double) (1. + 1e-6));
     __m256 r[n_avx];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
     long r_max, i;
     int j;
@@ -39,7 +39,7 @@ void avx_fma(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_avx; j++) {
-        r[j] = _mm256_set1_ps((float) j);
+        r[j] = _mm256_set1_ps((double) j);
     }
 
     /* Add over registers r0-r4, multiply over r5-r9, and rely on pipelining,
@@ -82,7 +82,7 @@ void avx_fma(void *args_in)
     result = reduce_AVX_FMA(r[0]);
 
     /* (iterations) * (16 flops / register) * (n_avx registers / iteration) */
-    flops = r_max * 16 * n_avx / runtime;
+    flops = r_max * 8 * n_avx / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -99,12 +99,12 @@ void avx_fmac(void *args_in)
     struct roof_args *args;
 
     const int n_avx = VMULPS_LATENCY;
-    const __m256 add0 = _mm256_set1_ps((float) 1e-6);
-    const __m256 mul0 = _mm256_set1_ps((float) (1. + 1e-6));
+    const __m256 add0 = _mm256_set1_ps((double) 1e-6);
+    const __m256 mul0 = _mm256_set1_ps((double) (1. + 1e-6));
     __m256 r[2 * n_avx];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
     long r_max, i;
     int j;
@@ -117,8 +117,8 @@ void avx_fmac(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_avx; j++) {
-        r[j] = _mm256_set1_ps((float) j);
-        r[j + n_avx] = _mm256_set1_ps((float) j);
+        r[j] = _mm256_set1_ps((double) j);
+        r[j + n_avx] = _mm256_set1_ps((double) j);
     }
 
     /* Add over registers r0-r4, multiply over r5-r9, and rely on pipelining,
@@ -162,7 +162,7 @@ void avx_fmac(void *args_in)
     result = reduce_AVX_FMA(r[0]);
 
     /* (iterations) * (16 flops / register) * (n_avx registers / iteration) */
-    flops = r_max * 16 * (2 * n_avx) / runtime;
+    flops = r_max * 8 * (2 * n_avx) / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -173,16 +173,16 @@ void avx_fmac(void *args_in)
 
 
 /* TODO: Remove; this is identical to reduce_AVX! */
-float reduce_AVX_FMA(__m256 x) {
+double reduce_AVX_FMA(__m256 x) {
     union vec {
         __m256 reg;
-        float val[8];
+        double val[4];
     } v;
-    float result = 0;
+    double result = 0;
     int i;
 
     v.reg = x;
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < 4; i++)
         result += v.val[i];
 
     return result;

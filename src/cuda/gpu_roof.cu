@@ -2,7 +2,7 @@
 
 #define BLOCKSIZE 1024
 
-__global__ void saxpy(int n, float a, float *x, float *y)
+__global__ void saxpy(int n, double a, double *x, double *y)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < n)
@@ -11,22 +11,22 @@ __global__ void saxpy(int n, float a, float *x, float *y)
 
 
 extern "C"
-void gpu_axpy(int n, float a, float b, float * x_in, float * y_in,
+void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
               struct roof_args *args)
 {
-    float *x, *y;
+    double *x, *y;
     size_t nbytes;
 
     int r, r_max;
 
     cudaEvent_t start, stop;
-    float msec, sec;
+    double msec, sec;
 
     // Timer setup
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    nbytes = n * sizeof(float);
+    nbytes = n * sizeof(double);
     cudaMalloc(&x, nbytes);
     cudaMalloc(&y, nbytes);
 

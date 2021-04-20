@@ -28,8 +28,8 @@ void * roof_thread(void *args_in)
     /* Benchmark inputs */
 
     int n;
-    float a, b;
-    float *x, *y;
+    double a, b;
+    double *x, *y;
 
     /* Compilers cannot infer that posix_memalign() initializes x and y and may
      * raise a warning, so we explicitly initalize them here. */
@@ -37,8 +37,8 @@ void * roof_thread(void *args_in)
     y = NULL;
 
     n = args->vlen;
-    posix_memalign((void *) &x, BYTEALIGN, n * sizeof(float));
-    posix_memalign((void *) &y, BYTEALIGN, n * sizeof(float));
+    posix_memalign((void *) &x, BYTEALIGN, n * sizeof(double));
+    posix_memalign((void *) &y, BYTEALIGN, n * sizeof(double));
 
     a = 2.;
     b = 3.;

@@ -11,7 +11,7 @@
 #define VADDPS_LATENCY 16
 
 /* Headers */
-float reduce_AVX512(__m512);
+double reduce_AVX512(__m512);
 
 
 void avx512_add(void *args_in)
@@ -20,7 +20,7 @@ void avx512_add(void *args_in)
     struct roof_args *args;
 
     const int n_avx512 = VADDPS_LATENCY;
-    const __m512 add0 = _mm512_set1_ps((float) 1e-6);
+    const __m512 add0 = _mm512_set1_ps((double) 1e-6);
     __m512 r[n_avx512];
 
     long r_max, i;
@@ -29,7 +29,7 @@ void avx512_add(void *args_in)
     Stopwatch *t;
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result;
+    volatile double result;
 
     /* Read inputs */
     args = (struct roof_args *) args_in;
@@ -37,7 +37,7 @@ void avx512_add(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_avx512; j++) {
-        r[j] = _mm512_set1_ps((float) j);
+        r[j] = _mm512_set1_ps((double) j);
     }
 
     *(args->runtime_flag) = 0;
@@ -89,12 +89,12 @@ void avx512_fma(void *args_in)
     struct roof_args *args;
 
     const int n_avx512 = VFMAPS_LATENCY;
-    const __m512 add0 = _mm512_set1_ps((float) 1e-6);
-    const __m512 mul0 = _mm512_set1_ps((float) (1. + 1e-6));
+    const __m512 add0 = _mm512_set1_ps((double) 1e-6);
+    const __m512 mul0 = _mm512_set1_ps((double) (1. + 1e-6));
     __m512 r[n_avx512];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result;
+    volatile double result;
 
     long r_max, i;
     int j;
@@ -107,7 +107,7 @@ void avx512_fma(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_avx512; j++) {
-        r[j] = _mm512_set1_ps((float) j);
+        r[j] = _mm512_set1_ps((double) j);
     }
 
     /* Add over registers r0-r4, multiply over r5-r9, and rely on pipelining,
@@ -157,12 +157,12 @@ void avx512_fma(void *args_in)
 }
 
 
-float reduce_AVX512(__m512 x) {
+double reduce_AVX512(__m512 x) {
     union vec {
         __m512 reg;
-        float val[16];
+        double val[16];
     } v;
-    float result = 0;
+    double result = 0;
     int i;
 
     v.reg = x;

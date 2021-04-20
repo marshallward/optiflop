@@ -11,7 +11,7 @@
 #define VMULPS_LATENCY 5
 
 /* Headers */
-float reduce_sse_fma(__m128);
+double reduce_sse_fma(__m128);
 
 
 /* Sequential SSE FMA */
@@ -21,12 +21,12 @@ void sse_fma(void *args_in)
     struct roof_args *args;
 
     const int n_sse = VMULPS_LATENCY;
-    const __m128 add0 = _mm_set1_ps((float) 1e-6);
-    const __m128 mul0 = _mm_set1_ps((float) (1. + 1e-6));
+    const __m128 add0 = _mm_set1_ps((double) 1e-6);
+    const __m128 mul0 = _mm_set1_ps((double) (1. + 1e-6));
     __m128 r[n_sse];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
     long r_max, i;
     int j;
@@ -39,7 +39,7 @@ void sse_fma(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_sse; j++) {
-        r[j] = _mm_set1_ps((float) j);
+        r[j] = _mm_set1_ps((double) j);
     }
 
     *(args->runtime_flag) = 0;
@@ -78,7 +78,7 @@ void sse_fma(void *args_in)
     result = reduce_sse_fma(r[0]);
 
     /* (iterations) * (8 flops / register) * (n_sse registers / iteration) */
-    flops = r_max * 8 * n_sse / runtime;
+    flops = r_max * 4 * n_sse / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -95,12 +95,12 @@ void sse_fmac(void *args_in)
     struct roof_args *args;
 
     const int n_sse = VMULPS_LATENCY;
-    const __m128 add0 = _mm_set1_ps((float) 1e-6);
-    const __m128 mul0 = _mm_set1_ps((float) (1. + 1e-6));
+    const __m128 add0 = _mm_set1_ps((double) 1e-6);
+    const __m128 mul0 = _mm_set1_ps((double) (1. + 1e-6));
     __m128 r[2 * n_sse];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
     long r_max, i;
     int j;
@@ -114,8 +114,8 @@ void sse_fmac(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_sse; j++) {
-        r[j] = _mm_set1_ps((float) j);
-        r[j + n_sse] = _mm_set1_ps((float) j);
+        r[j] = _mm_set1_ps((double) j);
+        r[j + n_sse] = _mm_set1_ps((double) j);
     }
 
     /* Run independent FMAs concurrently on the first and second halves of r */
@@ -157,7 +157,7 @@ void sse_fmac(void *args_in)
     result = reduce_sse_fma(r[0]);
 
     /* (iterations) * (8 flops / register) * (n_sse registers / iteration) */
-    flops = r_max * 8 * (2 * n_sse) / runtime;
+    flops = r_max * 4 * (2 * n_sse) / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -168,16 +168,16 @@ void sse_fmac(void *args_in)
 
 
 /* TODO: Remove; this is identical to reduce_sse! */
-float reduce_sse_fma(__m128 x) {
+double reduce_sse_fma(__m128 x) {
     union vec {
         __m128 reg;
-        float val[4];
+        double val[2];
     } v;
-    float result = 0;
+    double result = 0;
     int i;
 
     v.reg = x;
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 2; i++)
         result += v.val[i];
 
     return result;

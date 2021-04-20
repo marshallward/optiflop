@@ -47,19 +47,19 @@ void * roof_thread(void *);
 
 
 /* Roofline test function pointer */
-typedef void (*roof_ptr_t) (int, float, float, float *, float *,
+typedef void (*roof_ptr_t) (int, double, double, double *, double *,
                             struct roof_args *);
 
 /* Roofline tests */
-void roof_copy(int, float, float, float *, float *, struct roof_args *);
-void roof_ax(int, float, float, float *, float *, struct roof_args *);
-void roof_xpx(int, float, float, float *, float *, struct roof_args *);
-void roof_xpy(int, float, float, float *, float *, struct roof_args *);
-void roof_axpy(int, float, float, float *, float *, struct roof_args *);
-void roof_axpby(int, float, float, float *, float *, struct roof_args *);
-void roof_diff(int, float, float, float *, float *, struct roof_args *);
-void roof_diff8(int, float, float, float *, float *, struct roof_args *);
+void roof_copy(int, double, double, double *, double *, struct roof_args *);
+void roof_ax(int, double, double, double *, double *, struct roof_args *);
+void roof_xpx(int, double, double, double *, double *, struct roof_args *);
+void roof_xpy(int, double, double, double *, double *, struct roof_args *);
+void roof_axpy(int, double, double, double *, double *, struct roof_args *);
+void roof_axpby(int, double, double, double *, double *, struct roof_args *);
+void roof_diff(int, double, double, double *, double *, struct roof_args *);
+void roof_diff8(int, double, double, double *, double *, struct roof_args *);
 
-void dummy(float, float, float *, float *);
+void dummy(double, double, double *, double *);
 
 #endif  // OPTIFLOP_ROOF_H_

@@ -1,1 +1,1 @@
-void dummy(float a, float b, float *x, float *y) {}
+void dummy(double a, double b, double *x, double *y) {}

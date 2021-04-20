@@ -11,7 +11,7 @@
 #define VMULPS_LATENCY 5
 
 /* Headers */
-float reduce_sse(__m128);
+double reduce_sse(__m128);
 
 
 void sse_add(void *args_in)
@@ -20,7 +20,7 @@ void sse_add(void *args_in)
     struct roof_args *args;
 
     const int n_sse = VADDPS_LATENCY;
-    const __m128 add0 = _mm_set1_ps((float) 1e-6);
+    const __m128 add0 = _mm_set1_ps((double) 1e-6);
     __m128 reg[n_sse];
 
     long r, r_max;
@@ -29,7 +29,7 @@ void sse_add(void *args_in)
     Stopwatch *t;
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
     /* Read inputs */
     args = (struct roof_args *) args_in;
@@ -37,7 +37,7 @@ void sse_add(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_sse; j++)
-        reg[j] = _mm_set1_ps((float) j);
+        reg[j] = _mm_set1_ps((double) j);
 
     *(args->runtime_flag) = 0;
     r_max = 1;
@@ -75,22 +75,22 @@ void sse_add(void *args_in)
     result = reduce_sse(reg[0]);
 
     args->runtime = runtime;
-    args->flops = r_max * 4 * n_sse / runtime;
+    args->flops = r_max * 2 * n_sse / runtime;
     args->bw_load = 0.;
     args->bw_store = 0.;
 }
 
 
-float reduce_sse(__m128 x) {
+double reduce_sse(__m128 x) {
     union vec {
         __m128 reg;
-        float val[4];
+        double val[2];
     } v;
-    float result = 0;
+    double result = 0;
     int i;
 
     v.reg = x;
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 2; i++)
         result += v.val[i];
 
     return result;
