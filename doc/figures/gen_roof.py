@@ -12,9 +12,18 @@ import numpy as np
 platform = 'Raijin, E5-2670'
 platform = 'Intel i7-7560U'
 
+results_fname = 'results_gaea.txt'
+
 n_avx = 8
 #f_peak = 3.3e9
-f_peak = 3.8e9
+#f_peak = 3.8e9
+
+# Gaea's Xeon E5-2697 v4
+f_peak = 3.6e9
+
+# AMD ryzen 5
+#f_peak = 3.9e9
+
 P_peak = n_avx * f_peak
 
 p_min_exp, p_max_exp = -6, 2
@@ -22,8 +31,16 @@ p_min, p_max = 2**p_min_exp, 2**p_max_exp
 perf_grid = P_peak * 2.**np.arange(p_min_exp, p_max_exp + 1)
 
 # Single-channel DRAM bandwidth
-# (This is not exactly correct, fix it up...)
-f_dram = 800e6      # RAM frequency (800 MHz)
+
+# DDR3? (Raijin)
+#f_dram = 800e6      # RAM frequency (800 MHz)
+
+# Home machine (DDR4-1066)
+#f_dram = 1066.67e6  # RAM frequency (1066 MHz)
+
+# Gaea
+f_dram = 1200e6
+
 ddr = 2             # Two sends per cycle (DDR) (DDR3 is more like 4 or 8?)
 bus_width = 8       # 64-bit bus width
 n_channels = 4      # Raijin has 4-channel DRAM (but don't use it here)
@@ -42,7 +59,7 @@ ai_dram = P_peak / bw_dram
 # Read results
 
 results = {}
-with open('results.txt', 'r') as flopfile:
+with open(results_fname, 'r') as flopfile:
 
     flopreader = csv.reader(flopfile)
     for row in flopreader:
@@ -81,7 +98,7 @@ ai_axis = np.array([Fraction(x).limit_denominator() for x in ai_grid])
 
 ax.set_xscale('log')
 ax.set_xlim(ai_min, ai_max)
-ax.set_xticks(ai_axis)
+#ax.set_xticks(ai_axis)
 ax.set_xticklabels(ai_axis)
 
 ax.set_yscale('log')
@@ -145,7 +162,7 @@ ax.text(tx, bw_dram * tx * 1.15,
         'DRAM ({:.1f} GB/sec)'.format(bw_dram / 1e9),
         rotation=45., ha='center', va='center')
 
-for (x, y) in zip(x_ai[1:4], y_results[1:4]):
+for (x, y) in zip(x_ai[1:8], y_results[1:8]):
     ax.scatter(x, y)
 
 # Dumb: redraw (0) to put it in front
