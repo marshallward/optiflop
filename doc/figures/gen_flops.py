@@ -5,8 +5,12 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Config
+plot_bandwidth = False
+plot_gpu = False
+outfile = None
+
 if len(sys.argv) == 2:
-    print(sys.argv)
     result_fname = sys.argv[1]
 else:
     result_fname = 'results.txt'
@@ -20,7 +24,7 @@ with open(result_fname, 'r') as flopfile:
         n = int(row[0])
         try:
             results[n] = [float(r) for r in row[1:]]
-        except:
+        except IndexError:
             print(row)
             raise
 
@@ -47,15 +51,21 @@ y_results[15][:8] = 0.
 
 # Plot results
 
-fig, (ax1, ax2) = plt.subplots(2, 1)
+if plot_bandwidth:
+    fig, axes = plt.subplots(2, 1, figsize=(6., 9.))
+    ax1, ax2 = axes
+else:
+    fig, ax1 = plt.subplots()
+    axes = (ax1,)
 
 ax1.set_title('Performance (GFLOP/s) vs vector length')
-ax2.set_title('Bandwidth (GB/s) vs vector length')
-
 ax1.set_ylabel('GFLOP / sec')
-ax2.set_ylabel('GB / sec')
 
-for ax in (ax1, ax2):
+if plot_bandwidth:
+    ax2.set_title('Bandwidth (GB/s) vs vector length')
+    ax2.set_ylabel('GB / sec')
+
+for ax in axes:
     ax.set_xscale('log')
     ax.set_xlabel('Vector length')
 
@@ -66,18 +76,20 @@ for y, name in zip(y_results[:6], run_names[1:7]):
 # Skip first 8 nonsense diff8 timings
 ax1.plot(x[8:], y_results[6][8:] / 1e9, label=run_names[7])
 
-# No, don't skip GPU!
-ax1.plot(x[:], y_results[7][:] / 1e9, label=run_names[8])
+if plot_gpu:
+    ax1.plot(x[:], y_results[7][:] / 1e9, label=run_names[8])
 
 ax1.legend()
 
+if plot_bandwidth:
+    for y, name in zip(y_results[9:15], run_names[1:7]):
+        ax2.plot(x, y / 1e9, '.', label=name)
 
-for y, name in zip(y_results[9:15], run_names[1:7]):
-    ax2.plot(x, y / 1e9, '.', label=name)
+    # diff8 again
+    ax2.plot(x[8:], y_results[15][8:] / 1e9, '.')
+    ax2.legend()
 
-# diff8 again
-ax2.plot(x[8:], y_results[15][8:] / 1e9, '.')
-
-ax2.legend()
-
-plt.show()
+if outfile:
+    plt.savefig(outfile)
+else:
+    plt.show()
