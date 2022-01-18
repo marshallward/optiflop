@@ -61,7 +61,7 @@ gpu: gpuflop
 # Executable rules
 
 gpuflop: $(OBJS) $(OBJDIR)/gpu_roof.o
-	$(CXX) $(LDFLAGS) -lcudart -pthread -o $@ $^
+	nvcc $(LDFLAGS) -o $@ $^
 
 optiflop: $(OBJS) $(OBJDIR)/gpu_roof_null.o
 	$(CC) -pthread -o $@ $^ $(LDFLAGS)
