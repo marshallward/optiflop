@@ -17,7 +17,7 @@
 #include "input.h"
 
 #include "stopwatch.h"
-#include "gpu_roof.h"
+#include "gpu.h"
 
 int main(int argc, char *argv[])
 {
@@ -88,27 +88,28 @@ int main(int argc, char *argv[])
     }
 
     const struct task simd_tasks[] = {
-        {.name = "sse_add",     .thread = {.simd = &sse_add}},
-        {.name = "sse_fma",     .thread = {.simd = &sse_fma}},
-        {.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
-        {.name = "avx_add",     .thread = {.simd = &avx_add}},
-        {.name = "avx_mac",     .thread = {.simd = &avx_mac}},
-        {.name = "avx_fma",     .thread = {.simd = &avx_fma}},
-        {.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
-        {.name = "avx512_add",  .thread = {.simd = &avx512_add}},
-        {.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
+        //{.name = "sse_add",     .thread = {.simd = &sse_add}},
+        //{.name = "sse_fma",     .thread = {.simd = &sse_fma}},
+        //{.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
+        //{.name = "avx_add",     .thread = {.simd = &avx_add}},
+        //{.name = "avx_mac",     .thread = {.simd = &avx_mac}},
+        //{.name = "avx_fma",     .thread = {.simd = &avx_fma}},
+        //{.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
+        //{.name = "avx512_add",  .thread = {.simd = &avx512_add}},
+        //{.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
+        {.name = "gpu_avx",  .thread = {.simd = &gpu_avx}},
     };
     int nsimd = sizeof(simd_tasks) / sizeof(struct task);
 
     const struct task roof_tasks[] = {
-        {.name = "y[:] = x[:]",                 .thread = {.roof = &roof_copy}},
-        {.name = "y[:] = a x[:]",               .thread = {.roof = &roof_ax}},
-        {.name = "y[:] = x[:] + x[:]",          .thread = {.roof = &roof_xpx}},
-        {.name = "y[:] = x[:] + y[:]",          .thread = {.roof = &roof_xpy}},
-        {.name = "y[:] = a x[:] + y[:]",        .thread = {.roof = &roof_axpy}},
-        {.name = "y[:] = a x[:] + b y[:]",      .thread = {.roof = &roof_axpby}},
-        {.name = "y[1:] = x[1:] + x[:-1]",      .thread = {.roof = &roof_diff}},
-        {.name = "y[8:] = x[8:] + x[:-8]",      .thread = {.roof = &roof_diff8}},
+        //{.name = "y[:] = x[:]",                 .thread = {.roof = &roof_copy}},
+        //{.name = "y[:] = a x[:]",               .thread = {.roof = &roof_ax}},
+        //{.name = "y[:] = x[:] + x[:]",          .thread = {.roof = &roof_xpx}},
+        //{.name = "y[:] = x[:] + y[:]",          .thread = {.roof = &roof_xpy}},
+        //{.name = "y[:] = a x[:] + y[:]",        .thread = {.roof = &roof_axpy}},
+        //{.name = "y[:] = a x[:] + b y[:]",      .thread = {.roof = &roof_axpby}},
+        //{.name = "y[1:] = x[1:] + x[:-1]",      .thread = {.roof = &roof_diff}},
+        //{.name = "y[8:] = x[8:] + x[:-8]",      .thread = {.roof = &roof_diff8}},
         {.name = "GPU: y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy}},
     };
     int nroof = sizeof(roof_tasks) / sizeof(struct task);
@@ -309,13 +310,16 @@ int main(int argc, char *argv[])
         }
 
         if (cfg->save_output)
-            fprintf(output, "%li,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
-                    vlen,
-                    results[0][1], results[0][2], results[0][3], results[0][4],
-                    results[0][5], results[0][6], results[0][7], results[0][8],
-                    results[1][0],
-                    results[1][1], results[1][2], results[1][3], results[1][4],
-                    results[1][5], results[1][6], results[1][7], results[1][8]
+            //fprintf(output, "%li,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
+            //        vlen,
+            //        results[0][1], results[0][2], results[0][3], results[0][4],
+            //        results[0][5], results[0][6], results[0][7], results[0][8],
+            //        results[1][0],
+            //        results[1][1], results[1][2], results[1][3], results[1][4],
+            //        results[1][5], results[1][6], results[1][7], results[1][8]
+            //);
+            fprintf(output, "%li,%.1f,%.1f\n",
+                    vlen, results[0][0], results[1][0]
             );
     }
 
