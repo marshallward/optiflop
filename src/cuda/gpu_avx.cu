@@ -1,33 +1,76 @@
 #include "roof.h"
 
-// testing...
-#include <unistd.h> // sleep
+#define NCORES 32
+#define NBLOCKS 160
+#define NTHREADS 128
+
+__global__ void kadd(long r_max, float *sum)
+{
+    const float eps = 1e-6f;
+    const float alpha = (1.f + 1e-6f);
+    float reg[NCORES];
+    long r;
+    int i;
+
+    for (i = 0; i < NCORES; i++)
+        reg[i] = 1.f;
+
+    for (r = 0; r < r_max; r++)
+        for (i = 0; i < NCORES; i++)
+            reg[i] = reg[i] + eps;
+            //reg[i] = reg[i] * alpha;
+            //reg[i] = alpha * reg[i] + eps;
+
+    *sum = 0.f;
+    for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
+    //*sum = reg[0];
+}
 
 extern "C"
 void gpu_avx(void *args_in)
 {
-    /* Thread input */
-    struct roof_args *args;
-
+    struct roof_args *args;     // args
     cudaEvent_t start, stop;
-    float msec, sec;
+    long r_max;
+    float sum, *gpu_sum;
+
+    float msec, runtime;
 
     args = (struct roof_args *) args_in;
+
+    r_max = 1;
+    cudaMalloc(&gpu_sum, sizeof(float));
 
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    cudaEventRecord(start);
-    /* TODO: Actual work! */
-    sleep(1);
-    cudaEventRecord(stop);
+    *(args->runtime_flag) = 0;
+    do {
+        cudaEventRecord(start);
+        // TODO: Move this loop into kernel?
+        kadd<<<NBLOCKS,NTHREADS>>>(r_max, gpu_sum);
+        cudaEventRecord(stop);
 
-    cudaEventElapsedTime(&msec, start, stop);
-    sec = msec / 1000.f;
+        // Get results
+        cudaMemcpy(&sum, gpu_sum, sizeof(float), cudaMemcpyDeviceToHost);
 
-    /* TODO: Actual work! */
-    args->runtime = sec;
-    args->flops = 0.;
+        cudaEventElapsedTime(&msec, start, stop);
+        runtime = msec / 1000.f;
+
+        if (runtime > args->min_runtime)
+            *(args->runtime_flag) = 1;
+        // TODO: Set mutex before write?
+
+        // TODO: barrier?
+
+        if (! *(args->runtime_flag)) r_max *= 2;
+    } while (! *(args->runtime_flag));
+
+    args->runtime = runtime;
+    //args->flops = (float) NTHREADS * NCORES * r_max / runtime;
+    args->flops = (float) NBLOCKS * NTHREADS * NCORES * r_max / runtime;
     args->bw_load = 0;
-    args->bw_store =0;
+    args->bw_store = 0;
+
+    cudaFree(gpu_sum);
 }

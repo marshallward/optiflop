@@ -33,7 +33,7 @@ void gpu_axpy(int n, float a, float b, float * x_in, float * y_in,
     cudaMemcpy(x, x_in, nbytes, cudaMemcpyHostToDevice);
     cudaMemcpy(y, y_in, nbytes, cudaMemcpyHostToDevice);
 
-    r_max = 1000;
+    r_max = 1;
     cudaEventRecord(start);
     for (r = 0; r < r_max; r++) {
         saxpy<<<1 + n / BLOCKSIZE, BLOCKSIZE>>>(n, a, x, y);
