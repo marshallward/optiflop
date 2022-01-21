@@ -64,7 +64,7 @@ __global__ void kfma(long r_max, float *sum)
 
 
 extern "C"
-void gpu_avx(void *args_in)
+void gpu_add(void *args_in)
 {
     struct roof_args *args;     // args
     cudaEvent_t start, stop;
@@ -77,6 +77,7 @@ void gpu_avx(void *args_in)
     r_max = 1;
     cudaMalloc(&gpu_sum, sizeof(float));
 
+    /* TODO: Move timer to kernel and use clock64() */
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
