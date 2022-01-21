@@ -1,5 +1,6 @@
 #include "roof.h"
 
+/* TODO: V100-specific numbers; how to generalize? */
 #define NCORES 32
 #define NBLOCKS 160
 #define NTHREADS 128
@@ -7,7 +8,6 @@
 __global__ void kadd(long r_max, float *sum)
 {
     const float eps = 1e-6f;
-    const float alpha = (1.f + 1e-6f);
     float reg[NCORES];
     long r;
     int i;
@@ -18,13 +18,50 @@ __global__ void kadd(long r_max, float *sum)
     for (r = 0; r < r_max; r++)
         for (i = 0; i < NCORES; i++)
             reg[i] = reg[i] + eps;
-            //reg[i] = reg[i] * alpha;
-            //reg[i] = alpha * reg[i] + eps;
 
     *sum = 0.f;
     for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
-    //*sum = reg[0];
 }
+
+
+__global__ void kmul(long r_max, float *sum)
+{
+    const float alpha = 1.f + 1e-6f;
+    float reg[NCORES];
+    long r;
+    int i;
+
+    for (i = 0; i < NCORES; i++)
+        reg[i] = 1.f;
+
+    for (r = 0; r < r_max; r++)
+        for (i = 0; i < NCORES; i++)
+            reg[i] = reg[i] * alpha;
+
+    *sum = 0.f;
+    for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
+}
+
+
+__global__ void kfma(long r_max, float *sum)
+{
+    const float eps = 1e-6f;
+    const float alpha = 1.f + 1e-6f;
+    float reg[NCORES];
+    long r;
+    int i;
+
+    for (i = 0; i < NCORES; i++)
+        reg[i] = 1.f;
+
+    for (r = 0; r < r_max; r++)
+        for (i = 0; i < NCORES; i++)
+            reg[i] = alpha * reg[i] + eps;
+
+    *sum = 0.f;
+    for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
+}
+
 
 extern "C"
 void gpu_avx(void *args_in)
@@ -33,7 +70,6 @@ void gpu_avx(void *args_in)
     cudaEvent_t start, stop;
     long r_max;
     float sum, *gpu_sum;
-
     float msec, runtime;
 
     args = (struct roof_args *) args_in;
@@ -47,7 +83,6 @@ void gpu_avx(void *args_in)
     *(args->runtime_flag) = 0;
     do {
         cudaEventRecord(start);
-        // TODO: Move this loop into kernel?
         kadd<<<NBLOCKS,NTHREADS>>>(r_max, gpu_sum);
         cudaEventRecord(stop);
 
@@ -67,8 +102,8 @@ void gpu_avx(void *args_in)
     } while (! *(args->runtime_flag));
 
     args->runtime = runtime;
-    //args->flops = (float) NTHREADS * NCORES * r_max / runtime;
     args->flops = (float) NBLOCKS * NTHREADS * NCORES * r_max / runtime;
+    //args->flops = (float) 2 * NBLOCKS * NTHREADS * NCORES * r_max / runtime;
     args->bw_load = 0;
     args->bw_store = 0;
 
