@@ -100,6 +100,23 @@ fi
 AC_MSG_RESULT($enable_unroll)
 
 
+# GPU configuration
+
+# TODO: Abort if NVCC does not exist!
+AC_ARG_VAR([NVCC], [nVidia C/CUDA compiler])
+AC_PATH_PROG([NVCC], [nvcc], [no])
+
+AC_ARG_ENABLE([cuda],
+  AS_HELP_STRING([--enable-cuda], [Enable CUDA tests])
+)
+AS_IF([test "$enable_cuda" == "yes"],
+  [LD=$NVCC],
+  [LD=$CC
+   LDFLAGS+="-pthread"
+  ]
+)
+
+
 # Update and create the Makefile
 AC_SUBST(posix_timer_path, "$posix_timer_path")
 AC_SUBST(tsc_timer_path, "$tsc_timer_path")
@@ -109,5 +126,7 @@ AC_SUBST(sse_fma_path, "$sse_fma_path")
 AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
+AC_SUBST(enable_cuda, "$enable_cuda")
+AC_SUBST(LD, "$LD")
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

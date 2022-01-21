@@ -3,13 +3,16 @@ INC=inc
 OBJDIR=obj
 
 CC=@CC@
-CFLAGS=@DEFS@ @CFLAGS@ -Wall -I$(INC)
+CFLAGS=@DEFS@ @CFLAGS@ -I$(INC)
+
+NVCC=@NVCC@
+
+LD=@LD@
+LDFLAGS=@LDFLAGS@
+LIBS=@LIBS@
 
 # Optional flags
 LOOP_CFLAGS=@loop_cflags@
-
-LD=@CC@
-LDFLAGS=@LIBS@
 
 # Paths to platform-specific source
 POSIX_TIMER_PATH=$(SRC)/@posix_timer_path@
@@ -20,16 +23,19 @@ AVX_PATH=$(SRC)/@avx_path@
 AVX_FMA_PATH=$(SRC)/@avx_fma_path@
 AVX512_PATH=$(SRC)/@avx512_path@
 
+# Control flags
+ENABLE_CUDA = @enable_cuda@
+
 # Object files
 # TODO: Generate this list
-# TODO: Include GPU object file
 _OBJS=main.o input.o \
 	stopwatch.o stopwatch_posix.o stopwatch_tsc.o \
 	simd.o \
 	sse.o sse_fma.o \
 	avx.o avx_fma.o \
 	avx512.o \
-	roof.o kernel.o dummy.o
+	roof.o kernel.o dummy.o \
+	gpu_roof.o gpu_simd.o
 
 OBJS=$(addprefix $(OBJDIR)/, $(_OBJS))
 
@@ -51,20 +57,10 @@ fcc: CC=fccpx -Xg -I$(INC)
 fcc: CFLAGS=-std=gnu99 -Kfast
 fcc: optiflop
 
-# TODO: Integrate this with autoconf
-gpu: CC=gcc -std=gnu99 -g -I$(INC)
-gpu: CFLAGS=-mavx -O3 -fno-builtin
-gpu: LOOP=-funroll-loops --param max-unroll-times=2
-gpu: CXX=g++
-gpu: gpuflop
-
 # Executable rules
 
-gpuflop: $(OBJS) $(OBJDIR)/gpu_roof.o
-	nvcc $(LDFLAGS) -o $@ $^
-
-optiflop: $(OBJS) $(OBJDIR)/gpu_roof_null.o
-	$(CC) -pthread -o $@ $^ $(LDFLAGS)
+optiflop: $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 $(OBJS): | $(OBJDIR)
 
@@ -115,15 +111,22 @@ $(OBJDIR)/stopwatch_posix.o: $(POSIX_TIMER_PATH)/stopwatch_posix.c
 $(OBJDIR)/stopwatch_tsc.o: $(TSC_TIMER_PATH)/stopwatch_tsc.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/gpu_roof_null.o: $(SRC)/generic/gpu_roof.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+ifeq ($(ENABLE_CUDA), yes)
+$(OBJDIR)/gpu_simd.o: src/cuda/gpu_simd.cu
+	$(NVCC) -I$(INC) -c -o $@ $<
 
-$(OBJDIR)/gpu_roof.o: $(SRC)/cuda/gpu_roof.cu
-	nvcc -I$(INC) -c -o $@ $<
+$(OBJDIR)/gpu_roof.o: src/cuda/gpu_roof.cu
+	$(NVCC) -I$(INC) -c -o $@ $<
+else
+$(OBJDIR)/gpu_simd.o: src/generic/gpu_simd.c
+	$(CC) -I$(INC) -c -o $@ $<
 
+$(OBJDIR)/gpu_roof.o: src/generic/gpu_roof.c
+	$(CC) -I$(INC) -c -o $@ $<
+endif
 
 clean:
-	$(RM) optiflop gpuflop $(OBJDIR)/*.o $(INC)/*.h.gch
+	$(RM) optiflop $(OBJDIR)/*.o $(INC)/*.h.gch
 	$(RM) -r $(OBJDIR)
 
 
