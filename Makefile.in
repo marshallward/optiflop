@@ -2,8 +2,10 @@ SRC=src
 INC=inc
 OBJDIR=obj
 
+CPPFLAGS=@DEFS@ @CPPFLAGS@ -I$(INC)
+
 CC=@CC@
-CFLAGS=@DEFS@ @CFLAGS@ -I$(INC)
+CFLAGS=@CFLAGS@
 
 NVCC=@NVCC@
 
@@ -70,59 +72,59 @@ $(OBJDIR):
 # Object rules
 
 $(OBJDIR)/main.o: $(SRC)/main.c $(INC)/sse.h $(INC)/sse_fma.h $(INC)/avx.h $(INC)/roof.h $(INC)/bench.h
-	$(CC) $(CFLAGS) -c -pthread -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -pthread -o $@ $<
 
 $(OBJDIR)/input.o: $(SRC)/input.c $(INC)/input.h
-	$(CC) $(CFLAGS) -c -pthread -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -pthread -o $@ $<
 
 $(OBJDIR)/simd.o: $(SRC)/simd.c $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/sse.o: $(SSE_PATH)/sse.c $(INC)/sse.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/sse_fma.o: $(SSE_FMA_PATH)/sse_fma.c $(INC)/sse_fma.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/avx.o: $(AVX_PATH)/avx.c $(INC)/avx.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/avx_fma.o: $(AVX_FMA_PATH)/avx_fma.c $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/kernel.o: $(SRC)/kernel.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/dummy.o: $(SRC)/dummy.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/stopwatch.o: $(SRC)/stopwatch.c $(INC)/stopwatch.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/stopwatch_posix.o: $(POSIX_TIMER_PATH)/stopwatch_posix.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/stopwatch_tsc.o: $(TSC_TIMER_PATH)/stopwatch_tsc.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 ifeq ($(ENABLE_CUDA), yes)
 $(OBJDIR)/gpu_simd.o: src/cuda/gpu_simd.cu
-	$(NVCC) -I$(INC) -c -o $@ $<
+	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 
 $(OBJDIR)/gpu_roof.o: src/cuda/gpu_roof.cu
-	$(NVCC) -I$(INC) -c -o $@ $<
+	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 else
 $(OBJDIR)/gpu_simd.o: src/generic/gpu_simd.c
-	$(CC) -I$(INC) -c -o $@ $<
+	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 
 $(OBJDIR)/gpu_roof.o: src/generic/gpu_roof.c
-	$(CC) -I$(INC) -c -o $@ $<
+	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 endif
 
 clean:

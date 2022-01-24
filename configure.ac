@@ -117,6 +117,10 @@ AS_IF([test "$enable_cuda" == "yes"],
 )
 
 
+# XXX: This should be handled more properly...
+AC_DEFUN(SIMDTYPE, double)
+
+
 # Update and create the Makefile
 AC_SUBST(posix_timer_path, "$posix_timer_path")
 AC_SUBST(tsc_timer_path, "$tsc_timer_path")
