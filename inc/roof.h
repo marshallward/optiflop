@@ -15,6 +15,10 @@
 #define ASSUME_ALIGNED(x) x
 #endif
 
+/* Set the benchmark datatype (until I find a better way)*/
+#ifndef SIMDTYPE
+#define SIMDTYPE float
+#endif
 
 struct roof_args {
     /* Timimg */

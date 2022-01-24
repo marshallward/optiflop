@@ -69,7 +69,7 @@ $(OBJDIR):
 
 # Object rules
 
-$(OBJDIR)/main.o: $(SRC)/main.c $(INC)/sse.h $(INC)/sse_fma.h $(INC)/avx.h $(INC)/avx_fma.h $(INC)/roof.h $(INC)/bench.h
+$(OBJDIR)/main.o: $(SRC)/main.c $(INC)/sse.h $(INC)/sse_fma.h $(INC)/avx.h $(INC)/roof.h $(INC)/bench.h
 	$(CC) $(CFLAGS) -c -pthread -o $@ $<
 
 $(OBJDIR)/input.o: $(SRC)/input.c $(INC)/input.h
@@ -87,7 +87,7 @@ $(OBJDIR)/sse_fma.o: $(SSE_FMA_PATH)/sse_fma.c $(INC)/sse_fma.h $(INC)/bench.h $
 $(OBJDIR)/avx.o: $(AVX_PATH)/avx.c $(INC)/avx.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/avx_fma.o: $(AVX_FMA_PATH)/avx_fma.c $(INC)/avx_fma.h $(INC)/bench.h $(INC)/stopwatch.h
+$(OBJDIR)/avx_fma.o: $(AVX_FMA_PATH)/avx_fma.c $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC)/stopwatch.h

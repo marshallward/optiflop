@@ -2,16 +2,16 @@
 #include <pthread.h>    /* pthread_* */
 #include <stdint.h>     /* uint64_t */
 
+#include "roof.h"
 #include "avx.h"
-#include "bench.h"
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
 #define VADDPS_LATENCY 3
 #define VMULPS_LATENCY 5
 
-/* Headers */
-float reduce_AVX(__m256);
+/* Internal functions */
+static SIMDTYPE sum_avx(__m256);
 
 
 void avx_add(void *args_in)
@@ -19,9 +19,10 @@ void avx_add(void *args_in)
     /* Thread input */
     struct roof_args *args;
 
-    const int n_avx = VADDPS_LATENCY;
-    const __m256 add0 = _mm256_set1_ps((float) 1e-6);
-    __m256 reg[n_avx];
+    const int n_avx = 32 / sizeof(SIMDTYPE);   // Values per SIMD register
+    const int n_rolls = VADDPS_LATENCY;     // Number of loop-unrolled stages
+    const __m256 add0 = _mm256_set1_ps((SIMDTYPE) 1e-6);
+    __m256 reg[n_rolls];
 
     long r, r_max;
     int j;
@@ -29,15 +30,15 @@ void avx_add(void *args_in)
     Stopwatch *t;
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile SIMDTYPE result __attribute__((unused));
 
     /* Read inputs */
     args = (struct roof_args *) args_in;
 
     t = args->timer;
 
-    for (j = 0; j < n_avx; j++)
-        reg[j] = _mm256_set1_ps((float) j);
+    for (j = 0; j < n_rolls; j++)
+        reg[j] = _mm256_set1_ps((SIMDTYPE) j);
 
     *(args->runtime_flag) = 0;
     r_max = 1;
@@ -47,9 +48,9 @@ void avx_add(void *args_in)
         for (r = 0; r < r_max; r++) {
             /* Intel icc requires an explicit unroll */
             #ifdef __ICC
-            #pragma unroll(n_avx)
+            #pragma unroll(n_rolls)
             #endif
-            for (j = 0; j < n_avx; j++)
+            for (j = 0; j < n_rolls; j++)
                 reg[j] = _mm256_add_ps(reg[j], add0);
         }
         t->stop(t);
@@ -70,12 +71,13 @@ void avx_add(void *args_in)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the results as volatile. */
 
-    for (j = 0; j < n_avx; j++)
+    for (j = 0; j < n_rolls; j++)
         reg[0] = _mm256_add_ps(reg[0], reg[j]);
-    result = reduce_AVX(reg[0]);
+    result = sum_avx(reg[0]);
 
+    // FLOPs: iterations * N FLOPs/reg * n regs/iter
     args->runtime = runtime;
-    args->flops = r_max * 8 * n_avx / runtime;
+    args->flops = r_max * n_avx * n_rolls / runtime;
     args->bw_load = 0.;
     args->bw_store = 0.;
 }
@@ -86,13 +88,14 @@ void avx_mac(void *args_in)
     /* Thread input */
     struct roof_args *args;
 
-    const int n_avx = VMULPS_LATENCY;
-    const __m256 add0 = _mm256_set1_ps((float) 1e-6);
-    const __m256 mul0 = _mm256_set1_ps((float) (1. + 1e-6));
-    __m256 r[2 * n_avx];
+    const int n_avx = 32 / sizeof(SIMDTYPE);  // Values per SIMD register
+    const int n_rolls = VADDPS_LATENCY;     // Number of loop-unrolled stages
+    const __m256 add0 = _mm256_set1_ps((SIMDTYPE) 1e-6);
+    const __m256 mul0 = _mm256_set1_ps((SIMDTYPE) (1. + 1e-6));
+    __m256 r[2 * n_rolls];  // Concurrency uses 2x registers
 
     // Declare as volatile to prevent removal during optimisation
-    volatile float result __attribute__((unused));
+    volatile SIMDTYPE result __attribute__((unused));
 
     long r_max, i;
     int j;
@@ -104,9 +107,9 @@ void avx_mac(void *args_in)
 
     t = args->timer;
 
-    for (j = 0; j < n_avx; j++) {
-        r[j] = _mm256_set1_ps((float) j);
-        r[j + n_avx] = _mm256_set1_ps((float) j);
+    for (j = 0; j < n_rolls; j++) {
+        r[j] = _mm256_set1_ps((SIMDTYPE) j);
+        r[j + n_rolls] = _mm256_set1_ps((SIMDTYPE) j);
     }
 
     /* Add over registers r0-r4, multiply over r5-r9, and rely on pipelining,
@@ -122,9 +125,9 @@ void avx_mac(void *args_in)
             #ifdef __ICC
             #pragma unroll
             #endif
-            for (j = 0; j < n_avx; j++) {
+            for (j = 0; j < n_rolls; j++) {
                 r[j] = _mm256_add_ps(r[j], add0);
-                r[j + n_avx] = _mm256_mul_ps(r[j + n_avx], mul0);
+                r[j + n_rolls] = _mm256_mul_ps(r[j + n_rolls], mul0);
             }
         }
         t->stop(t);
@@ -145,12 +148,12 @@ void avx_mac(void *args_in)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
 
-    for (j = 0; j < 2 * n_avx; j++)
+    for (j = 0; j < 2 * n_rolls; j++)
         r[0] = _mm256_add_ps(r[0], r[j]);
-    result = reduce_AVX(r[0]);
+    result = sum_avx(r[0]);
 
-    /* (iterations) * (8 flops / register) * (2*n_avx registers / iteration) */
-    flops = r_max * 8 * (2 * n_avx) / runtime;
+    // FLOPs: iterations * 8 FLOPs/reg * n regs/iter
+    flops = r_max * n_avx * (2 * n_rolls) / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -160,16 +163,17 @@ void avx_mac(void *args_in)
 }
 
 
-float reduce_AVX(__m256 x) {
+SIMDTYPE sum_avx(__m256 x) {
+    const int n_avx = 32 / sizeof(SIMDTYPE);
     union vec {
         __m256 reg;
-        float val[8];
+        SIMDTYPE val[n_avx];
     } v;
-    float result = 0;
+    SIMDTYPE result = 0;
     int i;
 
     v.reg = x;
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < n_avx; i++)
         result += v.val[i];
 
     return result;

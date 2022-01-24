@@ -1,6 +1,6 @@
 #include <pthread.h>    /* pthread_* */
 
-#include "bench.h"
+#include "roof.h"
 
 void avx_fma(void *args_in)
 {
