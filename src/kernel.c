@@ -5,33 +5,33 @@
 
 
 /* Kernel pointer definition */
-typedef void (*compute_kernel) (int, float, float, float *, float *);
+typedef void (*compute_kernel) (int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *);
 
 
 /* Kernel definitions */
-static inline void copy_kernel(int i, float a, float b, float *x, float *y)
+static inline void copy_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void ax_kernel(int i, float a, float b, float *x, float *y)
+static inline void ax_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void xpx_kernel(int i, float a, float b, float *x, float *y)
+static inline void xpx_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void xpy_kernel(int i, float a, float b, float *x, float *y)
+static inline void xpy_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void axpy_kernel(int i, float a, float b, float *x, float *y)
+static inline void axpy_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void axpby_kernel(int i, float a, float b, float *x, float *y)
+static inline void axpby_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void diff_kernel(int i, float a, float b, float *x, float *y)
+static inline void diff_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
-static inline void diff8_kernel(int i, float a, float b, float *x, float *y)
+static inline void diff8_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
     __attribute__((always_inline));
 
 
-void roof_kernel(int n, float a, float b,
-                 float * restrict x_in, float * restrict y_in,
+void roof_kernel(int n, SIMDTYPE a, SIMDTYPE b,
+                 SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
                  struct roof_args *args, compute_kernel kernel)
 {
-    float *x, *y;
+    SIMDTYPE *x, *y;
 
     Stopwatch *t;
     long r, r_max;
@@ -76,15 +76,15 @@ void roof_kernel(int n, float a, float b,
 
     //args->runtime = runtime;
     //args->flops = args->nflops * (n - offset) * r_max / runtime;
-    //args->bw_load = args->load_bytes * (n - args->offset) * sizeof(float) * r_max
+    //args->bw_load = args->load_bytes * (n - args->offset) * sizeof(SIMDTYPE) * r_max
     //                    / runtime;
-    //args->bw_store = args->store_bytes * (n - offset) * sizeof(float) * r_max
+    //args->bw_store = args->store_bytes * (n - offset) * sizeof(SIMDTYPE) * r_max
     //                    / runtime;
 
     args->runtime = runtime;
     args->flops = args->kflops * nk * r_max / runtime;
-    args->bw_load = args->kloads * sizeof(float) * nk * r_max / runtime;
-    args->bw_store = args->kstores * sizeof(float) * nk * r_max / runtime;
+    args->bw_load = args->kloads * sizeof(SIMDTYPE) * nk * r_max / runtime;
+    args->bw_store = args->kstores * sizeof(SIMDTYPE) * nk * r_max / runtime;
 }
 
 
@@ -98,12 +98,12 @@ void roof_kernel(int n, float a, float b,
  * (usually with `-fno-builtin`).
  */
 
-void copy_kernel(int i, float a, float b, float *x, float *y) {
+void copy_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y) {
     y[i] = x[i];
 }
 
-void roof_copy(int n, float a, float b,
-               float * restrict x_in, float * restrict y_in,
+void roof_copy(int n, SIMDTYPE a, SIMDTYPE b,
+               SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
                struct roof_args *args)
 {
     args->kflops = 0;
@@ -117,12 +117,12 @@ void roof_copy(int n, float a, float b,
 
 /* roof_ax */
 
-void ax_kernel(int i, float a, float b, float *x, float *y) {
+void ax_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y) {
     y[i] = a * x[i];
 }
 
-void roof_ax(int n, float a, float b,
-             float * restrict x_in, float * restrict y_in,
+void roof_ax(int n, SIMDTYPE a, SIMDTYPE b,
+             SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
              struct roof_args *args)
 {
     args->kflops = 1;
@@ -136,13 +136,13 @@ void roof_ax(int n, float a, float b,
 
 /* roof_xpx */
 
-void xpx_kernel(int i, float a, float b, float *x, float *y)
+void xpx_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
 {
     y[i] = x[i] + x[i];
 }
 
-void roof_xpx(int n, float a, float b,
-              float * restrict x_in, float * restrict y_in,
+void roof_xpx(int n, SIMDTYPE a, SIMDTYPE b,
+              SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
               struct roof_args *args)
 {
     args->kflops = 1;
@@ -156,13 +156,13 @@ void roof_xpx(int n, float a, float b,
 
 /* roof_xpy */
 
-void xpy_kernel(int i, float a, float b, float *x, float *y)
+void xpy_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
 {
     y[i] = x[i] + y[i];
 }
 
-void roof_xpy(int n, float a, float b,
-              float * restrict x_in, float * restrict y_in,
+void roof_xpy(int n, SIMDTYPE a, SIMDTYPE b,
+              SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
               struct roof_args *args)
 {
     args->kflops = 1;
@@ -176,13 +176,13 @@ void roof_xpy(int n, float a, float b,
 
 /* roof_axpy */
 
-void axpy_kernel(int i, float a, float b, float *x, float *y)
+void axpy_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
 {
     y[i] = a * x[i] + y[i];
 }
 
-void roof_axpy(int n, float a, float b,
-               float * restrict x_in, float * restrict y_in,
+void roof_axpy(int n, SIMDTYPE a, SIMDTYPE b,
+               SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
                struct roof_args *args)
 {
     args->kflops = 2;
@@ -196,14 +196,14 @@ void roof_axpy(int n, float a, float b,
 
 /* roof_axpby */
 
-void axpby_kernel(int i, float a, float b, float *x, float *y)
+void axpby_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
 {
     y[i] = a * x[i] + b * y[i];
 }
 
 
-void roof_axpby(int n, float a, float b,
-                float * restrict x_in, float * restrict y_in,
+void roof_axpby(int n, SIMDTYPE a, SIMDTYPE b,
+                SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
                 struct roof_args *args)
 {
     args->kflops = 3;
@@ -215,14 +215,14 @@ void roof_axpby(int n, float a, float b,
 }
 
 
-void diff_kernel(int i, float a, float b, float *x, float *y)
+void diff_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
 {
     y[i] = x[i + 1] - x[i];
 }
 
 
-void roof_diff(int n, float a, float b,
-               float * restrict x_in, float * restrict y_in,
+void roof_diff(int n, SIMDTYPE a, SIMDTYPE b,
+               SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
                struct roof_args *args)
 {
     args->kflops = 1;
@@ -234,14 +234,14 @@ void roof_diff(int n, float a, float b,
 }
 
 
-void diff8_kernel(int i, float a, float b, float *x, float *y)
+void diff8_kernel(int i, SIMDTYPE a, SIMDTYPE b, SIMDTYPE *x, SIMDTYPE *y)
 {
     y[i] = x[i + 8] - x[i];
 }
 
 
-void roof_diff8(int n, float a, float b,
-                float * restrict x_in, float * restrict y_in,
+void roof_diff8(int n, SIMDTYPE a, SIMDTYPE b,
+                SIMDTYPE * restrict x_in, SIMDTYPE * restrict y_in,
                 struct roof_args *args)
 {
     args->kflops = 1;
