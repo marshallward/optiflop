@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
         {.name = "avx512_add",  .thread = {.simd = &avx512_add}},
         {.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
         {.name = "gpu_add",  .thread = {.simd = &gpu_add}},
+        {.name = "gpu_fma",  .thread = {.simd = &gpu_fma}},
     };
     int nsimd = sizeof(simd_tasks) / sizeof(struct task);
 
