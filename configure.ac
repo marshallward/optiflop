@@ -101,24 +101,19 @@ AC_MSG_RESULT($enable_unroll)
 
 
 # GPU configuration
-
-# TODO: Abort if NVCC does not exist!
-AC_ARG_VAR([NVCC], [nVidia C/CUDA compiler])
-AC_PATH_PROG([NVCC], [nvcc], [no])
-
 AC_ARG_ENABLE([cuda],
   AS_HELP_STRING([--enable-cuda], [Enable CUDA tests])
 )
 AS_IF([test "$enable_cuda" == "yes"],
-  [LD=$NVCC],
-  [LD=$CC
-   LDFLAGS+="-pthread"
+  [
+    AC_PATH_PROG([NVCC], [nvcc], [no])
+    AS_IF([test $NVCC == "no"], [AC_MSG_ERROR([No CUDA compiler found])])
+    LD=$NVCC
+  ], [
+    LD=$CC
+    LDFLAGS+="-pthread"
   ]
 )
-
-
-# XXX: This should be handled more properly...
-AC_DEFUN(SIMDTYPE, double)
 
 
 # Update and create the Makefile
