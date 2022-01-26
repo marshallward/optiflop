@@ -7,8 +7,7 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define VADDPS_LATENCY 3
-#define VMULPS_LATENCY 5
+#define VFMAPS_LATENCY 5
 
 /* Headers */
 static SIMDTYPE sum_avx(__m256);
@@ -21,7 +20,7 @@ void avx_fma(void *args_in)
     struct roof_args *args;
 
     const int n_avx = 32 / sizeof(SIMDTYPE);   // Values per SIMD register
-    const int n_rolls = VMULPS_LATENCY;
+    const int n_rolls = VFMAPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((SIMDTYPE) 1e-6);
     const __m256 mul0 = _mm256_set1_ps((SIMDTYPE) (1. + 1e-6));
     __m256 r[n_rolls];
@@ -100,7 +99,7 @@ void avx_fmac(void *args_in)
     struct roof_args *args;
 
     const int n_avx = 32 / sizeof(SIMDTYPE);   // Values per SIMD register
-    const int n_rolls = VMULPS_LATENCY;
+    const int n_rolls = VFMAPS_LATENCY;
     const __m256 add0 = _mm256_set1_ps((SIMDTYPE) 1e-6);
     const __m256 mul0 = _mm256_set1_ps((SIMDTYPE) (1. + 1e-6));
     __m256 r[2 * n_rolls];

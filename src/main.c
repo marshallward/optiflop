@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
         {.name = "sse_fma",     .thread = {.simd = &sse_fma}},
         {.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
         {.name = "avx_add",     .thread = {.simd = &avx_add}},
+        {.name = "avx_mul",     .thread = {.simd = &avx_mul}},
         {.name = "avx_mac",     .thread = {.simd = &avx_mac}},
         {.name = "avx_fma",     .thread = {.simd = &avx_fma}},
         {.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
