@@ -74,7 +74,7 @@ void avx512_add(void *args_in)
     result = avx512_sum(r[0]);
 
     /* (iter) * (16 instr / reg) * (1 flops / instr) * (n_rolls reg / iter) */
-    flops = r_max * n_avx * n_rolls / runtime;
+    flops = r_max * n_avx512 * n_rolls / runtime;
 
     /* Thread output */
     args->runtime = runtime;
