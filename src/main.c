@@ -97,6 +97,7 @@ int main(int argc, char *argv[])
         {.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
         {.name = "avx512_add",  .thread = {.simd = &avx512_add}},
         {.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
+        {.name = "avx512_fmac", .thread = {.simd = &avx512_fmac}},
         {.name = "gpu_add",  .thread = {.simd = &gpu_add}},
         {.name = "gpu_fma",  .thread = {.simd = &gpu_fma}},
     };
