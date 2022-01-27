@@ -15,10 +15,6 @@
 #define ASSUME_ALIGNED(x) x
 #endif
 
-/* Set the benchmark datatype (until I find a better way)*/
-#ifndef SIMDTYPE
-#define SIMDTYPE float
-#endif
 
 struct roof_args {
     /* Timimg */
@@ -51,19 +47,19 @@ void * roof_thread(void *);
 
 
 /* Roofline test function pointer */
-typedef void (*roof_ptr_t) (int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *,
+typedef void (*roof_ptr_t) (int, double, double, double *, double *,
                             struct roof_args *);
 
 /* Roofline tests */
-void roof_copy(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_ax(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_xpx(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_xpy(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_axpy(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_axpby(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_diff(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
-void roof_diff8(int, SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *, struct roof_args *);
+void roof_copy(int, double, double, double *, double *, struct roof_args *);
+void roof_ax(int, double, double, double *, double *, struct roof_args *);
+void roof_xpx(int, double, double, double *, double *, struct roof_args *);
+void roof_xpy(int, double, double, double *, double *, struct roof_args *);
+void roof_axpy(int, double, double, double *, double *, struct roof_args *);
+void roof_axpby(int, double, double, double *, double *, struct roof_args *);
+void roof_diff(int, double, double, double *, double *, struct roof_args *);
+void roof_diff8(int, double, double, double *, double *, struct roof_args *);
 
-void dummy(SIMDTYPE, SIMDTYPE, SIMDTYPE *, SIMDTYPE *);
+void dummy(double, double, double *, double *);
 
 #endif  // OPTIFLOP_ROOF_H_

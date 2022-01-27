@@ -11,7 +11,7 @@
 #define VMULPS_LATENCY 5
 
 /* Headers */
-static SIMDTYPE sse_sum(__m128);
+static double sse_sum(__m128d);
 
 
 /* Sequential SSE FMA */
@@ -19,28 +19,25 @@ void sse_fma(void *args_in)
 {
     /* Thread input */
     struct roof_args *args;
+    args = (struct roof_args *) args_in;
 
-    const int n_sse = 16 / sizeof(SIMDTYPE);
-    const int n_rolls = VMULPS_LATENCY;
-    const __m128 add0 = _mm_set1_ps((SIMDTYPE) 1e-6);
-    const __m128 mul0 = _mm_set1_ps((SIMDTYPE) (1. + 1e-6));
-    __m128 r[n_rolls];
+    const int n_sse = 16 / sizeof(double);
+    const int n_reg = VMULPS_LATENCY;
+    const __m128d add0 = _mm_set1_pd(1e-6);
+    const __m128d mul0 = _mm_set1_pd(1. + 1e-6);
+    __m128d reg[n_reg];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile SIMDTYPE result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
-    long r_max, i;
-    int j;
+    long r_max;
     double runtime, flops;
     Stopwatch *t;
 
-    /* Read inputs */
-    args = (struct roof_args *) args_in;
-
     t = args->timer;
 
-    for (j = 0; j < n_rolls; j++) {
-        r[j] = _mm_set1_ps((SIMDTYPE) j);
+    for (int j = 0; j < n_reg; j++) {
+        reg[j] = _mm_set1_pd((double) j);
     }
 
     *(args->runtime_flag) = 0;
@@ -48,12 +45,10 @@ void sse_fma(void *args_in)
     do {
         pthread_barrier_wait(args->barrier);
         t->start(t);
-        for (i = 0; i < r_max; i++) {
-            #ifdef __ICC
-            #pragma unroll
-            #endif
-            for (j = 0; j < n_rolls; j++) {
-                r[j] = _mm_fmadd_ps(r[j], add0, mul0);
+        for (int r = 0; r < r_max; r++) {
+            #pragma unroll(n_reg)
+            for (int j = 0; j < n_reg; j++) {
+                reg[j] = _mm_fmadd_pd(reg[j], add0, mul0);
             }
         }
         t->stop(t);
@@ -74,11 +69,11 @@ void sse_fma(void *args_in)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
 
-    for (j = 0; j < n_rolls; j++)
-        r[0] = _mm_add_ps(r[0], r[j]);
-    result = sse_sum(r[0]);
+    for (int j = 0; j < n_reg; j++)
+        reg[0] = _mm_add_pd(reg[0], reg[j]);
+    result = sse_sum(reg[0]);
 
-    flops = r_max * (2 * n_sse) * n_rolls / runtime;
+    flops = r_max * (2 * n_sse) * n_reg / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -94,17 +89,18 @@ void sse_fmac(void *args_in)
     /* Thread input */
     struct roof_args *args;
 
-    const int n_sse = 16 / sizeof(SIMDTYPE);
-    const int n_rolls = VMULPS_LATENCY;
-    const __m128 add0 = _mm_set1_ps((SIMDTYPE) 1e-6);
-    const __m128 mul0 = _mm_set1_ps((SIMDTYPE) (1. + 1e-6));
-    __m128 r[2 * n_rolls];
+    const int n_sse = 16 / sizeof(double);
+    const int n_reg = VMULPS_LATENCY;
+    const __m128d add0 = _mm_set1_pd(1e-6);
+    const __m128d mul0 = _mm_set1_pd(1. + 1e-6);
+    //__m128d reg[2 * n_reg];
+    __m128d reg1[n_reg];
+    __m128d reg2[n_reg];
 
     // Declare as volatile to prevent removal during optimisation
-    volatile SIMDTYPE result __attribute__((unused));
+    volatile double result __attribute__((unused));
 
-    long r_max, i;
-    int j;
+    long r_max;
     double runtime, flops;
     Stopwatch *t;
 
@@ -113,9 +109,11 @@ void sse_fmac(void *args_in)
 
     t = args->timer;
 
-    for (j = 0; j < n_rolls; j++) {
-        r[j] = _mm_set1_ps((SIMDTYPE) j);
-        r[j + n_rolls] = _mm_set1_ps((SIMDTYPE) j);
+    for (int j = 0; j < n_reg; j++) {
+        //reg[j] = _mm_set1_pd((double) j);
+        //reg[j + n_reg] = _mm_set1_pd((double) j);
+        reg1[j] = _mm_set1_pd((double) j);
+        reg2[j] = _mm_set1_pd((double) j);
     }
 
     /* Run independent FMAs concurrently on the first and second halves of r */
@@ -125,13 +123,13 @@ void sse_fmac(void *args_in)
     do {
         pthread_barrier_wait(args->barrier);
         t->start(t);
-        for (i = 0; i < r_max; i++) {
-            #ifdef __ICC
-            #pragma unroll
-            #endif
-            for (j = 0; j < n_rolls; j++) {
-                r[j] = _mm_fmadd_ps(r[j], add0, mul0);
-                r[j + n_rolls] = _mm_fmadd_ps(r[j + n_rolls], add0, mul0);
+        for (long r = 0; r < r_max; r++) {
+            #pragma unroll(n_reg)
+            for (int j = 0; j < n_reg; j++) {
+                //reg[j] = _mm_fmadd_pd(reg[j], add0, mul0);
+                //reg[j + n_reg] = _mm_fmadd_pd(reg[j + n_reg], add0, mul0);
+                reg1[j] = _mm_fmadd_pd(reg1[j], add0, mul0);
+                reg2[j] = _mm_fmadd_pd(reg2[j], add0, mul0);
             }
         }
         t->stop(t);
@@ -152,11 +150,15 @@ void sse_fmac(void *args_in)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
 
-    for (j = 0; j < 2 * n_rolls; j++)
-        r[0] = _mm_add_ps(r[0], r[j]);
-    result = sse_sum(r[0]);
+    //for (j = 0; j < 2 * n_reg; j++)
+    //    reg[0] = _mm_add_pd(reg[0], reg[j]);
+    for (int j = 0; j < n_reg; j++) {
+        reg1[0] = _mm_add_pd(reg1[0], reg1[j]);
+        reg1[0] = _mm_add_pd(reg1[0], reg2[j]);
+    }
+    result = sse_sum(reg1[0]);
 
-    flops = r_max * (2 * n_sse) * (2 * n_rolls) / runtime;
+    flops = r_max * (2 * n_sse) * (2 * n_reg) / runtime;
 
     /* Thread output */
     args->runtime = runtime;
@@ -166,17 +168,16 @@ void sse_fmac(void *args_in)
 }
 
 
-SIMDTYPE sse_sum(__m128 x) {
-    const int n_sse = 16 / sizeof(SIMDTYPE);
+double sse_sum(__m128d x) {
+    const int n_sse = 16 / sizeof(double);
     union vec {
-        __m128 reg;
-        SIMDTYPE val[n_sse];
+        __m128d reg;
+        double val[n_sse];
     } v;
-    SIMDTYPE result = 0;
-    int i;
+    double result = 0;
 
     v.reg = x;
-    for (i = 0; i < n_sse; i++)
+    for (int i = 0; i < n_sse; i++)
         result += v.val[i];
 
     return result;

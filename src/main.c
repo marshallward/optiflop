@@ -10,7 +10,6 @@
 #include "sse.h"
 #include "sse_fma.h"
 #include "avx.h"
-//#include "avx_fma.h"
 #include "avx512.h"
 #include "roof.h"
 #include "bench.h"

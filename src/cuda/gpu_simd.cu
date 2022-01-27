@@ -6,17 +6,17 @@
 #define NBLOCKS 160
 
 
-__global__ void kadd(long r_max, SIMDTYPE *sum, double *runtime)
+__global__ void kadd(long r_max, double *sum, double *runtime)
 {
-    const SIMDTYPE eps = (SIMDTYPE) 1e-6;
-    SIMDTYPE reg[NCORES];
+    const double eps = (double) 1e-6;
+    double reg[NCORES];
     long long int start, end;
 
     long r;
     int i;
 
     for (i = 0; i < NCORES; i++)
-        reg[i] = (SIMDTYPE) 1.;
+        reg[i] = (double) 1.;
 
     start = clock64();
     for (r = 0; r < r_max; r++)
@@ -26,22 +26,22 @@ __global__ void kadd(long r_max, SIMDTYPE *sum, double *runtime)
 
     *runtime = (double) (end - start) / 1.230e9;
 
-    *sum = (SIMDTYPE) 0.;
+    *sum = (double) 0.;
     for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
 }
 
 
-__global__ void kmul(long r_max, SIMDTYPE *sum, double *runtime)
+__global__ void kmul(long r_max, double *sum, double *runtime)
 {
-    const SIMDTYPE alpha = (SIMDTYPE) (1. + 1e-6);
-    SIMDTYPE reg[NCORES];
+    const double alpha = (double) (1. + 1e-6);
+    double reg[NCORES];
     long long int start, end;
 
     long r;
     int i;
 
     for (i = 0; i < NCORES; i++)
-        reg[i] = (SIMDTYPE) 1.;
+        reg[i] = (double) 1.;
 
     start = clock64();
     for (r = 0; r < r_max; r++)
@@ -51,16 +51,16 @@ __global__ void kmul(long r_max, SIMDTYPE *sum, double *runtime)
 
     *runtime = (double) (end - start) / 1.230e9;
 
-    *sum = (SIMDTYPE) 0.;
+    *sum = (double) 0.;
     for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
 }
 
 
-__global__ void kfma(long r_max, SIMDTYPE *sum, double *runtime)
+__global__ void kfma(long r_max, double *sum, double *runtime)
 {
-    const SIMDTYPE eps = (SIMDTYPE) 1e-6;
-    const SIMDTYPE alpha = (SIMDTYPE) (1. + 1e-6);
-    SIMDTYPE reg[NCORES];
+    const double eps = (double) 1e-6;
+    const double alpha = (double) (1. + 1e-6);
+    double reg[NCORES];
     long long int start, end;
 
     long r;
@@ -77,7 +77,7 @@ __global__ void kfma(long r_max, SIMDTYPE *sum, double *runtime)
 
     *runtime = (double) (end - start) / 1.230e9;
 
-    *sum = (SIMDTYPE) 0.;
+    *sum = (double) 0.;
     for (i = 0; i < NCORES; i++) *sum = *sum + reg[i];
 }
 
@@ -88,7 +88,7 @@ void gpu_add(void *args_in)
     struct roof_args *args;     // args
     cudaEvent_t start, stop;
     long r_max;
-    SIMDTYPE sum, *gpu_sum;
+    double sum, *gpu_sum;
     float msec, runtime;
 
     // testing
@@ -101,7 +101,7 @@ void gpu_add(void *args_in)
     //cudaDeviceReset();
 
     r_max = 1;
-    cudaMalloc(&gpu_sum, sizeof(SIMDTYPE));
+    cudaMalloc(&gpu_sum, sizeof(double));
     cudaMalloc(&gpu_runtime, sizeof(double));
 
     /* TODO: Move timer to kernel and use clock64() */
@@ -115,7 +115,7 @@ void gpu_add(void *args_in)
         cudaEventRecord(stop);
 
         // Get results
-        cudaMemcpy(&sum, gpu_sum, sizeof(SIMDTYPE), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&sum, gpu_sum, sizeof(double), cudaMemcpyDeviceToHost);
         cudaMemcpy(&new_runtime, gpu_runtime, sizeof(double), cudaMemcpyDeviceToHost);
 
         cudaEventElapsedTime(&msec, start, stop);
@@ -148,7 +148,7 @@ void gpu_fma(void *args_in)
     struct roof_args *args;     // args
     cudaEvent_t start, stop;
     long r_max;
-    SIMDTYPE sum, *gpu_sum;
+    double sum, *gpu_sum;
     float msec, runtime;
 
     // testing
@@ -161,7 +161,7 @@ void gpu_fma(void *args_in)
     //cudaDeviceReset();
 
     r_max = 1;
-    cudaMalloc(&gpu_sum, sizeof(SIMDTYPE));
+    cudaMalloc(&gpu_sum, sizeof(double));
     cudaMalloc(&gpu_runtime, sizeof(double));
 
     /* TODO: Move timer to kernel and use clock64() */
@@ -175,7 +175,7 @@ void gpu_fma(void *args_in)
         cudaEventRecord(stop);
 
         // Get results
-        cudaMemcpy(&sum, gpu_sum, sizeof(SIMDTYPE), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&sum, gpu_sum, sizeof(double), cudaMemcpyDeviceToHost);
         cudaMemcpy(&new_runtime, gpu_runtime, sizeof(double), cudaMemcpyDeviceToHost);
 
         cudaEventElapsedTime(&msec, start, stop);

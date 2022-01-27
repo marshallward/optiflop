@@ -5,7 +5,7 @@
 #define MAXTHREADS 800
 
 
-__global__ void saxpy(int n, SIMDTYPE a, SIMDTYPE *x, SIMDTYPE *y)
+__global__ void saxpy(int n, double a, double *x, double *y)
 {
     int i0 = MAXCORES * (blockDim.x * blockIdx.x + threadIdx.x);
     for (int i = i0; i < min(i0 + MAXCORES, n); i++)
@@ -14,10 +14,10 @@ __global__ void saxpy(int n, SIMDTYPE a, SIMDTYPE *x, SIMDTYPE *y)
 
 
 extern "C"
-void gpu_axpy(int n, SIMDTYPE a, SIMDTYPE b, SIMDTYPE * x_in, SIMDTYPE * y_in,
+void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
               struct roof_args *args)
 {
-    SIMDTYPE *x, *y;
+    double *x, *y;
     size_t nbytes;
 
     int r, r_max;
@@ -32,7 +32,7 @@ void gpu_axpy(int n, SIMDTYPE a, SIMDTYPE b, SIMDTYPE * x_in, SIMDTYPE * y_in,
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    nbytes = n * sizeof(SIMDTYPE);
+    nbytes = n * sizeof(double);
     cudaMalloc(&x, nbytes);
     cudaMalloc(&y, nbytes);
 
