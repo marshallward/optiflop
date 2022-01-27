@@ -7,11 +7,10 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define VADDPS_LATENCY 3
-#define VMULPS_LATENCY 5
+#define ADDPS_LATENCY 3
 
 /* Headers */
-static SIMDTYPE sum_sse(__m128);
+static float sum_sse(__m128);
 
 
 void sse_add(void *args_in)
@@ -19,9 +18,9 @@ void sse_add(void *args_in)
     /* Thread input */
     struct roof_args *args;
 
-    const int n_sse = 16 / sizeof(SIMDTYPE);
-    const int n_rolls = VADDPS_LATENCY;
-    const __m128 add0 = _mm_set1_ps((SIMDTYPE) 1e-6);
+    const int n_sse = 16 / sizeof(float);
+    const int n_rolls = ADDPS_LATENCY;
+    const __m128 add0 = _mm_set1_ps((float) 1e-6);
     __m128 reg[n_rolls];
 
     long r, r_max;
@@ -30,7 +29,7 @@ void sse_add(void *args_in)
     Stopwatch *t;
 
     // Declare as volatile to prevent removal during optimisation
-    volatile SIMDTYPE result __attribute__((unused));
+    volatile float result __attribute__((unused));
 
     /* Read inputs */
     args = (struct roof_args *) args_in;
@@ -38,7 +37,7 @@ void sse_add(void *args_in)
     t = args->timer;
 
     for (j = 0; j < n_rolls; j++)
-        reg[j] = _mm_set1_ps((SIMDTYPE) j);
+        reg[j] = _mm_set1_ps((float) j);
 
     *(args->runtime_flag) = 0;
     r_max = 1;
@@ -82,17 +81,17 @@ void sse_add(void *args_in)
 }
 
 
-SIMDTYPE sum_sse(__m128 x) {
-    const int n_sse = 16 / sizeof(SIMDTYPE);
+float sum_sse(__m128 x) {
+    const int n_sse = 16 / sizeof(float);
     union vec {
         __m128 reg;
-        SIMDTYPE val[n_sse];
+        float val[n_sse];
     } v;
-    SIMDTYPE result = 0;
+    float result = 0;
     int i;
 
     v.reg = x;
-    for (i = 0; i < sizeof(SIMDTYPE); i++)
+    for (i = 0; i < sizeof(float); i++)
         result += v.val[i];
 
     return result;

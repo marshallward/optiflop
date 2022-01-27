@@ -1,10 +1,15 @@
 #ifndef OPTIFLOP_AVX_H_
 #define OPTIFLOP_AVX_H_
 
-void avx_add(void *);
-void avx_mul(void *);
-void avx_mac(void *);
+#include "roof.h"
+
 void avx_fma(void *);
 void avx_fmac(void *);
+
+/* TESTING??!? */
+void simd_avx_add(struct roof_args *);
+void simd_avx_mul(struct roof_args *);
+void simd_avx_mac(struct roof_args *);
+
 
 #endif  // OPTIFLOP_AVX_H_
