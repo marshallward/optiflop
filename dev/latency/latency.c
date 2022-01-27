@@ -102,11 +102,11 @@ int main(int argc, char *argv[])
 
     /* vaddps avx512 */
 #ifdef USE_AVX512
-    __m512 reg512;
-    volatile __m512 out512;
+    __m512d reg512;
+    volatile __m512d out512;
 
-    const __m512 add512 = _mm512_set1_pd(1e-6);
-    const __m512 mul512 = _mm512_set1_pd(1. + 1e-6);
+    const __m512d add512 = _mm512_set1_pd(1e-6);
+    const __m512d mul512 = _mm512_set1_pd(1. + 1e-6);
 
     reg512 = _mm512_set1_pd(1.);
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
