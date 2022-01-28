@@ -44,7 +44,7 @@ void roof_kernel(int n, double a, double b,
 
     t = args->timer;
 
-    nk = n - args->offset;
+    nk = n > args->offset ? n - args->offset : 0;
 
     r_max = 1;
     *(args->runtime_flag) = 0;
