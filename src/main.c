@@ -132,6 +132,9 @@ int main(int argc, char *argv[])
         stopwatch_set_tsc_freq();
 
     /* SIMD tests */
+    if (cfg->save_output)
+        fprintf(output, "simd:\n");
+
     for (b = 0; b < nsimd; b++) {
         max_total_flops = 0.;
         max_total_bw_load = 0.;
@@ -215,14 +218,23 @@ int main(int argc, char *argv[])
 
         /* Store results for model output */
         if (cfg->save_output) {
-            results[0][b] = total_flops;
-            results[1][b] = total_bw_load + total_bw_store;
+            fprintf(output, "  - name: '%s'\n", simd_tasks[b].name);
+            fprintf(output, "    flop: %24.16e\n", total_flops);
         }
     }
 
     /* Roofline tests */
     /* TODO: Merge with the SIMD loops */
+    if (cfg->save_output && nroof > 0)
+        fprintf(output, "roof:\n");
+
     for (vlen = vlen_start; vlen < vlen_end; vlen = ceil(vlen * vlen_scale)) {
+
+        if (cfg->save_output) {
+            fprintf(output, "  - len: %i\n", vlen);
+            fprintf(output, "    results:\n");
+        }
+
         for (b = 0; b < nroof; b++) {
             max_total_flops = 0.;
             max_total_bw_load = 0.;
@@ -309,23 +321,20 @@ int main(int argc, char *argv[])
                 results[0][b] = total_flops;
                 results[1][b] = total_bw_load + total_bw_store;
             }
-        }
 
-        if (cfg->save_output)
-            fprintf(output, "%li,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
-                    vlen,
-                    results[0][1], results[0][2], results[0][3], results[0][4],
-                    results[0][5], results[0][6], results[0][7], results[0][8],
-                    results[1][0],
-                    results[1][1], results[1][2], results[1][3], results[1][4],
-                    results[1][5], results[1][6], results[1][7], results[1][8]
-            );
+            if (cfg->save_output) {
+                fprintf(output, "      - name: '%s'\n", roof_tasks[b].name);
+                fprintf(output, "        flop:  %23.16e\n", total_flops);
+                fprintf(output, "        load:  %23.16e\n", total_bw_load);
+                fprintf(output, "        store: %23.16e\n", total_bw_store);
+            }
+        }
     }
 
     /* IO cleanup */
     if (cfg->save_output) {
-        free(results);
         fclose(output);
+        free(results);
     }
 
     pthread_barrier_destroy(&barrier);
