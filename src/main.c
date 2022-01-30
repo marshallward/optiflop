@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
         {.name = "y[:] = a x[:] + b y[:]",      .thread = {.roof = &roof_axpby}},
         {.name = "y[1:] = x[1:] + x[:-1]",      .thread = {.roof = &roof_diff}},
         {.name = "y[8:] = x[8:] + x[:-8]",      .thread = {.roof = &roof_diff8}},
+        {.name = "y[:] = sqrt(x[:])",           .thread = {.roof = &roof_sqrt}},
         {.name = "GPU: y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy}},
     };
     int nroof = sizeof(roof_tasks) / sizeof(struct task);

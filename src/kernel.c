@@ -1,4 +1,5 @@
 #include <pthread.h>    /* pthread_* */
+#include <math.h>       /* sqrt */
 
 #include "roof.h"       /* roof_args */
 #include "stopwatch.h"  /* Stopwatch */
@@ -24,6 +25,8 @@ static inline void axpby_kernel(int i, double a, double b, double *x, double *y)
 static inline void diff_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
 static inline void diff8_kernel(int i, double a, double b, double *x, double *y)
+    __attribute__((always_inline));
+static inline void sqrt_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
 
 
@@ -250,4 +253,23 @@ void roof_diff8(int n, double a, double b,
     args->offset = 8;
 
     roof_kernel(n, a, b, x_in, y_in, args, diff8_kernel);
+}
+
+
+void sqrt_kernel(int i, double a, double b, double *x, double *y)
+{
+    y[i] = sqrt(x[i]);
+}
+
+
+void roof_sqrt(int n, double a, double b,
+                double * restrict x_in, double * restrict y_in,
+                struct roof_args *args)
+{
+    args->kflops = 1;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = 0;
+
+    roof_kernel(n, a, b, x_in, y_in, args, sqrt_kernel);
 }
