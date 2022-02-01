@@ -1,15 +1,14 @@
 #include "roof.h"
 #include <stdio.h>
 
-#define MAXCORES 2
-#define MAXTHREADS 800
-
+#define MAXCORES 1
+#define MAXTHREADS 64
 
 __global__ void saxpy(int n, double a, double *x, double *y)
 {
     int i0 = MAXCORES * (blockDim.x * blockIdx.x + threadIdx.x);
     for (int i = i0; i < min(i0 + MAXCORES, n); i++)
-        y[i] = a * x[i] + y[i];
+        y[i] = x[i] + a * y[i];
 }
 
 
@@ -20,7 +19,7 @@ void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
     double *x, *y;
     size_t nbytes;
 
-    int r, r_max;
+    long r_max;
     int nthreads, nblocks;
 
     cudaEvent_t start, stop;
@@ -47,21 +46,29 @@ void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
     //printf(" nblocks: %i\n", nblocks);
 
     r_max = 1;
-    cudaEventRecord(start);
-    for (r = 0; r < r_max; r++) {
-        saxpy<<<nblocks,nthreads>>>(n, a, x, y);
-    }
-    cudaEventRecord(stop);
+    *(args->runtime_flag) = 0;
+    do {
+        cudaEventRecord(start);
+        for (long r = 0; r < r_max; r++) {
+            saxpy<<<nblocks,nthreads>>>(n, a, x, y);
+        }
+        cudaEventRecord(stop);
+        cudaMemcpy(y_in, y, nbytes, cudaMemcpyDeviceToHost);
 
-    cudaMemcpy(y_in, y, nbytes, cudaMemcpyDeviceToHost);
+        cudaEventElapsedTime(&msec, start, stop);
+        sec = msec / 1000.f;
 
-    /* Not yet confident this is working, so check the sum. */
-    /* Also ensures that the value is touched and won't be optimized out. */
-    /* TODO: Later, we can rely on `volatile` and drop this sum. */
+        if (sec > args->min_runtime)
+            *(args->runtime_flag) = 1;
+        else
+            r_max *= 2;
+
+    } while (!*(args->runtime_flag));
+
     sum = 0.;
     for (int i = 0; i < n; i++) sum += y_in[i];
-    if (sum != 4. * n) {
-        printf("ERROR: Sum (%f\n does not match!\n", sum);
+    if (sum != n) {
+        printf("ERROR: Sum %f\n does not match!\n", sum);
         exit(1);
     }
 

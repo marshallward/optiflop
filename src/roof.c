@@ -40,11 +40,11 @@ void * roof_thread(void *args_in)
     posix_memalign((void *) &x, BYTEALIGN, n * sizeof(double));
     posix_memalign((void *) &y, BYTEALIGN, n * sizeof(double));
 
-    a = 2.;
-    b = 3.;
+    a = 0.5;
+    b = 0.25;
     for (int i = 0; i < n; i++) {
-        x[i] = 1.;
-        y[i] = 2.;
+        x[i] = 0.5;
+        y[i] = 1.;
     }
 
     struct roof_args *rargs;
