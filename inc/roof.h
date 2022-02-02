@@ -61,6 +61,9 @@ void roof_diff(int, double, double, double *, double *, struct roof_args *);
 void roof_diff8(int, double, double, double *, double *, struct roof_args *);
 void roof_sqrt(int, double, double, double *, double *, struct roof_args *);
 
+/* Not really like the other tests, but here anyway... */
+void dgemm(int, double, double, double *, double *, struct roof_args *);
+
 void dummy(double, double, double *, double *);
 
 #endif  // OPTIFLOP_ROOF_H_

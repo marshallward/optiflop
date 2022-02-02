@@ -98,21 +98,22 @@ int main(int argc, char *argv[])
         {.name = "avx512_add",  .thread = {.simd = &avx512_add}},
         {.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
         {.name = "avx512_fmac", .thread = {.simd = &avx512_fmac}},
-        {.name = "gpu_add",  .thread = {.simd = &gpu_add}},
-        {.name = "gpu_fma",  .thread = {.simd = &gpu_fma}},
+        {.name = "gpu_add",     .thread = {.simd = &gpu_add}},
+        {.name = "gpu_fma",     .thread = {.simd = &gpu_fma}},
     };
     int nsimd = sizeof(simd_tasks) / sizeof(struct task);
 
     const struct task roof_tasks[] = {
-        {.name = "y[:] = x[:]",                 .thread = {.roof = &roof_copy}},
-        {.name = "y[:] = a x[:]",               .thread = {.roof = &roof_ax}},
-        {.name = "y[:] = x[:] + x[:]",          .thread = {.roof = &roof_xpx}},
-        {.name = "y[:] = x[:] + y[:]",          .thread = {.roof = &roof_xpy}},
-        {.name = "y[:] = a x[:] + y[:]",        .thread = {.roof = &roof_axpy}},
-        {.name = "y[:] = a x[:] + b y[:]",      .thread = {.roof = &roof_axpby}},
-        {.name = "y[1:] = x[1:] + x[:-1]",      .thread = {.roof = &roof_diff}},
-        {.name = "y[8:] = x[8:] + x[:-8]",      .thread = {.roof = &roof_diff8}},
-        {.name = "y[:] = sqrt(x[:])",           .thread = {.roof = &roof_sqrt}},
+        {.name = "y[:] = x[:]",             .thread = {.roof = &roof_copy}},
+        {.name = "y[:] = a x[:]",           .thread = {.roof = &roof_ax}},
+        {.name = "y[:] = x[:] + x[:]",      .thread = {.roof = &roof_xpx}},
+        {.name = "y[:] = x[:] + y[:]",      .thread = {.roof = &roof_xpy}},
+        {.name = "y[:] = a x[:] + y[:]",    .thread = {.roof = &roof_axpy}},
+        {.name = "y[:] = a x[:] + b y[:]",  .thread = {.roof = &roof_axpby}},
+        {.name = "y[1:] = x[1:] + x[:-1]",  .thread = {.roof = &roof_diff}},
+        {.name = "y[8:] = x[8:] + x[:-8]",  .thread = {.roof = &roof_diff8}},
+        {.name = "y[:] = sqrt(x[:])",       .thread = {.roof = &roof_sqrt}},
+        {.name = "A_ij = A_ik B_kj",        .thread = {.roof = &dgemm}},
         {.name = "GPU: y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy}},
         //{.name = "GPU: A[:,:] = A[:,:] * B[:,:]", .thread = {.roof = &gpu_matmul}},
     };
