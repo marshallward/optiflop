@@ -10,7 +10,7 @@ CFLAGS=@CFLAGS@
 NVCC=@NVCC@
 
 LD=@LD@
-LDFLAGS=@LDFLAGS@
+LDFLAGS=-qmkl @LDFLAGS@
 LIBS=@LIBS@
 
 # Optional flags
@@ -38,7 +38,7 @@ _OBJS=main.o input.o \
 	sse.o sse_fma.o \
 	avx.o avx_fma.o \
 	avx512.o \
-	dgemm.o \
+	roof_daxpy_blas.o roof_dgemm_blas.o \
 	roof.o kernel.o dummy.o \
 	gpu_roof.o gpu_simd.o \
 	gpu_axpy_blas.o gpu_dgemm_blas.o
@@ -99,7 +99,10 @@ $(OBJDIR)/avx_fma.o: $(AVX_FMA_PATH)/avx_fma.c $(INC)/bench.h $(INC)/stopwatch.h
 $(OBJDIR)/avx512.o: $(AVX512_PATH)/avx512.c $(INC)/avx512.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/dgemm.o: $(BLAS_PATH)/dgemm.c $(INC)/roof.h $(INC)/stopwatch.h
+$(OBJDIR)/roof_daxpy_blas.o: $(BLAS_PATH)/roof_daxpy_blas.c $(INC)/roof.h $(INC)/stopwatch.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/roof_dgemm_blas.o: $(BLAS_PATH)/roof_dgemm_blas.c $(INC)/roof.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h

@@ -9,9 +9,9 @@ static inline void dgemm_kernel(int n, double *x, double *y)
     __attribute__((always_inline));
 
 
-void roof_dgemm(int n, double a, double b,
-           double * restrict x_in, double * restrict y_in,
-           struct roof_args *args)
+void roof_dgemm_blas(int n, double a, double b,
+                     double * restrict x_in, double * restrict y_in,
+                     struct roof_args *args)
 {
     /* Timer config */
     Stopwatch *timer = args->timer;

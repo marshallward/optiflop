@@ -1,7 +1,7 @@
 #include "roof.h"
 
-void dgemm(int n, double a, double b, double * x_in, double * y_in,
-           struct roof_args *args)
+void roof_dgemm(int n, double a, double b, double * x_in, double * y_in,
+                struct roof_args *args)
 {
     args->runtime = 0.;
     args->flops = 0.;
