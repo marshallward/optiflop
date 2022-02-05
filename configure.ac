@@ -111,7 +111,7 @@ AS_IF([test "$enable_cuda" == "yes"],
     LD=$NVCC
   ], [
     LD=$CC
-    LDFLAGS+="-pthread"
+    LDFLAGS+=" -pthread"
   ]
 )
 
