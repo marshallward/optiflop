@@ -1,5 +1,6 @@
 #include <stdlib.h>     /* malloc, posix_memalign, free */
-#include <cblas.h>      /* Cblas*, cblas_dgemm */
+//#include <cblas.h>      /* Cblas*, cblas_dgemm */
+#include <mkl.h>      /* Cblas*, cblas_dgemm */
 
 #include "roof.h"      /* thread_args */
 #include "stopwatch.h"  /* Stopwatch */
@@ -8,7 +9,7 @@ static inline void dgemm_kernel(int n, double *x, double *y)
     __attribute__((always_inline));
 
 
-void dgemm(int n, double a, double b,
+void roof_dgemm(int n, double a, double b,
            double * restrict x_in, double * restrict y_in,
            struct roof_args *args)
 {
@@ -41,6 +42,10 @@ void dgemm(int n, double a, double b,
 
     long r_max = 1;
     *(args->runtime_flag) = 0;
+
+    cblas_dgemm(
+        CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+        n, n, n, 1., x, n, y, n, 0., x, n);
 
     do {
         pthread_barrier_wait(args->barrier);

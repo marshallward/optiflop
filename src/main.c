@@ -87,19 +87,19 @@ int main(int argc, char *argv[])
     }
 
     const struct task simd_tasks[] = {
-        {.name = "sse_add",     .thread = {.simd = &sse_add}},
-        {.name = "sse_fma",     .thread = {.simd = &sse_fma}},
-        {.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
-        {.name = "avx_add",     .thread = {.simd = &avx_add}},
-        {.name = "avx_mul",     .thread = {.simd = &avx_mul}},
-        {.name = "avx_mac",     .thread = {.simd = &avx_mac}},
-        {.name = "avx_fma",     .thread = {.simd = &avx_fma}},
-        {.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
-        {.name = "avx512_add",  .thread = {.simd = &avx512_add}},
-        {.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
-        {.name = "avx512_fmac", .thread = {.simd = &avx512_fmac}},
-        {.name = "gpu_add",     .thread = {.simd = &gpu_add}},
-        {.name = "gpu_fma",     .thread = {.simd = &gpu_fma}},
+        //{.name = "sse_add",     .thread = {.simd = &sse_add}},
+        //{.name = "sse_fma",     .thread = {.simd = &sse_fma}},
+        //{.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
+        //{.name = "avx_add",     .thread = {.simd = &avx_add}},
+        //{.name = "avx_mul",     .thread = {.simd = &avx_mul}},
+        //{.name = "avx_mac",     .thread = {.simd = &avx_mac}},
+        //{.name = "avx_fma",     .thread = {.simd = &avx_fma}},
+        //{.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
+        //{.name = "avx512_add",  .thread = {.simd = &avx512_add}},
+        //{.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
+        //{.name = "avx512_fmac", .thread = {.simd = &avx512_fmac}},
+        //{.name = "gpu_add",     .thread = {.simd = &gpu_add}},
+        //{.name = "gpu_fma",     .thread = {.simd = &gpu_fma}},
     };
     int nsimd = sizeof(simd_tasks) / sizeof(struct task);
 
@@ -113,8 +113,8 @@ int main(int argc, char *argv[])
         {.name = "y[1:] = x[1:] + x[:-1]",  .thread = {.roof = &roof_diff}},
         {.name = "y[8:] = x[8:] + x[:-8]",  .thread = {.roof = &roof_diff8}},
         {.name = "y[:] = sqrt(x[:])",       .thread = {.roof = &roof_sqrt}},
-        {.name = "A_ij = A_ik B_kj",        .thread = {.roof = &dgemm}},
-        {.name = "GPU: y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy}},
+        //{.name = "A_ij = A_ik B_kj",        .thread = {.roof = &roof_dgemm}},
+        //{.name = "GPU: y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy}},
         //{.name = "GPU: A[:,:] = A[:,:] * B[:,:]", .thread = {.roof = &gpu_matmul}},
     };
     int nroof = sizeof(roof_tasks) / sizeof(struct task);

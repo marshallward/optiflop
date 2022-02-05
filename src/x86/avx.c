@@ -7,7 +7,7 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define VADDPD_LATENCY 3
+#define VADDPD_LATENCY 4
 #define VMULPD_LATENCY 4
 
 /* Internal functions */
