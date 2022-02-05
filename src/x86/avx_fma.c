@@ -7,7 +7,7 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define VFMAPD_LATENCY 5
+#define VFMAPD_LATENCY 4
 
 /* Headers */
 static double sum_avx(__m256);

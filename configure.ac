@@ -100,6 +100,17 @@ fi
 AC_MSG_RESULT($enable_unroll)
 
 
+# BLAS configuration
+# TODO: Gracefully handle the missing header case...
+AC_SEARCH_LIBS([cblas_dgemm], [blas openblas],
+  [
+    AC_CHECK_HEADER([cblas.h])
+    cblas_path="blas"
+  ],
+  [cblas_path="generic"]
+)
+
+
 # GPU configuration
 AC_ARG_ENABLE([cuda],
   AS_HELP_STRING([--enable-cuda], [Enable CUDA tests])
@@ -139,6 +150,7 @@ AC_SUBST(sse_fma_path, "$sse_fma_path")
 AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
+AC_SUBST(cblas_path, "$cblas_path")
 AC_SUBST(enable_cuda, "$enable_cuda")
 AC_SUBST(enable_cublas, "$enable_cublas")
 AC_SUBST(LD, "$LD")
