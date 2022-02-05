@@ -27,6 +27,7 @@ AVX512_PATH=$(SRC)/@avx512_path@
 
 # Control flags
 ENABLE_CUDA = @enable_cuda@
+ENABLE_CUBLAS = @enable_cublas@
 
 # Object files
 # TODO: Generate this list
@@ -37,7 +38,8 @@ _OBJS=main.o input.o \
 	avx.o avx_fma.o \
 	avx512.o \
 	roof.o kernel.o dummy.o \
-	gpu_roof.o gpu_simd.o
+	gpu_roof.o gpu_simd.o \
+	gpu_axpy_blas.o gpu_dgemm_blas.o
 
 OBJS=$(addprefix $(OBJDIR)/, $(_OBJS))
 
@@ -124,6 +126,20 @@ $(OBJDIR)/gpu_simd.o: src/generic/gpu_simd.c
 	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 
 $(OBJDIR)/gpu_roof.o: src/generic/gpu_roof.c
+	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+endif
+
+ifeq ($(ENABLE_CUBLAS), yes)
+$(OBJDIR)/gpu_axpy_blas.o: src/cuda/gpu_axpy_blas.cu
+	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+
+$(OBJDIR)/gpu_dgemm_blas.o: src/cuda/gpu_dgemm_blas.cu
+	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+else
+$(OBJDIR)/gpu_axpy_blas.o: src/generic/gpu_axpy_blas.c
+	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+
+$(OBJDIR)/gpu_dgemm_blas.o: src/generic/gpu_dgemm_blas.c
 	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 endif
 

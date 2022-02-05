@@ -1,28 +1,23 @@
 #include "roof.h"
 #include <stdio.h>
+#include "stopwatch.h"
+
+#include <cublas.h>
 
 #define MAXCORES 1
 #define MAXTHREADS 64
 
-__global__ void saxpy(int n, double a, double *x, double *y)
-{
-    int i0 = MAXCORES * (blockDim.x * blockIdx.x + threadIdx.x);
-    for (int i = i0; i < min(i0 + MAXCORES, n); i++)
-        y[i] = x[i] + a * y[i];
-}
-
-
 extern "C"
-void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
-              struct roof_args *args)
+void gpu_axpy_blas(int n, double a, double b, double * x_in, double * y_in,
+                   struct roof_args *args)
 {
     double *x, *y;
     size_t nbytes;
 
     long r_max;
-    int nthreads, nblocks;
 
     cudaEvent_t start, stop;
+    cudaError_t error;
     float msec, sec;
 
     volatile double sum;
@@ -38,21 +33,19 @@ void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
     cudaMemcpy(x, x_in, nbytes, cudaMemcpyHostToDevice);
     cudaMemcpy(y, y_in, nbytes, cudaMemcpyHostToDevice);
 
-    nthreads = min(1 + (n - 1) / MAXCORES, MAXTHREADS);
-    nblocks = 1 + (n - 1) / (MAXTHREADS * MAXCORES);
-
-    //printf("  ncores: %i\n", MAXCORES);
-    //printf("nthreads: %i\n", nthreads);
-    //printf(" nblocks: %i\n", nblocks);
+    /* Apparently cuBLAS setup time is horrendous, so we need to run it
+       at least once before starting the time... */
+    cublasDaxpy(n, a, x, 1, y, 1);
 
     r_max = 1;
     *(args->runtime_flag) = 0;
     do {
         cudaEventRecord(start);
         for (long r = 0; r < r_max; r++) {
-            saxpy<<<nblocks,nthreads>>>(n, a, x, y);
+            cublasDaxpy(n, a, x, 1, y, 1);
         }
         cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
         cudaMemcpy(y_in, y, nbytes, cudaMemcpyDeviceToHost);
 
         cudaEventElapsedTime(&msec, start, stop);
@@ -74,9 +67,6 @@ void gpu_axpy(int n, double a, double b, double * x_in, double * y_in,
 
     cudaFree(x);
     cudaFree(y);
-
-    cudaEventElapsedTime(&msec, start, stop);
-    sec = msec / 1000.f;
 
     args->runtime = sec;
     args->flops = 2. * r_max * n / sec;

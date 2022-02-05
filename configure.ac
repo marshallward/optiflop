@@ -115,6 +115,20 @@ AS_IF([test "$enable_cuda" == "yes"],
   ]
 )
 
+AC_ARG_ENABLE([cublas],
+  AS_HELP_STRING([--enable-cublas], [Enable cuBLAS tests])
+)
+AS_IF([test "$enable_cublas" == "yes"],
+  [
+    AS_IF([test "$enable_cuda" == "no"],
+      [AC_MSG_ERROR([cuBLAS enabled without CUDA])]
+    )
+    cublas_path="cuda"
+    LIBS+="$LIBS -lcublas"
+  ],[
+    cublas_path="generic"
+  ]
+)
 
 # Update and create the Makefile
 AC_SUBST(posix_timer_path, "$posix_timer_path")
@@ -126,6 +140,7 @@ AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
 AC_SUBST(enable_cuda, "$enable_cuda")
+AC_SUBST(enable_cublas, "$enable_cublas")
 AC_SUBST(LD, "$LD")
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
