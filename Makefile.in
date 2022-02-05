@@ -10,7 +10,7 @@ CFLAGS=@CFLAGS@
 NVCC=@NVCC@
 
 LD=@LD@
-LDFLAGS=-qmkl @LDFLAGS@
+LDFLAGS=@LDFLAGS@
 LIBS=@LIBS@
 
 # Optional flags

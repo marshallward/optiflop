@@ -1,8 +1,8 @@
 CC = gcc
-#CPPFLAGS =
-#CFLAGS = -g -O3 -mavx -mfma
-CPPFLAGS = -DUSE_AVX512
-CFLAGS = -g -O3 -mavx -mfma -mavx512f
+CPPFLAGS =
+CFLAGS = -g -O3 -mavx -mfma
+#CPPFLAGS = -DUSE_AVX512
+#CFLAGS = -g -O3 -mavx -mfma -mavx512f
 LIBS = -lm
 
 all: latency
