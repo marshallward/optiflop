@@ -24,7 +24,11 @@ static inline void axpby_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
 static inline void diff_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
-static inline void diff8_kernel(int i, double a, double b, double *x, double *y)
+static inline void diff_simd_kernel(int i, double a, double b, double *x, double *y)
+    __attribute__((always_inline));
+static inline void mean_kernel(int i, double a, double b, double *x, double *y)
+    __attribute__((always_inline));
+static inline void mean_simd_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
 static inline void sqrt_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
@@ -76,14 +80,6 @@ void roof_kernel(int n, double a, double b,
     } while (! *(args->runtime_flag));
 
     /* Total number of kernel calls */
-
-    //args->runtime = runtime;
-    //args->flops = args->nflops * (n - offset) * r_max / runtime;
-    //args->bw_load = args->load_bytes * (n - args->offset) * sizeof(double) * r_max
-    //                    / runtime;
-    //args->bw_store = args->store_bytes * (n - offset) * sizeof(double) * r_max
-    //                    / runtime;
-
     args->runtime = runtime;
     args->flops = args->kflops * nk * r_max / runtime;
     args->bw_load = args->kloads * sizeof(double) * nk * r_max / runtime;
@@ -218,6 +214,9 @@ void roof_axpby(int n, double a, double b,
 }
 
 
+/* diff */
+
+
 void diff_kernel(int i, double a, double b, double *x, double *y)
 {
     y[i] = x[i + 1] - x[i];
@@ -237,22 +236,79 @@ void roof_diff(int n, double a, double b,
 }
 
 
-void diff8_kernel(int i, double a, double b, double *x, double *y)
+/* diff_simd */
+/* NOTE: We actually do not need to do 2x SIMD width here!
+ * I don't yet know why, something unique to X[1]-X[0] vs X[1]+X[0] *
+ */
+
+void diff_simd_kernel(int i, double a, double b, double *x, double *y)
 {
-    y[i] = x[i + 8] - x[i];
+    const int d = 2 * (32 / sizeof(double));
+    y[i] = x[i + d] - x[i];
 }
 
 
-void roof_diff8(int n, double a, double b,
-                double * restrict x_in, double * restrict y_in,
-                struct roof_args *args)
+void roof_diff_simd(int n, double a, double b,
+                    double * restrict x_in, double * restrict y_in,
+                    struct roof_args *args)
 {
+    const int d = 2 * (32 / sizeof(double));
+
     args->kflops = 1;
     args->kloads = 1;
     args->kstores = 1;
-    args->offset = 8;
+    args->offset = d;
 
-    roof_kernel(n, a, b, x_in, y_in, args, diff8_kernel);
+    roof_kernel(n, a, b, x_in, y_in, args, diff_simd_kernel);
+}
+
+
+/* mean */
+
+
+void mean_kernel(int i, double a, double b, double *x, double *y)
+{
+    y[i] = 0.5 * (x[i + 1] + x[i]);
+}
+
+
+void roof_mean(int n, double a, double b,
+               double * restrict x_in, double * restrict y_in,
+               struct roof_args *args)
+{
+    args->kflops = 2;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = 1;
+
+    roof_kernel(n, a, b, x_in, y_in, args, mean_kernel);
+}
+
+
+/* mean_simd */
+/* NOTE: Optimal will allow summation of two concurrent pairs of two registers.
+ * So we need a 2x SIMD offset to do these concurrently.
+ */
+
+void mean_simd_kernel(int i, double a, double b, double *x, double *y)
+{
+    const int d = 2 * (32 / sizeof(double));
+    y[i] = 0.5 * (x[i + d] + x[i]);
+}
+
+
+void roof_mean_simd(int n, double a, double b,
+                    double * restrict x_in, double * restrict y_in,
+                    struct roof_args *args)
+{
+    const int d = 2 * (32 / sizeof(double));
+
+    args->kflops = 2;
+    args->kloads = 1;
+    args->kstores = 1;
+    args->offset = d;
+
+    roof_kernel(n, a, b, x_in, y_in, args, mean_simd_kernel);
 }
 
 

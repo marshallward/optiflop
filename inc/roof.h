@@ -58,7 +58,9 @@ void roof_xpy(int, double, double, double *, double *, struct roof_args *);
 void roof_axpy(int, double, double, double *, double *, struct roof_args *);
 void roof_axpby(int, double, double, double *, double *, struct roof_args *);
 void roof_diff(int, double, double, double *, double *, struct roof_args *);
-void roof_diff8(int, double, double, double *, double *, struct roof_args *);
+void roof_diff_simd(int, double, double, double *, double *, struct roof_args *);
+void roof_mean(int, double, double, double *, double *, struct roof_args *);
+void roof_mean_simd(int, double, double, double *, double *, struct roof_args *);
 void roof_sqrt(int, double, double, double *, double *, struct roof_args *);
 
 void dummy(double, double, double *, double *);
