@@ -32,6 +32,8 @@ static inline void mean_simd_kernel(int i, double a, double b, double *x, double
     __attribute__((always_inline));
 static inline void sqrt_kernel(int i, double a, double b, double *x, double *y)
     __attribute__((always_inline));
+static inline void demo_kernel(int i, double a, double b, double *x, double *y)
+    __attribute__((always_inline));
 
 
 void roof_kernel(int n, double a, double b,
@@ -61,6 +63,65 @@ void roof_kernel(int n, double a, double b,
         for (r = 0; r < r_max; r++) {
             for (int i = 0; i < nk; i++)
                 kernel(i, a, b, x, y);
+            // Create an impossible branch to prevent loop interchange
+            if (y[0] < 0.) dummy(a, b, x, y);
+        }
+        t->stop(t);
+        runtime = t->runtime(t);
+
+        /* Set runtime flag if any thread exceeds runtime limit */
+        if (runtime > (args->min_runtime)) {
+            pthread_mutex_lock(args->mutex);
+            *(args->runtime_flag) = 1;
+            pthread_mutex_unlock(args->mutex);
+        }
+
+        pthread_barrier_wait(args->barrier);
+        if (! *(args->runtime_flag)) r_max *= 2;
+
+    } while (! *(args->runtime_flag));
+
+    /* Total number of kernel calls */
+    args->runtime = runtime;
+    args->flops = args->kflops * nk * r_max / runtime;
+    args->bw_load = args->kloads * sizeof(double) * nk * r_max / runtime;
+    args->bw_store = args->kstores * sizeof(double) * nk * r_max / runtime;
+}
+
+
+void roof_kernel_set(int n, double a, double b,
+                     double * restrict x_in, double * restrict y_in,
+                     struct roof_args *args)
+{
+    double *x, *y;
+
+    Stopwatch *t;
+    long r, r_max;
+    int nk;
+    double runtime;
+
+    /* If possible, assert alignment of x_in and y_in */
+    x = ASSUME_ALIGNED(x_in);
+    y = ASSUME_ALIGNED(y_in);
+
+    t = args->timer;
+
+    nk = n > args->offset ? n - args->offset : 0;
+
+    r_max = 1;
+    *(args->runtime_flag) = 0;
+    do {
+        pthread_barrier_wait(args->barrier);
+        t->start(t);
+        for (r = 0; r < r_max; r++) {
+            //for (int k = 0; k < nker; k++)  {
+            //    for (int i = 0; i < nk; i++)
+            //        kernels[k](i, a, b, x, y);
+            //}
+            for (int i = 0; i < nk; i++)
+                demo_kernel(i, a, b, x, y);
+            for (int i = 0; i < nk; i++)
+                copy_kernel(i, a, b, y, x);
             // Create an impossible branch to prevent loop interchange
             if (y[0] < 0.) dummy(a, b, x, y);
         }
@@ -328,4 +389,27 @@ void roof_sqrt(int n, double a, double b,
     args->offset = 0;
 
     roof_kernel(n, a, b, x_in, y_in, args, sqrt_kernel);
+}
+
+
+void demo_kernel(int i, double a, double b, double *x, double *y)
+{
+    y[i] = x[i] + a * x[i-1] + b * x[i] + a * x[i+1];
+}
+
+
+void roof_demo(int n, double a, double b,
+               double * restrict x_in, double * restrict y_in,
+               struct roof_args *args)
+{
+    compute_kernel kernels[2];
+    kernels[0] = demo_kernel;
+    kernels[1] = copy_kernel;
+
+    args->kflops = 5;
+    args->kloads = 2;
+    args->kstores = 1;
+    args->offset = 1;
+
+    roof_kernel_set(n, a, b, x_in, y_in, args);
 }

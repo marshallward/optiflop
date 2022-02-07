@@ -62,6 +62,7 @@ void roof_diff_simd(int, double, double, double *, double *, struct roof_args *)
 void roof_mean(int, double, double, double *, double *, struct roof_args *);
 void roof_mean_simd(int, double, double, double *, double *, struct roof_args *);
 void roof_sqrt(int, double, double, double *, double *, struct roof_args *);
+void roof_demo(int, double, double, double *, double *, struct roof_args *);
 
 /* Not really like the other tests, but here anyway... */
 void roof_daxpy_blas(int, double, double, double *, double *, struct roof_args *);
