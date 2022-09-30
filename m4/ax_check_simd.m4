@@ -2,7 +2,7 @@ dnl AX_CHECK_SIMD
 dnl Check if Intel SIMD intrinsics are supported by the compiler.
 dnl
 dnl NOTE: These intrinsics are macros, not functions, and will often
-dnl   only fail after executation of invalid assembly, so require execution.
+dnl   only fail after execution of invalid assembly, so require AC_RUN_IFELSE.
 dnl
 AC_DEFUN([AX_CHECK_SIMD], [
   AC_LANG_PUSH([C])

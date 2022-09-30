@@ -7,7 +7,7 @@
 #include "stopwatch.h"
 
 /* TODO: Make this dynamic */
-#define ADDPD_LATENCY 4
+#define ADDPD_LATENCY 3
 
 /* Headers */
 static double sum_sse(__m128d);
