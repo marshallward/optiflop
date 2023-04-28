@@ -22,9 +22,7 @@ void sse_add(void *args_in)
     const int n_sse = 16 / sizeof(double);
     const int n_reg = ADDPD_LATENCY;
     const __m128d add0 = _mm_set1_pd(1e-6);
-    const __m128d mul0 = _mm_set1_pd(1. + 1e-6);
     __m128d reg[n_reg];
-    __m128d reg2[n_reg];
 
     long r_max;
     double runtime;

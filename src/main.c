@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
     for (vlen = vlen_start; vlen < vlen_end; vlen = ceil(vlen * vlen_scale)) {
 
         if (cfg->save_output) {
-            fprintf(output, "  - len: %i\n", vlen);
+            fprintf(output, "  - len: %li\n", vlen);
             fprintf(output, "    results:\n");
         }
 
