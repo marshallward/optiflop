@@ -27,8 +27,8 @@ AVX512_PATH=$(SRC)/@avx512_path@
 BLAS_PATH=$(SRC)/@cblas_path@
 
 # Control flags
-ENABLE_CUDA = @enable_cuda@
-ENABLE_CUBLAS = @enable_cublas@
+ENABLE_CUDA=@enable_cuda@
+ENABLE_CUBLAS=@enable_cublas@
 
 # Object files
 # TODO: Generate this list

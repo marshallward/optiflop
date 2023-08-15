@@ -158,9 +158,9 @@ void avx_mac(void *args_in)
     // Declare as volatile to prevent removal during optimisation
     volatile double result __attribute__((unused));
 
-    long r_max, i;
+    long r_max;
     int j;
-    double runtime, flops;
+    double runtime;
     Stopwatch *t;
 
     t = args->timer;
