@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
-#define MINTIME 0.1
+#define MINTIME 3.0
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     volatile __m256d out;
 
     long r_max;
-    volatile long v;
+    volatile char v;
     double freq;
 
     int addpd, vaddpd, vmulpd, vfmaddpd, vsqrtpd;
@@ -23,15 +23,17 @@ int main(int argc, char *argv[])
     const __m256d add0 = _mm256_set1_pd(1e-6);
     const __m256d mul0 = _mm256_set1_pd(1. + 1e-6);
 
-    /* This is not correct; the "scalar" frequency is not necessarily the "AVX"
-     * frequency. */
+    /* This may be computing the base frequency, rather than the "boost"
+     * frequency.  But it seems sufficient for now. */
     r_max = 1;
     do {
         r_max *= 2;
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
-        /* NOTE: This assumes v==1 uses CMP, and that CMP latency is 1 */
-        for (long r = 0; r < r_max; r++)
-            v == 1;
+        for (long r = 0; r < r_max; r++) {
+            /* This should be any short instruction that can be done
+             * concurrently with loop iteration. (i.e. one cycle per loop) */
+            v = 1;
+        }
         clock_gettime(CLOCK_MONOTONIC_RAW, &ts_end);
         time = (double)(ts_end.tv_sec - ts_start.tv_sec)
             + (double) (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9;
@@ -39,6 +41,11 @@ int main(int argc, char *argv[])
     freq = (double) r_max / time;
     printf("freq: %.12f\n", freq * 1e-9);
     printf("rmax: %li\n", r_max);
+
+    /* We have "spun up" the CPU, so we can now reduce the number of
+     * iterations for the following tests. */
+    /* NOTE: This may not be a good idea!  But so far seems OK. */
+    r_max = r_max / 300;
 
     /****************/
 
