@@ -102,13 +102,15 @@ AC_MSG_RESULT($enable_unroll)
 
 # BLAS configuration
 # TODO: Gracefully handle the missing header case...
-AC_SEARCH_LIBS([cblas_dgemm], [blas openblas],
-  [
-    AC_CHECK_HEADER([cblas.h])
+AC_SEARCH_LIBS([cblas_dgemm], [blas openblas], [
+  AC_CHECK_HEADERS([cblas.h], [
     cblas_path="blas"
-  ],
-  [cblas_path="generic"]
-)
+  ], [
+    cblas_path="generic"
+  ])
+], [
+  cblas_path="generic"
+])
 
 
 # GPU configuration

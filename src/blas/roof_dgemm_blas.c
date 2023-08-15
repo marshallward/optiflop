@@ -1,6 +1,7 @@
 #include <stdlib.h>     /* malloc, posix_memalign, free */
-//#include <cblas.h>      /* Cblas*, cblas_dgemm */
-#include <mkl.h>      /* Cblas*, cblas_dgemm */
+#include <cblas.h>      /* Cblas*, cblas_dgemm */
+//#include <openblas/cblas.h>   /* Cblas*, cblas_dgemm */
+//#include <mkl.h>      /* Cblas*, cblas_dgemm */
 
 #include "roof.h"      /* thread_args */
 #include "stopwatch.h"  /* Stopwatch */

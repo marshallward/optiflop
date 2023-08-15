@@ -1,5 +1,7 @@
 #include <pthread.h>    /* pthread_* */
-#include <mkl.h>
+#include <cblas.h>
+//#include <openblas/cblas.h>
+//#include <mkl.h>
 
 #include "roof.h"       /* roof_args */
 #include "stopwatch.h"  /* Stopwatch */
