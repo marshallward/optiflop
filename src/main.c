@@ -87,19 +87,19 @@ int main(int argc, char *argv[])
     }
 
     const struct task simd_tasks[] = {
-        //{.name = "sse_add",     .thread = {.simd = &sse_add}},
-        //{.name = "sse_fma",     .thread = {.simd = &sse_fma}},
-        //{.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
-        //{.name = "avx_add",     .thread = {.simd = &avx_add}},
-        //{.name = "avx_mul",     .thread = {.simd = &avx_mul}},
-        //{.name = "avx_mac",     .thread = {.simd = &avx_mac}},
-        //{.name = "avx_fma",     .thread = {.simd = &avx_fma}},
-        //{.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
-        //{.name = "avx512_add",  .thread = {.simd = &avx512_add}},
-        //{.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
-        //{.name = "avx512_fmac", .thread = {.simd = &avx512_fmac}},
-        //{.name = "gpu_add",     .thread = {.simd = &gpu_add}},
-        //{.name = "gpu_fma",     .thread = {.simd = &gpu_fma}},
+        {.name = "sse_add",     .thread = {.simd = &sse_add}},
+        {.name = "sse_fma",     .thread = {.simd = &sse_fma}},
+        {.name = "sse_fmac",    .thread = {.simd = &sse_fmac}},
+        {.name = "avx_add",     .thread = {.simd = &avx_add}},
+        {.name = "avx_mul",     .thread = {.simd = &avx_mul}},
+        {.name = "avx_mac",     .thread = {.simd = &avx_mac}},
+        {.name = "avx_fma",     .thread = {.simd = &avx_fma}},
+        {.name = "avx_fmac",    .thread = {.simd = &avx_fmac}},
+        {.name = "avx512_add",  .thread = {.simd = &avx512_add}},
+        {.name = "avx512_fma",  .thread = {.simd = &avx512_fma}},
+        {.name = "avx512_fmac", .thread = {.simd = &avx512_fmac}},
+        {.name = "gpu_add",     .thread = {.simd = &gpu_add}},
+        {.name = "gpu_fma",     .thread = {.simd = &gpu_fma}},
     };
     int nsimd = sizeof(simd_tasks) / sizeof(struct task);
 
@@ -200,15 +200,13 @@ int main(int argc, char *argv[])
         total_bw_load = max_total_bw_load;
         total_bw_store = max_total_bw_store;
 
-        if (total_flops > 0.)
-            printf("%s GFLOP/s: %.3f (%.3f / thread)\n",
-                    simd_tasks[b].name, total_flops / 1e9,
-                    total_flops / nthreads / 1e9);
-
-        if (total_bw_load > 0. && total_bw_store > 0.)
-            printf("%s GB/s: %.3f (%.3f / thread)\n",
-                    simd_tasks[b].name, (total_bw_load + total_bw_store) / 1e9,
-                    (total_bw_load + total_bw_store) / nthreads / 1e9);
+        if (total_flops > 0.) {
+            printf("%s GFLOP/s: %.3f",
+                simd_tasks[b].name, total_flops / 1e9);
+            if (nthreads > 1)
+                printf(" (%.3f / thread)", total_flops / nthreads / 1e9);
+            printf("\n");
+        }
 
         if (cfg->verbose) {
             for (t = 0; t < nthreads; t++) {
@@ -216,10 +214,6 @@ int main(int argc, char *argv[])
                        t, simd_tasks[b].name, t_args[t].runtime);
                 printf("    - Thread %i %s gflops: %.12f\n",
                        t, simd_tasks[b].name, t_args[t].flops /  1e9);
-                printf("    - Thread %i %s load BW: %.12f\n",
-                       t, simd_tasks[b].name, t_args[t].bw_load /  1e9);
-                printf("    - Thread %i %s store BW: %.12f\n",
-                       t, simd_tasks[b].name, t_args[t].bw_store /  1e9);
             }
         }
 
@@ -300,15 +294,25 @@ int main(int argc, char *argv[])
             total_bw_load = max_total_bw_load;
             total_bw_store = max_total_bw_store;
 
-            if (total_flops > 0.)
-                printf("%s GFLOP/s: %.3f (%.3f / thread)\n",
-                        roof_tasks[b].name, total_flops / 1e9,
-                        total_flops / nthreads / 1e9);
+            if (total_flops > 0.) {
+                printf("%s GFLOP/s: %.3f ",
+                       roof_tasks[b].name, total_flops / 1e9);
+                if (nthreads > 1) {
+                    printf(" (%.3f / thread)", total_flops / nthreads / 1e9);
+                }
+                printf("\n");
+            }
 
-            if (total_bw_load > 0. && total_bw_store > 0.)
-                printf("%s GB/s: %.3f (%.3f / thread)\n",
-                        roof_tasks[b].name, (total_bw_load + total_bw_store) / 1e9,
+            if (total_bw_load > 0. && total_bw_store > 0.) {
+                printf("%s GB/s: %.3f",
+                       roof_tasks[b].name,
+                       (total_bw_load + total_bw_store) / 1e9);
+                if (nthreads > 1) {
+                printf(" (%.3f / thread)",
                         (total_bw_load + total_bw_store) / nthreads / 1e9);
+                }
+                printf("\n");
+            }
 
             if (cfg->verbose) {
                 for (t = 0; t < nthreads; t++) {
