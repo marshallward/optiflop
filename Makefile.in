@@ -1,38 +1,38 @@
-SRC=src
-INC=inc
-OBJDIR=obj
+SRC = src
+INC = inc
+OBJDIR = obj
 
-CPPFLAGS=@DEFS@ @CPPFLAGS@ -I$(INC)
+CPPFLAGS = @DEFS@ @CPPFLAGS@ -I$(INC)
 
-CC=@CC@
-CFLAGS=@CFLAGS@
+CC = @CC@
+CFLAGS = @CFLAGS@
 
-NVCC=@NVCC@
+NVCC = @NVCC@
 
-LD=@LD@
-LDFLAGS=@LDFLAGS@
-LIBS=@LIBS@
+LD = @LD@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
 
 # Optional flags
-LOOP_CFLAGS=@loop_cflags@
+LOOP_CFLAGS = @loop_cflags@
 
 # Paths to platform-specific source
-POSIX_TIMER_PATH=$(SRC)/@posix_timer_path@
-TSC_TIMER_PATH=$(SRC)/@tsc_timer_path@
-SSE_PATH=$(SRC)/@sse_path@
-SSE_FMA_PATH=$(SRC)/@sse_fma_path@
-AVX_PATH=$(SRC)/@avx_path@
-AVX_FMA_PATH=$(SRC)/@avx_fma_path@
-AVX512_PATH=$(SRC)/@avx512_path@
-BLAS_PATH=$(SRC)/@cblas_path@
+POSIX_TIMER_PATH = $(SRC)/@posix_timer_path@
+TSC_TIMER_PATH = $(SRC)/@tsc_timer_path@
+SSE_PATH = $(SRC)/@sse_path@
+SSE_FMA_PATH = $(SRC)/@sse_fma_path@
+AVX_PATH = $(SRC)/@avx_path@
+AVX_FMA_PATH = $(SRC)/@avx_fma_path@
+AVX512_PATH = $(SRC)/@avx512_path@
+BLAS_PATH = $(SRC)/@cblas_path@
 
 # Control flags
-ENABLE_CUDA=@enable_cuda@
-ENABLE_CUBLAS=@enable_cublas@
+ENABLE_CUDA = @enable_cuda@
+ENABLE_CUBLAS = @enable_cublas@
 
 # Object files
 # TODO: Generate this list
-_OBJS=main.o input.o \
+_OBJS = main.o input.o \
 	stopwatch.o stopwatch_posix.o stopwatch_tsc.o \
 	simd.o \
 	sse.o sse_fma.o \
@@ -43,7 +43,7 @@ _OBJS=main.o input.o \
 	gpu_roof.o gpu_simd.o \
 	gpu_axpy_blas.o gpu_dgemm_blas.o
 
-OBJS=$(addprefix $(OBJDIR)/, $(_OBJS))
+OBJS = $(addprefix $(OBJDIR)/, $(_OBJS))
 
 all: LOOP=-funroll-loops --param max-unroll-times=2
 all: optiflop
@@ -123,7 +123,7 @@ $(OBJDIR)/stopwatch_posix.o: $(POSIX_TIMER_PATH)/stopwatch_posix.c
 $(OBJDIR)/stopwatch_tsc.o: $(TSC_TIMER_PATH)/stopwatch_tsc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-ifeq ($(ENABLE_CUDA), yes)
+ifdef ENABLE_CUDA
 $(OBJDIR)/gpu_simd.o: src/cuda/gpu_simd.cu
 	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 
@@ -137,7 +137,7 @@ $(OBJDIR)/gpu_roof.o: src/generic/gpu_roof.c
 	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 endif
 
-ifeq ($(ENABLE_CUBLAS), yes)
+ifdef ENABLE_CUBLAS
 $(OBJDIR)/gpu_axpy_blas.o: src/cuda/gpu_axpy_blas.cu
 	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 

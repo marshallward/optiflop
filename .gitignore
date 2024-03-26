@@ -10,5 +10,6 @@ optiflop
 /config.status
 /configure
 /Makefile
-/inc/config.h.in
 /inc/config.h
+/inc/config.h.in
+/inc/config.h.in~

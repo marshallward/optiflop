@@ -52,3 +52,18 @@ Roofline analysis
 Work here is not well-documented yet, but the basic result is that I get
 nowhere near this result for a typical vector update.  Will update this later
 (or incorporate into the main document).
+
+
+
+Peak A100 Performance
+=====================
+
+Still gathering info here...
+
+- 108 SM units
+- 32 FP64 cores per SM
+- Clock speed ~ 1410 MHz (boost)
+
+Peak is 108 x 32 x 1.410 x 2 = 9.746 TFLOP/s
+
+Tensor cores are still a mystery here.
