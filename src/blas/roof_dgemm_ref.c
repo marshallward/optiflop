@@ -9,10 +9,16 @@
 static inline void dgemm_kernel(int n, double *x, double *y)
     __attribute__((always_inline));
 
+/* Defined in dgemm.f */
+extern void dgemm(
+    char *transa, char *transb, int *m, int *n, int *k,
+    double *alpha, double *a, int *lda, double *b, int *ldb,
+    double *beta, double *c, int *ldc
+);
 
-void roof_dgemm_blas(int n, double a, double b,
-                     double * restrict x_in, double * restrict y_in,
-                     struct roof_args *args)
+void roof_dgemm_ref(int n, double a, double b,
+                    double * restrict x_in, double * restrict y_in,
+                    struct roof_args *args)
 {
     /* Timer config */
     Stopwatch *timer = args->timer;
@@ -20,6 +26,8 @@ void roof_dgemm_blas(int n, double a, double b,
 
     /* dgemm inputs */
     double *x, *y;
+    double alpha, beta;
+    char transa, transb;
 
     /* We don't use any of the input arguments here!  Make new ones */
     /* TODO: Yes, this indicates bad design... */
@@ -28,6 +36,11 @@ void roof_dgemm_blas(int n, double a, double b,
     /* NOTE: Initialize to NULL to prevent warnings */
     x = NULL;
     y = NULL;
+
+    alpha = 1.0;
+    beta = 0.0;
+    transa = 'N';
+    transb = 'N';
 
     posix_memalign((void *) &x, BYTEALIGN, n * n * sizeof(double));
     posix_memalign((void *) &y, BYTEALIGN, n * n * sizeof(double));
@@ -44,17 +57,17 @@ void roof_dgemm_blas(int n, double a, double b,
     long r_max = 1;
     *(args->runtime_flag) = 0;
 
-    cblas_dgemm(
-        CblasRowMajor, CblasNoTrans, CblasNoTrans, 
-        n, n, n, 1., x, n, y, n, 0., x, n);
+    dgemm(
+        &transa, &transb,
+        &n, &n, &n, &alpha, x, &n, y, &n, &beta, x, &n);
 
     do {
         pthread_barrier_wait(args->barrier);
         timer->start(timer);
         for (long r = 0; r < r_max; r++) {
-            cblas_dgemm(
-                CblasRowMajor, CblasNoTrans, CblasNoTrans, 
-                n, n, n, 1., x, n, y, n, 0., x, n);
+            dgemm(
+                &transa, &transb,
+                &n, &n, &n, &alpha, x, &n, y, &n, &beta, x, &n);
             /* Prevent loop interchange */
             //if (y[0] < 0.) dummy(a, b, x, y);
         }

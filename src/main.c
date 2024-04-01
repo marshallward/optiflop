@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
         {.name = "y[:] = sqrt(x[:])",           .thread = {.roof = &roof_sqrt}},
         {.name = "(BLAS) y[:] = a x[:] + y[:]", .thread = {.roof = &roof_daxpy_blas}},
         {.name = "(BLAS) A_ij = A_ik B_kj",     .thread = {.roof = &roof_dgemm_blas}},
+        {.name = "(BLAS ref) A_ij = A_ik B_kj", .thread = {.roof = &roof_dgemm_ref}},
         {.name = "GPU: y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy}},
         {.name = "GPU (BLAS): y[:] = a * x[:] + y[:]", .thread = {.roof = &gpu_axpy_blas}},
         {.name = "GPU (BLAS): A[:,:] = A[:,:] * B[:,:]", .thread = {.roof = &gpu_dgemm_blas}},

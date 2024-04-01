@@ -6,10 +6,16 @@ AC_CONFIG_HEADERS([inc/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 
+# Set up Fortran
+# NOTE: We need .f source to work, but rely on a modern (FC) toolset
+AC_LANG([Fortran])
+AC_FC_SRCEXT([f])
+AC_PROG_FC
+AC_FC_LIBRARY_LDFLAGS
+
 # Compiler configuration
 AC_LANG([C])
 AC_PROG_CC
-
 
 # Validate the following keywords
 AX_C_ASM
@@ -103,7 +109,7 @@ AC_MSG_RESULT($enable_unroll)
 # BLAS configuration
 # TODO: Gracefully handle the missing header case...
 AC_SEARCH_LIBS([cblas_dgemm], [blas openblas], [
-  AC_CHECK_HEADERS([cblas.h], [
+  AC_CHECK_HEADERS([openblas/cblas.h], [
     cblas_path="blas"
   ], [
     cblas_path="generic"
@@ -156,5 +162,6 @@ AC_SUBST(cblas_path, "$cblas_path")
 AC_SUBST(enable_cuda, "$enable_cuda")
 AC_SUBST(enable_cublas, "$enable_cublas")
 AC_SUBST(LD, "$LD")
+AC_SUBST(FCLIBS, "$FCLIBS")
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -66,6 +66,7 @@ void roof_sqrt(int, double, double, double *, double *, struct roof_args *);
 /* Not really like the other tests, but here anyway... */
 void roof_daxpy_blas(int, double, double, double *, double *, struct roof_args *);
 void roof_dgemm_blas(int, double, double, double *, double *, struct roof_args *);
+void roof_dgemm_ref(int, double, double, double *, double *, struct roof_args *);
 
 void dummy(double, double, double *, double *);
 
