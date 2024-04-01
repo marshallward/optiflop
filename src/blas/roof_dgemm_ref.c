@@ -9,8 +9,14 @@
 static inline void dgemm_kernel(int n, double *x, double *y)
     __attribute__((always_inline));
 
+/* Defined in dgemm.f */
+extern void dgemm(
+    int transa, int transb, int m, int n, int k,
+    double alpha, double *a, int lda, double *b, int ldb,
+    double beta, double *c, int ldc
+);
 
-void roof_dgemm_blas(int n, double a, double b,
+void roof_dgemm_roof(int n, double a, double b,
                      double * restrict x_in, double * restrict y_in,
                      struct roof_args *args)
 {
@@ -44,16 +50,16 @@ void roof_dgemm_blas(int n, double a, double b,
     long r_max = 1;
     *(args->runtime_flag) = 0;
 
-    cblas_dgemm(
-        CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+    dgemm(
+        CblasNoTrans, CblasNoTrans, 
         n, n, n, 1., x, n, y, n, 0., x, n);
 
     do {
         pthread_barrier_wait(args->barrier);
         timer->start(timer);
         for (long r = 0; r < r_max; r++) {
-            cblas_dgemm(
-                CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+            dgemm(
+                CblasNoTrans, CblasNoTrans, 
                 n, n, n, 1., x, n, y, n, 0., x, n);
             /* Prevent loop interchange */
             //if (y[0] < 0.) dummy(a, b, x, y);

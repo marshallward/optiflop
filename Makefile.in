@@ -7,11 +7,14 @@ CPPFLAGS = @DEFS@ @CPPFLAGS@ -I$(INC)
 CC = @CC@
 CFLAGS = @CFLAGS@
 
+FC = @FC@
+FCFLAGS = @FCFLAGS@
+
 NVCC = @NVCC@
 
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
+LIBS = @LIBS@ @FCLIBS@
 
 # Optional flags
 LOOP_CFLAGS = @loop_cflags@
@@ -39,6 +42,7 @@ _OBJS = main.o input.o \
 	avx.o avx_fma.o \
 	avx512.o \
 	roof_daxpy_blas.o roof_dgemm_blas.o \
+	roof_dgemm_ref.o dgemm.o xerbla.o lsame.o \
 	roof.o kernel.o dummy.o \
 	gpu_roof.o gpu_simd.o \
 	gpu_axpy_blas.o gpu_dgemm_blas.o
@@ -104,6 +108,18 @@ $(OBJDIR)/roof_daxpy_blas.o: $(BLAS_PATH)/roof_daxpy_blas.c $(INC)/roof.h $(INC)
 
 $(OBJDIR)/roof_dgemm_blas.o: $(BLAS_PATH)/roof_dgemm_blas.c $(INC)/roof.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/roof_dgemm_ref.o: $(BLAS_PATH)/roof_dgemm_ref.c $(INC)/roof.h $(INC)/stopwatch.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/dgemm.o: $(BLAS_PATH)/dgemm.f
+	$(FC) $(FCFLAGS) -c -o $@ $<
+
+$(OBJDIR)/xerbla.o: $(BLAS_PATH)/xerbla.f
+	$(FC) $(FCFLAGS) -c -o $@ $<
+
+$(OBJDIR)/lsame.o: $(BLAS_PATH)/lsame.f
+	$(FC) $(FCFLAGS) -c -o $@ $<
 
 $(OBJDIR)/roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
