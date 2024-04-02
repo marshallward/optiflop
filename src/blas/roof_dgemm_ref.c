@@ -10,7 +10,7 @@ static inline void dgemm_kernel(int n, double *x, double *y)
     __attribute__((always_inline));
 
 /* Defined in dgemm.f */
-extern void dgemm(
+extern void dgemm_ref(
     char *transa, char *transb, int *m, int *n, int *k,
     double *alpha, double *a, int *lda, double *b, int *ldb,
     double *beta, double *c, int *ldc
@@ -28,7 +28,6 @@ void roof_dgemm_ref(int n_in, double a, double b,
     double *x, *y;
     double alpha, beta;
     char transa, transb;
-
     int n;
 
     /* Allocate matrix as a 1d array */
@@ -40,6 +39,8 @@ void roof_dgemm_ref(int n_in, double a, double b,
     beta = 0.0;
     transa = 'N';
     transb = 'N';
+    /* DGEMM ref is very slow, so reduce the size. */
+    n = n_in;
 
     /* Reference BLAS is very slow, so much that even a single iteration is a
      * long time.  For now, we just reduce the size, but we should rethink how
@@ -61,7 +62,7 @@ void roof_dgemm_ref(int n_in, double a, double b,
     long r_max = 1;
     *(args->runtime_flag) = 0;
 
-    dgemm(
+    dgemm_ref(
         &transa, &transb,
         &n, &n, &n, &alpha, x, &n, y, &n, &beta, x, &n);
 
@@ -69,7 +70,7 @@ void roof_dgemm_ref(int n_in, double a, double b,
         pthread_barrier_wait(args->barrier);
         timer->start(timer);
         for (long r = 0; r < r_max; r++) {
-            dgemm(
+            dgemm_ref(
                 &transa, &transb,
                 &n, &n, &n, &alpha, x, &n, y, &n, &beta, x, &n);
             /* Prevent loop interchange */

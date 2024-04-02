@@ -38,9 +38,12 @@ AS_IF([test $posix_timer_path = "posix"], [
   AX_CHECK_ASM([rdtsc], [has_rdtsc])
   AX_CHECK_ASM([rdtscp], [has_rdtscp])
   AX_CHECK_ASM([cpuid], [has_cpuid])
-  AS_IF([test $has_rdtsc -a $has_rdtscp -a $has_cpuid],
-    [tsc_timer_path=x86])
-])
+  AS_IF([test $has_rdtsc -ne 0 -a $has_rdtscp -ne 0 -a $has_cpuid -ne 0],
+    [tsc_timer_path=x86],
+    [tsc_timer_path=generic]
+  )],
+  [tsc_timer_path=generic]
+)
 
 
 # Threading
@@ -79,11 +82,32 @@ AC_ARG_ENABLE([blas],
   AS_HELP_STRING([--enable-blas], [Enable BLAS testing])
 )
 
-# TODO: Gracefully handle the missing header case.
+if test "$enable_unroll" = "yes" -o "$enable_unroll" = ""; then
+    enable_unroll=2
+fi
+
+# Confirm that unroll factor is a positive integer
+case "$enable_unroll" in
+    [[!0-9]]*)
+        AC_MSG_ERROR([Loop unroll must be an integer]) ;;
+    *)
+        ;;
+esac
+
+if test $enable_unroll -gt 0; then
+    loop_cflags="-funroll-loops --param max-unroll-times=$enable_unroll"
+else
+    loop_cflags=""
+fi
+AC_MSG_RESULT($enable_unroll)
+
+
+# BLAS configuration
+# TODO: Gracefully handle the missing header case...
 cblas_path="generic"
-AS_IF([test "$enable_blas" == "yes"], [
-  AC_SEARCH_LIBS([cblas_dgemm], [blas openblas], [
-    AC_CHECK_HEADERS([openblas/cblas.h], [cblas_path="blas"])
+AC_SEARCH_LIBS([cblas_dgemm], [mkl blas openblas], [
+  AC_CHECK_HEADERS([cblas.h], [
+    cblas_path="blas"
   ])
 ])
 
