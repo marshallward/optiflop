@@ -16,7 +16,7 @@ extern void dgemm(
     double *beta, double *c, int *ldc
 );
 
-void roof_dgemm_ref(int n, double a, double b,
+void roof_dgemm_ref(int n_in, double a, double b,
                     double * restrict x_in, double * restrict y_in,
                     struct roof_args *args)
 {
@@ -29,8 +29,7 @@ void roof_dgemm_ref(int n, double a, double b,
     double alpha, beta;
     char transa, transb;
 
-    /* We don't use any of the input arguments here!  Make new ones */
-    /* TODO: Yes, this indicates bad design... */
+    int n;
 
     /* Allocate matrix as a 1d array */
     /* NOTE: Initialize to NULL to prevent warnings */
@@ -41,6 +40,11 @@ void roof_dgemm_ref(int n, double a, double b,
     beta = 0.0;
     transa = 'N';
     transb = 'N';
+
+    /* Reference BLAS is very slow, so much that even a single iteration is a
+     * long time.  For now, we just reduce the size, but we should rethink how
+     * we define matrix-like tests. */
+    n = n_in / 5;
 
     posix_memalign((void *) &x, BYTEALIGN, n * n * sizeof(double));
     posix_memalign((void *) &y, BYTEALIGN, n * n * sizeof(double));

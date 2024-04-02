@@ -14,7 +14,8 @@ NVCC = @NVCC@
 
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@ @FCLIBS@
+LIBS = @LIBS@
+LIBS += @FCLIBS@
 
 # Optional flags
 LOOP_CFLAGS = @loop_cflags@
@@ -30,6 +31,7 @@ AVX512_PATH = $(SRC)/@avx512_path@
 BLAS_PATH = $(SRC)/@cblas_path@
 
 # Control flags
+ENABLE_BLAS = @enable_blas@
 ENABLE_CUDA = @enable_cuda@
 ENABLE_CUBLAS = @enable_cublas@
 
@@ -41,15 +43,19 @@ _OBJS = main.o input.o \
 	sse.o sse_fma.o \
 	avx.o avx_fma.o \
 	avx512.o \
-	roof_daxpy_blas.o roof_dgemm_blas.o \
-	roof_dgemm_ref.o dgemm.o xerbla.o lsame.o \
+	roof_daxpy_blas.o roof_dgemm_blas.o roof_dgemm_ref.o \
 	roof.o kernel.o dummy.o \
 	gpu_roof.o gpu_simd.o \
 	gpu_axpy_blas.o gpu_dgemm_blas.o
 
+ifdef ENABLE_BLAS
+  _OBJS += dgemm.o xerbla.o lsame.o
+endif
+
 OBJS = $(addprefix $(OBJDIR)/, $(_OBJS))
 
-all: LOOP=-funroll-loops --param max-unroll-times=2
+## Rules
+
 all: optiflop
 
 # Platforms
@@ -109,16 +115,11 @@ $(OBJDIR)/roof_daxpy_blas.o: $(BLAS_PATH)/roof_daxpy_blas.c $(INC)/roof.h $(INC)
 $(OBJDIR)/roof_dgemm_blas.o: $(BLAS_PATH)/roof_dgemm_blas.c $(INC)/roof.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/roof_dgemm_ref.o: src/blas/roof_dgemm_ref.c $(INC)/roof.h $(INC)/stopwatch.h
+$(OBJDIR)/roof_dgemm_ref.o: $(BLAS_PATH)/roof_dgemm_ref.c $(INC)/roof.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/dgemm.o: src/blas/dgemm.f
-	$(FC) $(FCFLAGS) -c -o $@ $<
-
-$(OBJDIR)/xerbla.o: src/blas/xerbla.f
-	$(FC) $(FCFLAGS) -c -o $@ $<
-
-$(OBJDIR)/lsame.o: src/blas/lsame.f
+# dgemm.o xerbla.o lsame.o
+$(OBJDIR)/%.o: src/blas/%.f
 	$(FC) $(FCFLAGS) -c -o $@ $<
 
 $(OBJDIR)/roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
@@ -167,6 +168,13 @@ $(OBJDIR)/gpu_dgemm_blas.o: src/generic/gpu_dgemm_blas.c
 	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
 endif
 
+
+# Update Makefile from template
+Makefile: Makefile.in config.status
+	./config.status
+
+
+# Build cleanup
 clean:
 	$(RM) optiflop $(OBJDIR)/*.o $(INC)/*.h.gch
 	$(RM) -r $(OBJDIR)
@@ -188,6 +196,10 @@ distclean: clean
 .PHONY: ac-clean
 ac-clean: distclean
 	$(RM) inc/config.h.in
+	$(RM) inc/config.h.in~
 	$(RM) aclocal.m4
 	$(RM) -r autom4te.cache
+	$(RM) config.guess
+	$(RM) config.sub
 	$(RM) configure
+	$(RM) configure~

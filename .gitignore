@@ -1,15 +1,22 @@
-optiflop
+# Build output
+/optiflop
 *.s
-*.o
-*.h.gch
+/obj/*.o
+/inc/*.h.gch
 
-# Autoconf
-/aclocal.m4
-/autom4te.cache/
+# configure output
 /config.log
 /config.status
-/configure
 /Makefile
 /inc/config.h
+/inc/config.h.in~
+
+# Autoconf output
+/aclocal.m4
+/autom4te.cache/
+/config.guess
+/config.sub
+/configure
+/configure~
 /inc/config.h.in
 /inc/config.h.in~

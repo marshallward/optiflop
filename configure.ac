@@ -6,18 +6,11 @@ AC_CONFIG_HEADERS([inc/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 
-# Set up Fortran
-# NOTE: We need .f source to work, but rely on a modern (FC) toolset
-AC_LANG([Fortran])
-AC_FC_SRCEXT([f])
-AC_PROG_FC
-AC_FC_LIBRARY_LDFLAGS
-
 # Compiler configuration
 AC_LANG([C])
 AC_PROG_CC
 
-# Validate the following keywords
+# Validate the following C keywords
 AX_C_ASM
 AC_C_RESTRICT
 AC_C_VOLATILE
@@ -107,17 +100,24 @@ AC_MSG_RESULT($enable_unroll)
 
 
 # BLAS configuration
+AC_ARG_ENABLE([blas],
+  AS_HELP_STRING([--enable-blas], [Enable BLAS testing])
+)
 # TODO: Gracefully handle the missing header case...
-AC_SEARCH_LIBS([cblas_dgemm], [blas openblas], [
-  AC_CHECK_HEADERS([openblas/cblas.h], [
-    cblas_path="blas"
+# TODO: Invert this loop!!
+AS_IF([test "$enable_blas" == "yes"], [
+  AC_SEARCH_LIBS([cblas_dgemm], [blas openblas], [
+    AC_CHECK_HEADERS([openblas/cblas.h], [
+      cblas_path="blas"
+    ], [
+      cblas_path="generic"
+    ])
   ], [
     cblas_path="generic"
   ])
 ], [
   cblas_path="generic"
 ])
-
 
 # GPU configuration
 AC_ARG_ENABLE([cuda],
@@ -134,6 +134,7 @@ AS_IF([test "$enable_cuda" == "yes"],
   ]
 )
 
+# GPU (CUDA) BLAS configuration
 AC_ARG_ENABLE([cublas],
   AS_HELP_STRING([--enable-cublas], [Enable cuBLAS tests])
 )
@@ -149,6 +150,16 @@ AS_IF([test "$enable_cublas" == "yes"],
   ]
 )
 
+# TODO: As Fortran tests are added, this criterion can be adjusted.
+AS_IF([test "$enable_blas" == "yes"], [
+  # NOTE: Test fixed format (.f) in a modern Fortran compiler (FC)
+  #   In the future, we may need to test both fixed and free format.
+  AC_LANG([Fortran])
+  AC_FC_SRCEXT([f])
+  AC_PROG_FC
+  AC_FC_LIBRARY_LDFLAGS
+])
+
 # Update and create the Makefile
 AC_SUBST(posix_timer_path, "$posix_timer_path")
 AC_SUBST(tsc_timer_path, "$tsc_timer_path")
@@ -159,6 +170,7 @@ AC_SUBST(avx_path, "$avx_path")
 AC_SUBST(avx_fma_path, "$avx_fma_path")
 AC_SUBST(avx512_path, "$avx512_path")
 AC_SUBST(cblas_path, "$cblas_path")
+AC_SUBST(enable_blas, "$enable_blas")
 AC_SUBST(enable_cuda, "$enable_cuda")
 AC_SUBST(enable_cublas, "$enable_cublas")
 AC_SUBST(LD, "$LD")
