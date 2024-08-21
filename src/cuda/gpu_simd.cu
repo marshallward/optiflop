@@ -2,8 +2,8 @@
 
 /* TODO: V100-specific numbers; how to generalize? */
 #define NCORES 32
-#define NTHREADS 128
-#define NBLOCKS 160
+#define NTHREADS 256
+#define NBLOCKS 320
 
 
 __global__ void kadd(long r_max, double *sum, double *runtime)

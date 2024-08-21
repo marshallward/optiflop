@@ -157,8 +157,14 @@ AS_IF([test "$enable_blas" == "yes"], [
   AC_LANG([Fortran])
   AC_FC_SRCEXT([f])
   AC_PROG_FC
-  AC_FC_LIBRARY_LDFLAGS
+  # NOTE: Older autoconfs seem to require a mature libtool setup.
+  #   Not yet sure how to handle this with older versions (if at all).
+  # NOTE: 2.69 definitely does not work, no idea about 2.70--2.71
+  m4_version_prereq([2.72], [AC_FC_LIBRARY_LDFLAGS], [
+    FCLIBS=""
 ])
+])
+
 
 # Update and create the Makefile
 AC_SUBST(posix_timer_path, "$posix_timer_path")
