@@ -45,6 +45,11 @@ AS_IF([test $posix_timer_path = "posix"], [
 )
 
 
+# Threading
+# TODO: Someday might generalize this, but for now we just force POSIX threads.
+LDFLAGS="$LDFLAGS -pthread"
+
+
 # Check if platform requires an explicit link to libm (math).
 AC_SEARCH_LIBS(ceil, m)
 
@@ -71,6 +76,8 @@ AX_CHECK_SIMD([avx512_movnt], [__m512],
 
 
 # Loop unroll check
+# NOTE: This is an awful mess that breaks on many compilers, needs to be
+#   seriously redesigned (if not removed entirely).
 AC_MSG_CHECKING([loop unroll factor])
 AC_ARG_ENABLE(unroll,
     AS_HELP_STRING(--enable-unroll, [set the loop unrolling factor]))
@@ -99,7 +106,7 @@ fi
 AC_MSG_RESULT($enable_unroll)
 
 
-# BLAS configuration
+# C BLAS configuration
 AC_ARG_ENABLE([blas],
   AS_HELP_STRING([--enable-blas], [Enable BLAS testing])
 )
@@ -119,36 +126,42 @@ AS_IF([test "$enable_blas" == "yes"], [
   cblas_path="generic"
 ])
 
-# GPU configuration
-AC_ARG_ENABLE([cuda],
-  AS_HELP_STRING([--enable-cuda], [Enable CUDA tests])
-)
-AS_IF([test "$enable_cuda" == "yes"],
-  [
-    AC_PATH_PROG([NVCC], [nvcc], [no])
-    AS_IF([test $NVCC == "no"], [AC_MSG_ERROR([No CUDA compiler found])])
-    LD=$NVCC
-  ], [
-    LD=$CC
-    LDFLAGS+=" -pthread"
-  ]
-)
 
+# GPU configuration
+AC_ARG_ENABLE([cuda], [
+  AS_HELP_STRING([--enable-cuda], [Enable CUDA tests])
+])
 # GPU (CUDA) BLAS configuration
-AC_ARG_ENABLE([cublas],
+AC_ARG_ENABLE([cublas], [
   AS_HELP_STRING([--enable-cublas], [Enable cuBLAS tests])
-)
-AS_IF([test "$enable_cublas" == "yes"],
-  [
-    AS_IF([test "$enable_cuda" == "no"],
-      [AC_MSG_ERROR([cuBLAS enabled without CUDA])]
-    )
-    cublas_path="cuda"
-    LIBS+="$LIBS -lcublas"
-  ],[
-    cublas_path="generic"
-  ]
-)
+])
+
+
+# If using CUDA, then use a C++ compatible compiler as linker.
+# Otherwise, use the C compiler.
+AS_IF([test "$enable_cuda" == "yes" -o "$enable_cublas" == "yes"], [
+  AC_PATH_PROG([NVCC], [nvcc], [no])
+  AS_IF([test $NVCC == "no"], [AC_MSG_ERROR([No CUDA compiler found])])
+
+  # NOTE: g++ may be viable here, need more info
+  AC_PATH_PROG([NVCPP], [nvc++], [no])
+  AS_IF([test "$NVCPP" == "no"], [AC_MSG_ERROR([No C++ compiler found])])
+  LD=$NVCPP
+  # TODO: Test for libraries
+  LIBS+="$LIBS -lcuda -lcudart"
+], [
+  LD=$CC
+])
+
+
+# cuBLAS setup
+AS_IF([test "$enable_cublas" == "yes"], [
+  cublas_path="cuda"
+  LIBS+="$LIBS -lcublas"
+],[
+  cublas_path="generic"
+])
+
 
 # TODO: As Fortran tests are added, this criterion can be adjusted.
 AS_IF([test "$enable_blas" == "yes"], [
@@ -160,9 +173,7 @@ AS_IF([test "$enable_blas" == "yes"], [
   # NOTE: Older autoconfs seem to require a mature libtool setup.
   #   Not yet sure how to handle this with older versions (if at all).
   # NOTE: 2.69 definitely does not work, no idea about 2.70--2.71
-  m4_version_prereq([2.72], [AC_FC_LIBRARY_LDFLAGS], [
-    FCLIBS=""
-])
+  m4_version_prereq([2.72], [AC_FC_LIBRARY_LDFLAGS], [FCLIBS=""])
 ])
 
 
