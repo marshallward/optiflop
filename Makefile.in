@@ -17,9 +17,6 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 LIBS += @FCLIBS@
 
-# Optional flags
-LOOP_CFLAGS = @loop_cflags@
-
 # Paths to platform-specific source
 POSIX_TIMER_PATH = $(SRC)/@posix_timer_path@
 TSC_TIMER_PATH = $(SRC)/@tsc_timer_path@
@@ -123,10 +120,10 @@ $(OBJDIR)/%.o: src/blas/%.f
 	$(FC) $(FCFLAGS) -c -o $@ $<
 
 $(OBJDIR)/roof.o: $(SRC)/roof.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/kernel.o: $(SRC)/kernel.c $(INC)/roof.h $(INC)/bench.h $(INC)/stopwatch.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LOOP_CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/dummy.o: $(SRC)/dummy.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<

@@ -50,8 +50,8 @@ AS_IF([test $posix_timer_path = "posix"], [
 LDFLAGS="$LDFLAGS -pthread"
 
 
-# Check if platform requires an explicit link to libm (math).
-AC_SEARCH_LIBS(ceil, m)
+# Check if platform requires an explicit link to the math (libm) library.
+AC_SEARCH_LIBS([ceil], [m])
 
 
 # SIMD configuration
@@ -73,37 +73,6 @@ AX_CHECK_SIMD([avx_movnt], [__m256],
               [float *p = malloc(32); _mm256_stream_ps(p,r)])
 AX_CHECK_SIMD([avx512_movnt], [__m512],
               [float *p = malloc(64); _mm512_stream_ps(p,r)])
-
-
-# Loop unroll check
-# NOTE: This is an awful mess that breaks on many compilers, needs to be
-#   seriously redesigned (if not removed entirely).
-AC_MSG_CHECKING([loop unroll factor])
-AC_ARG_ENABLE(unroll,
-    AS_HELP_STRING(--enable-unroll, [set the loop unrolling factor]))
-if test "$enable_unroll" = "no"; then
-    # Set default unroll rate to two
-    enable_unroll=0
-fi
-
-if test "$enable_unroll" = "yes" -o "$enable_unroll" = ""; then
-    enable_unroll=2
-fi
-
-# Confirm that unroll factor is a positive integer
-case "$enable_unroll" in
-    [[!0-9]]*)
-        AC_MSG_ERROR([Loop unroll must be an integer]) ;;
-    *)
-        ;;
-esac
-
-if test $enable_unroll -gt 0; then
-    loop_cflags="-funroll-loops --param max-unroll-times=$enable_unroll"
-else
-    loop_cflags=""
-fi
-AC_MSG_RESULT($enable_unroll)
 
 
 # C BLAS configuration
