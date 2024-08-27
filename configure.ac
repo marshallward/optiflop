@@ -32,22 +32,21 @@ AC_CHECK_TYPE([clockid_t],
 )
 
 
-# TODO: Our TSC test uses the POSIX timer, but we could relax this.
+# TODO: Our TSC test also uses the POSIX timer, but we could relax this.
+tsc_timer_path=generic
 AS_IF([test $posix_timer_path = "posix"], [
   AX_CHECK_ASM([rdtsc], [has_rdtsc])
   AX_CHECK_ASM([rdtscp], [has_rdtscp])
   AX_CHECK_ASM([cpuid], [has_cpuid])
-  AS_IF([test $has_rdtsc -eq 1 -a $has_rdtscp -eq 1 -a $has_cpuid -eq 1],
-    [tsc_timer_path=x86],
-    [tsc_timer_path=generic]
-  )],
-  [tsc_timer_path=generic]
-)
+  AS_IF([test $has_rdtsc -a $has_rdtscp -a $has_cpuid],
+    [tsc_timer_path=x86])
+])
 
 
 # Threading
-# TODO: Someday might generalize this, but for now we just force POSIX threads.
-LDFLAGS="$LDFLAGS -pthread"
+# TODO: This could be better in many ways, but this will address most of the
+#   common issues around enabling Pthreads.
+AC_CHECK_FUNC([pthread_create], [PTHREAD=""], [PTHREAD="-pthread"])
 
 
 # Check if platform requires an explicit link to the math (libm) library.
@@ -79,20 +78,13 @@ AX_CHECK_SIMD([avx512_movnt], [__m512],
 AC_ARG_ENABLE([blas],
   AS_HELP_STRING([--enable-blas], [Enable BLAS testing])
 )
-# TODO: Gracefully handle the missing header case...
-# TODO: Invert this loop!!
+
+# TODO: Gracefully handle the missing header case.
+cblas_path="generic"
 AS_IF([test "$enable_blas" == "yes"], [
   AC_SEARCH_LIBS([cblas_dgemm], [blas openblas], [
-    AC_CHECK_HEADERS([openblas/cblas.h], [
-      cblas_path="blas"
-    ], [
-      cblas_path="generic"
-    ])
-  ], [
-    cblas_path="generic"
+    AC_CHECK_HEADERS([openblas/cblas.h], [cblas_path="blas"])
   ])
-], [
-  cblas_path="generic"
 ])
 
 
@@ -106,19 +98,16 @@ AC_ARG_ENABLE([cublas], [
 ])
 
 
-# If using CUDA, then use a C++ compatible compiler as linker.
+# If using CUDA, then use the CUDA compiler as a linker.
 # Otherwise, use the C compiler.
 AS_IF([test "$enable_cuda" == "yes" -o "$enable_cublas" == "yes"], [
+  # TODO: What if NVCC is already set?
   AC_PATH_PROG([NVCC], [nvcc], [no])
   AS_IF([test $NVCC == "no"], [AC_MSG_ERROR([No CUDA compiler found])])
-
-  # NOTE: g++ may be viable here, need more info
-  AC_PATH_PROG([NVCPP], [nvc++], [no])
-  AS_IF([test "$NVCPP" == "no"], [AC_MSG_ERROR([No C++ compiler found])])
-  LD=$NVCPP
-  # TODO: Test for libraries
-  LIBS+="$LIBS -lcuda -lcudart"
+  MAINCC=$NVCC
+  LD=$NVCC
 ], [
+  MAINCC=$CC
   LD=$CC
 ])
 
@@ -126,7 +115,7 @@ AS_IF([test "$enable_cuda" == "yes" -o "$enable_cublas" == "yes"], [
 # cuBLAS setup
 AS_IF([test "$enable_cublas" == "yes"], [
   cublas_path="cuda"
-  LIBS+="$LIBS -lcublas"
+  AC_SEARCH_LIBS([cublasDaxpy],[cublas])
 ],[
   cublas_path="generic"
 ])
@@ -159,6 +148,9 @@ AC_SUBST(cblas_path, "$cblas_path")
 AC_SUBST(enable_blas, "$enable_blas")
 AC_SUBST(enable_cuda, "$enable_cuda")
 AC_SUBST(enable_cublas, "$enable_cublas")
+AC_SUBST(NVCC, "$NVCC")
+AC_SUBST(PTHREAD, "$PTHREAD")
+AC_SUBST(MAINCC, "$MAINCC")
 AC_SUBST(LD, "$LD")
 AC_SUBST(FCLIBS, "$FCLIBS")
 AC_CONFIG_FILES([Makefile])

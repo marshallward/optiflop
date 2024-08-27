@@ -1,7 +1,14 @@
+# Control flags
+ENABLE_BLAS = @enable_blas@
+ENABLE_CUDA = @enable_cuda@
+ENABLE_CUBLAS = @enable_cublas@
+
+# Build
 SRC = src
 INC = inc
 OBJDIR = obj
 
+# Toolchain
 CPPFLAGS = @DEFS@ @CPPFLAGS@ -I$(INC)
 
 CC = @CC@
@@ -10,12 +17,17 @@ CFLAGS = @CFLAGS@
 FC = @FC@
 FCFLAGS = @FCFLAGS@
 
-NVCC = @NVCC@
-
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 LIBS += @FCLIBS@
+
+# Miscellaneous
+#   Most of these should probably have been resolved by autoconf, but for now
+#   they are configured here.
+NVCC = @NVCC@   # The CUDA compiler (if available)
+MAINCC = @MAINCC@     # Compiler used with main.o (see below)
+PTHREAD = @PTHREAD@
 
 # Paths to platform-specific source
 POSIX_TIMER_PATH = $(SRC)/@posix_timer_path@
@@ -27,10 +39,6 @@ AVX_FMA_PATH = $(SRC)/@avx_fma_path@
 AVX512_PATH = $(SRC)/@avx512_path@
 BLAS_PATH = $(SRC)/@cblas_path@
 
-# Control flags
-ENABLE_BLAS = @enable_blas@
-ENABLE_CUDA = @enable_cuda@
-ENABLE_CUBLAS = @enable_cublas@
 
 # Object files
 # TODO: Generate this list
@@ -55,25 +63,10 @@ OBJS = $(addprefix $(OBJDIR)/, $(_OBJS))
 
 all: optiflop
 
-# Platforms
-
-# NOTE: Using -mavx in place of -march=corei7-avx (or native) shows some minor
-# changes in performance, on the order of 10 to 100 MFLOP/s.  In general, -mavx
-# is slightly faster across the tests, although y[:] = x[:] + y[:] is slighly
-# faster when -mavx is removed.
-#
-# The reason for this is still not clear.  Please experiment on your platform.
-
-# Below are the old platform-specific rules.
-# I am working on getting autoconf to sort out these details
-fcc: CC=fccpx -Xg -I$(INC)
-fcc: CFLAGS=-std=gnu99 -Kfast
-fcc: optiflop
-
 # Executable rules
 
 optiflop: $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(LD) $(LDFLAGS) $(PTHREAD) -o $@ $^ $(LIBS)
 
 $(OBJS): | $(OBJDIR)
 
@@ -82,11 +75,13 @@ $(OBJDIR):
 
 # Object rules
 
+# NOTE: If compiled with nvc, then it will use objects unavailable to nvcc.
+#   So we use $(MAINCC) macro to configure this for CUDA builds when needed.
 $(OBJDIR)/main.o: $(SRC)/main.c $(INC)/sse.h $(INC)/sse_fma.h $(INC)/avx.h $(INC)/roof.h $(INC)/bench.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -pthread -o $@ $<
+	$(MAINCC) $(CPPFLAGS) $(CFLAGS) $(PTHREAD) -c -o $@ $<
 
 $(OBJDIR)/input.o: $(SRC)/input.c $(INC)/input.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -pthread -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/simd.o: $(SRC)/simd.c $(INC)/bench.h $(INC)/stopwatch.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<

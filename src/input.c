@@ -26,7 +26,7 @@ void parse_input(int argc, char *argv[], struct input_config *cfg)
     cfg->vlen_end = -1;
     cfg->vlen_scale = 2.;
     cfg->nthreads = 1;
-    cfg->min_runtime = 1e-2;
+    cfg->min_runtime = 1e-1;
     cfg->ensembles = 1;
     cfg->timer_type = TIMER_POSIX;
 
