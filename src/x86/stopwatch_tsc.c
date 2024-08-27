@@ -85,11 +85,11 @@ uint64_t rdtsc(void)
      * cycles, but is not my main problem at the moment.
      */
 
-    uint64_t rax, rdx;
-    uint32_t aux;
+    uint32_t eax, edx;  // Time stamp counter [EDX:EAX]
+    //uint32_t ecx;     // IA32_TSC_AUX (currently unused)
 
-    asm volatile ("rdtscp" : "=a" (rax), "=d" (rdx), "=c" (aux));
-    return (rdx << 32) | rax;
+    asm volatile ("rdtscp" : "=a" (eax), "=d" (edx));
+    return ((uint64_t) edx << 32) | eax;
 }
 
 double stopwatch_get_tsc_freq(void)
