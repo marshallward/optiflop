@@ -11,7 +11,7 @@ void gpu_dgemm_blas(int n, double a, double b, double * x_in, double * y_in,
 {
     cublasHandle_t handle;
     cudaStream_t stream;
-    cublasOperation_t op = CUBLAS_OP_N;
+    const cublasOperation_t op = CUBLAS_OP_N;
     size_t nbytes;
 
     double *A, *B, *C;
@@ -37,10 +37,16 @@ void gpu_dgemm_blas(int n, double a, double b, double * x_in, double * y_in,
     // But it would not take much for a compiler to remove the calculation.
     for (int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++) {
-            //A[i*n+j] = (i == j) ? 1. : 0.;
-            //B[i*n+j] = (i == j) ? 1. : 0.;
-            A[i*n+j] = (double) (i*n+j) * 1e-3;
-            B[i*n+j] = (double) (j*n+i) * 1e-3;
+
+            // This one is fast
+            A[i*n+j] = (i == j) ? 1. : 0.;
+            B[i*n+j] = (i == j) ? 1. : 0.;
+
+            // This one is slow
+            //A[i*n+j] = (double) (i*n+j) * 1e-3;
+            //B[i*n+j] = (double) (j*n+i) * 1e-3;
+
+            // I do not understand why it matters.
         }
     }
     cudaMalloc((void **) &dA, nbytes);
