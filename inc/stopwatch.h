@@ -8,7 +8,6 @@
 #define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 #endif
 
-
 /* Stopwatch type */
 enum stopwatch_backend {
     TIMER_UNDEF = -1,
@@ -20,14 +19,16 @@ enum stopwatch_backend {
 
 
 /* Stopwatch class */
-typedef struct Stopwatch_struct {
+typedef struct Stopwatch_struct Stopwatch;
+
+struct Stopwatch_struct {
     union stopwatch_context *context;
 
-    void (*start)();
-    void (*stop)();
-    double (*runtime)();
-    void (*destroy)();
-} Stopwatch;
+    void (*start)(Stopwatch *);
+    void (*stop)(Stopwatch *);
+    double (*runtime)(Stopwatch *);
+    void (*destroy)(Stopwatch *);
+};
 
 
 /* Context */
