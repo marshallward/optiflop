@@ -19,8 +19,8 @@ void sse_add(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_sse = 16 / sizeof(double);
-    const int n_reg = ADDPD_LATENCY;
+    enum { n_sse = 16 / sizeof(double) };
+    enum { n_reg = ADDPD_LATENCY };
     const __m128d add0 = _mm_set1_pd(1e-6);
     __m128d reg[n_reg];
 
@@ -42,8 +42,6 @@ void sse_add(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            /* Intel icc requires an explicit unroll */
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++)
                 reg[j] = _mm_add_pd(reg[j], add0);
         }
@@ -77,7 +75,7 @@ void sse_add(void *args_in)
 
 
 double sum_sse(__m128d x) {
-    const int n_sse = 16 / sizeof(double);
+    enum { n_sse = 16 / sizeof(double) };
     union vec {
         __m128d reg;
         double val[n_sse];

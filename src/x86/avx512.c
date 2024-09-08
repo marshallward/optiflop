@@ -20,8 +20,8 @@ void avx512_add(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_avx512 = 64 / sizeof(double);
-    const int n_reg = VADDPS_LATENCY;
+    enum { n_avx512 = 64 / sizeof(double) };
+    enum { n_reg = VADDPS_LATENCY };
     const __m512 add0 = _mm512_set1_ps((double) 1e-6);
     __m512 reg[n_reg];
 
@@ -43,7 +43,6 @@ void avx512_add(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++)
                 reg[j] = _mm512_add_ps(reg[j], add0);
         }
@@ -86,8 +85,8 @@ void avx512_fma(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_avx512 = 64 / sizeof(double);
-    const int n_reg = VFMAPS_LATENCY;
+    enum { n_avx512 = 64 / sizeof(double) };
+    enum { n_reg = VFMAPS_LATENCY };
     const __m512 add0 = _mm512_set1_ps((double) 1e-6);
     const __m512 mul0 = _mm512_set1_ps((double) (1. + 1e-6));
     __m512 reg[n_reg];
@@ -112,7 +111,6 @@ void avx512_fma(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++)
                 reg[j] = _mm512_fmadd_ps(reg[j], mul0, add0);
         }
@@ -154,8 +152,8 @@ void avx512_fmac(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_avx512 = 64 / sizeof(double);
-    const int n_reg = VFMAPS_LATENCY;
+    enum { n_avx512 = 64 / sizeof(double) };
+    enum { n_reg = VFMAPS_LATENCY };
     const __m512 add0 = _mm512_set1_ps((double) 1e-6);
     const __m512 mul0 = _mm512_set1_ps((double) (1. + 1e-6));
     __m512 reg1[n_reg];
@@ -181,7 +179,6 @@ void avx512_fmac(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++) {
                 reg1[j] = _mm512_fmadd_ps(reg1[j], mul0, add0);
                 reg2[j] = _mm512_fmadd_ps(reg2[j], mul0, add0);
@@ -222,7 +219,7 @@ void avx512_fmac(void *args_in)
 
 
 double avx512_sum(__m512 x) {
-    const int n_avx512 = 64 / sizeof(double);
+    enum { n_avx512 = 64 / sizeof(double) };
     union vec {
         __m512 reg;
         double val[n_avx512];

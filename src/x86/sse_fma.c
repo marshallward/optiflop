@@ -21,8 +21,8 @@ void sse_fma(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_sse = 16 / sizeof(double);
-    const int n_reg = VMULPS_LATENCY;
+    enum { n_sse = 16 / sizeof(double) };
+    enum { n_reg = VMULPS_LATENCY };
     const __m128d add0 = _mm_set1_pd(1e-6);
     const __m128d mul0 = _mm_set1_pd(1. + 1e-6);
     __m128d reg[n_reg];
@@ -46,7 +46,6 @@ void sse_fma(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (int r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++) {
                 reg[j] = _mm_fmadd_pd(reg[j], add0, mul0);
             }
@@ -89,8 +88,8 @@ void sse_fmac(void *args_in)
     /* Thread input */
     struct roof_args *args;
 
-    const int n_sse = 16 / sizeof(double);
-    const int n_reg = VMULPS_LATENCY;
+    enum { n_sse = 16 / sizeof(double) };
+    enum { n_reg = VMULPS_LATENCY };
     const __m128d add0 = _mm_set1_pd(1e-6);
     const __m128d mul0 = _mm_set1_pd(1. + 1e-6);
     //__m128d reg[2 * n_reg];
@@ -124,7 +123,6 @@ void sse_fmac(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++) {
                 //reg[j] = _mm_fmadd_pd(reg[j], add0, mul0);
                 //reg[j + n_reg] = _mm_fmadd_pd(reg[j + n_reg], add0, mul0);
@@ -169,7 +167,7 @@ void sse_fmac(void *args_in)
 
 
 double sse_sum(__m128d x) {
-    const int n_sse = 16 / sizeof(double);
+    enum { n_sse = 16 / sizeof(double) };
     union vec {
         __m128d reg;
         double val[n_sse];

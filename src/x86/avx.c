@@ -20,8 +20,8 @@ void avx_add(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_avx = 32 / sizeof(double);   // Values per SIMD register
-    const int n_reg = VADDPD_LATENCY;       // Number of loop-unrolled stages
+    enum { n_avx = 32 / sizeof(double) };
+    enum { n_reg = VADDPD_LATENCY };
     const __m256d add0 = _mm256_set1_pd(1e-6);
     __m256d reg[n_reg];
 
@@ -43,8 +43,6 @@ void avx_add(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            /* Intel icc requires an explicit unroll */
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++)
                 reg[j] = _mm256_add_pd(reg[j], add0);
         }
@@ -84,8 +82,8 @@ void avx_mul(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_avx = 32 / sizeof(double);   // Values per SIMD register
-    const int n_reg = VMULPD_LATENCY;     // Number of loop-unrolled stages
+    enum { n_avx = 32 / sizeof(double) };
+    enum { n_reg = VMULPD_LATENCY };
     const __m256d mul0 = _mm256_set1_pd(1. + 1e-6);
     __m256d reg[n_reg];
 
@@ -107,8 +105,6 @@ void avx_mul(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            /* Intel icc requires an explicit unroll */
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++)
                 reg[j] = _mm256_mul_pd(reg[j], mul0);
         }
@@ -148,8 +144,8 @@ void avx_mac(void *args_in)
     struct roof_args *args;
     args = (struct roof_args *) args_in;
 
-    const int n_avx = 32 / sizeof(double);  // Values per SIMD register
-    const int n_reg = VMULPD_LATENCY;     // Number of loop-unrolled stages
+    enum { n_avx = 32 / sizeof(double) };
+    enum { n_reg = VMULPD_LATENCY };
     const __m256d add0 = _mm256_set1_pd(1e-6);
     const __m256d mul0 = _mm256_set1_pd(1. + 1e-6);
     __m256d reg1[n_reg];
@@ -180,7 +176,6 @@ void avx_mac(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++) {
                 reg1[j] = _mm256_add_pd(reg1[j], add0);
                 reg2[j] = _mm256_mul_pd(reg2[j], mul0);
@@ -219,7 +214,7 @@ void avx_mac(void *args_in)
 
 
 double sum_avx(__m256d x) {
-    const int n_avx = 32 / sizeof(double);
+    enum { n_avx = 32 / sizeof(double) };
     union vec {
         __m256d reg;
         double val[n_avx];

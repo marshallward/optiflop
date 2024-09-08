@@ -18,10 +18,9 @@ void avx_fma(void *args_in)
 {
     /* Thread input */
     struct roof_args *args;
-    args = (struct roof_args *) args_in;
 
-    const int n_avx = 32 / sizeof(double);   // Values per SIMD register
-    const int n_reg = VFMAPD_LATENCY;
+    enum { n_avx = 32 / sizeof(double) };
+    enum { n_reg = VFMAPD_LATENCY };
     const __m256 add0 = _mm256_set1_ps(1e-6);
     const __m256 mul0 = _mm256_set1_ps(1. + 1e-6);
     __m256 reg[n_reg];
@@ -32,6 +31,9 @@ void avx_fma(void *args_in)
     long r_max;
     double runtime, flops;
     Stopwatch *t;
+
+    /* Read inputs */
+    args = (struct roof_args *) args_in;
 
     t = args->timer;
 
@@ -49,7 +51,6 @@ void avx_fma(void *args_in)
         pthread_barrier_wait(args->barrier);
         t->start(t);
         for (long r = 0; r < r_max; r++) {
-            #pragma unroll(n_reg)
             for (int j = 0; j < n_reg; j++) {
                 reg[j] = _mm256_fmadd_ps(reg[j], add0, mul0);
             }
@@ -93,8 +94,9 @@ void avx_fmac(void *args_in)
     /* Thread input */
     struct roof_args *args;
 
-    const int n_avx = 32 / sizeof(double);   // Values per SIMD register
-    const int n_reg = VFMAPD_LATENCY;
+    enum { n_avx = 32 / sizeof(double) };
+    enum { n_reg = VFMAPD_LATENCY };
+
     const __m256 add0 = _mm256_set1_ps(1e-6);
     const __m256 mul0 = _mm256_set1_ps(1. + 1e-6);
     __m256 reg[2 * n_reg];
@@ -102,8 +104,7 @@ void avx_fmac(void *args_in)
     // Declare as volatile to prevent removal during optimisation
     volatile double result __attribute__((unused));
 
-    long r_max, i;
-    int j;
+    long r_max;
     double runtime, flops;
     Stopwatch *t;
 
@@ -112,7 +113,7 @@ void avx_fmac(void *args_in)
 
     t = args->timer;
 
-    for (j = 0; j < n_reg; j++) {
+    for (int j = 0; j < n_reg; j++) {
         reg[j] = _mm256_set1_ps((double) j);
         reg[j + n_reg] = _mm256_set1_ps((double) j);
     }
@@ -126,9 +127,8 @@ void avx_fmac(void *args_in)
     do {
         pthread_barrier_wait(args->barrier);
         t->start(t);
-        for (i = 0; i < r_max; i++) {
-            #pragma unroll(n_reg)
-            for (j = 0; j < n_reg; j++) {
+        for (int i = 0; i < r_max; i++) {
+            for (int j = 0; j < n_reg; j++) {
                 reg[j] = _mm256_fmadd_ps(reg[j], add0, mul0);
                 reg[j + n_reg] = _mm256_fmadd_ps(reg[j + n_reg], add0, mul0);
             }
@@ -151,7 +151,7 @@ void avx_fmac(void *args_in)
     /* In order to prevent removal of the prior loop by optimisers,
      * sum the register values and save the result as volatile. */
 
-    for (j = 0; j < 2 * n_reg; j++)
+    for (int j = 0; j < 2 * n_reg; j++)
         reg[0] = _mm256_add_ps(reg[0], reg[j]);
     result = sum_avx(reg[0]);
 
@@ -167,7 +167,7 @@ void avx_fmac(void *args_in)
 
 
 double sum_avx(__m256 x) {
-    const int n_avx = 32 / sizeof(double);   // Values per SIMD register
+    enum { n_avx = 32 / sizeof(double) };
     union vec {
         __m256 reg;
         double val[n_avx];
