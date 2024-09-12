@@ -25,8 +25,10 @@ LIBS += @FCLIBS@
 # Miscellaneous
 #   Most of these should probably have been resolved by autoconf, but for now
 #   they are configured here.
-NVCC = @NVCC@   # The CUDA compiler (if available)
-MAINCC = @MAINCC@     # Compiler used with main.o (see below)
+#   NVCC: CUDA compiler (if available)
+#   MAINCC: Compiler used with main.o (see below)
+NVCC = @NVCC@
+MAINCC = @MAINCC@
 PTHREAD = @PTHREAD@
 
 # Paths to platform-specific source
