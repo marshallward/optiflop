@@ -9,7 +9,9 @@ INC = inc
 OBJDIR = obj
 
 # Toolchain
-CPPFLAGS = @DEFS@ @CPPFLAGS@ -I$(INC)
+CPPFLAGS = @DEFS@
+CPPFLAGS += @CPPFLAGS@
+CPPFLAGS += -I$(INC)
 
 CC = @CC@
 CFLAGS = @CFLAGS@
@@ -136,30 +138,30 @@ $(OBJDIR)/stopwatch_tsc.o: $(TSC_TIMER_PATH)/stopwatch_tsc.c
 
 ifdef ENABLE_CUDA
 $(OBJDIR)/gpu_simd.o: src/cuda/gpu_simd.cu
-	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(NVCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJDIR)/gpu_roof.o: src/cuda/gpu_roof.cu
-	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(NVCC) $(CPPFLAGS) -c -o $@ $<
 else
 $(OBJDIR)/gpu_simd.o: src/generic/gpu_simd.c
-	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/gpu_roof.o: src/generic/gpu_roof.c
-	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 endif
 
 ifdef ENABLE_CUBLAS
 $(OBJDIR)/gpu_axpy_blas.o: src/cuda/gpu_axpy_blas.cu
-	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(NVCC) $(CPPFLAGS) -c -o $@ $<
 
 $(OBJDIR)/gpu_dgemm_blas.o: src/cuda/gpu_dgemm_blas.cu
-	$(NVCC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(NVCC) $(CPPFLAGS) -c -o $@ $<
 else
 $(OBJDIR)/gpu_axpy_blas.o: src/generic/gpu_axpy_blas.c
-	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/gpu_dgemm_blas.o: src/generic/gpu_dgemm_blas.c
-	$(CC) $(CPPFLAGS) -I$(INC) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 endif
 
 
