@@ -1,6 +1,5 @@
 # Build output
 /optiflop
-*.s
 /obj/*.o
 /inc/*.h.gch
 

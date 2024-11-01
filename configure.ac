@@ -104,10 +104,10 @@ AS_IF([test "$enable_cuda" == "yes" -o "$enable_cublas" == "yes"], [
   # TODO: What if NVCC is already set?
   AC_PATH_PROG([NVCC], [nvcc], [no])
   AS_IF([test $NVCC == "no"], [AC_MSG_ERROR([No CUDA compiler found])])
-  MAINCC=$NVCC
+  CC_MAIN=$NVCC
   LD=$NVCC
 ], [
-  MAINCC=$CC
+  CC_MAIN=$CC
   LD=$CC
 ])
 
@@ -150,7 +150,7 @@ AC_SUBST(enable_cuda, "$enable_cuda")
 AC_SUBST(enable_cublas, "$enable_cublas")
 AC_SUBST(NVCC, "$NVCC")
 AC_SUBST(PTHREAD, "$PTHREAD")
-AC_SUBST(MAINCC, "$MAINCC")
+AC_SUBST(CC_MAIN, "$CC_MAIN")
 AC_SUBST(LD, "$LD")
 AC_SUBST(FCLIBS, "$FCLIBS")
 AC_CONFIG_FILES([Makefile])

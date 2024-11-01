@@ -21,6 +21,8 @@ FCFLAGS = @FCFLAGS@
 
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LDFLAGS += @PTHREAD@
+
 LIBS = @LIBS@
 LIBS += @FCLIBS@
 
@@ -28,10 +30,11 @@ LIBS += @FCLIBS@
 #   Most of these should probably have been resolved by autoconf, but for now
 #   they are configured here.
 #   NVCC: CUDA compiler (if available)
-#   MAINCC: Compiler used with main.o (see below)
+#   CC_MAIN: Compiler used with main.o (see below)
 NVCC = @NVCC@
-MAINCC = @MAINCC@
-PTHREAD = @PTHREAD@
+CC_MAIN = @CC_MAIN@
+CFLAGS_MAIN = $(CFLAGS)
+CFLAGS_MAIN += @PTHREAD@
 
 # Paths to platform-specific source
 POSIX_TIMER_PATH = $(SRC)/@posix_timer_path@
@@ -70,7 +73,7 @@ all: optiflop
 # Executable rules
 
 optiflop: $(OBJS)
-	$(LD) $(LDFLAGS) $(PTHREAD) -o $@ $^ $(LIBS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 $(OBJS): | $(OBJDIR)
 
@@ -80,9 +83,9 @@ $(OBJDIR):
 # Object rules
 
 # NOTE: If compiled with nvc, then it will use objects unavailable to nvcc.
-#   So we use $(MAINCC) macro to configure this for CUDA builds when needed.
+#   So we use $(CC_MAIN) macro to configure this for CUDA builds when needed.
 $(OBJDIR)/main.o: $(SRC)/main.c $(INC)/sse.h $(INC)/sse_fma.h $(INC)/avx.h $(INC)/roof.h $(INC)/bench.h
-	$(MAINCC) $(CPPFLAGS) $(CFLAGS) $(PTHREAD) -c -o $@ $<
+	$(CC_MAIN) $(CPPFLAGS) $(CFLAGS_MAIN) -c -o $@ $<
 
 $(OBJDIR)/input.o: $(SRC)/input.c $(INC)/input.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
