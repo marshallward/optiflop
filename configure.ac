@@ -105,12 +105,13 @@ AC_MSG_RESULT($enable_unroll)
 # BLAS configuration
 # TODO: Gracefully handle the missing header case...
 cblas_path="generic"
-AC_SEARCH_LIBS([cblas_dgemm], [mkl blas openblas], [
-  AC_CHECK_HEADERS([cblas.h], [
-    cblas_path="blas"
+AS_IF([test "$enable_blas" == "yes"], [
+  AC_SEARCH_LIBS([cblas_dgemm], [mkl blas openblas], [
+    AC_CHECK_HEADERS([cblas.h], [
+      cblas_path="blas"
+    ])
   ])
 ])
-
 
 # GPU configuration
 AC_ARG_ENABLE([cuda], [
@@ -139,7 +140,10 @@ AS_IF([test "$enable_cuda" == "yes" -o "$enable_cublas" == "yes"], [
 # cuBLAS setup
 AS_IF([test "$enable_cublas" == "yes"], [
   cublas_path="cuda"
+  ac_cc_save="$CC"
+  CC=$NVCC
   AC_SEARCH_LIBS([cublasDaxpy],[cublas])
+  CC="$ac_cc_save"
 ],[
   cublas_path="generic"
 ])

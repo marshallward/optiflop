@@ -94,8 +94,7 @@ void avx512_fma(void *args_in)
     // Declare as volatile to prevent removal during optimisation
     volatile double result;
 
-    long r_max, i;
-    int j;
+    long r_max;
     double runtime, flops;
     Stopwatch *t;
 
