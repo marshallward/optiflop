@@ -106,7 +106,7 @@ AC_MSG_RESULT($enable_unroll)
 # TODO: Gracefully handle the missing header case...
 cblas_path="generic"
 AS_IF([test "$enable_blas" == "yes"], [
-  AC_SEARCH_LIBS([cblas_dgemm], [mkl blas openblas], [
+  AC_SEARCH_LIBS([cblas_dgemm], [mkl blas openblas blis blis-mt], [
     AC_CHECK_HEADERS([cblas.h], [
       cblas_path="blas"
     ])
@@ -160,6 +160,9 @@ AS_IF([test "$enable_blas" == "yes"], [
   #   Not yet sure how to handle this with older versions (if at all).
   # NOTE: 2.69 definitely does not work, no idea about 2.70--2.71
   m4_version_prereq([2.72], [AC_FC_LIBRARY_LDFLAGS], [FCLIBS=""])
+
+  # xerbla requires a Fortran linker
+  LD=$FC
 ])
 
 
